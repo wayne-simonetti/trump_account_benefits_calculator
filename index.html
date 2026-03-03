@@ -1,0 +1,1577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trump Account Benefits Calculator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red: #C0392B;
+      --blue: #2B60D8;
+      --dark-blue: #1A3FA0;
+      --gold: #C9A84C;
+      --white: #FFFFFF;
+      --off-white: #ECEAE4;
+      --gray: #E2DED6;
+      --text: #1C1C1E;
+      --muted: #6B6B80;
+      --green: #2E7D32;
+      --light-green: #E8F5E9;
+    }
+
+    body { font-family: 'Georgia', serif; background: var(--off-white); color: var(--text); min-height: 100vh; }
+
+    /* HEADER */
+    header {
+      background: var(--white);
+      color: var(--text);
+      padding: 2rem 1rem 1.5rem;
+      text-align: center;
+      border-bottom: 1px solid #e0ddd6;
+    }
+    header h1 { font-size: clamp(1.6rem, 4vw, 2.6rem); font-weight: 700; letter-spacing: 0; color: var(--text); }
+    header h1 span { color: var(--blue); }
+    header p { margin-top: 0.4rem; font-size: 0.95rem; color: var(--muted); }
+
+    /* LAYOUT */
+    main { max-width: 980px; margin: 2rem auto; padding: 0 1rem 3rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    @media (max-width: 680px) {
+      main { grid-template-columns: 1fr; }
+      #results-section { grid-template-columns: 1fr; }
+      #child-info-grid { grid-template-columns: 1fr !important; }
+      #child-info-grid > * { min-width: 0; }
+      #child-info-grid input, #child-info-grid select { min-width: 0; width: 100%; }
+      .card { padding: 1.1rem; }
+      .chart-wrap { height: 200px; }
+      .grant-cards { grid-template-columns: 1fr; }
+      .tax-table th, .tax-table td { font-size: 0.76rem; padding: 0.35rem 0.5rem; }
+      .breakdown-table th, .breakdown-table td { font-size: 0.76rem; padding: 0.35rem 0.5rem; }
+      #emp-table th:nth-child(4), #emp-table td:nth-child(4) { display: none; }
+      .field input, .field select, .emp-combo-input { font-size: 1rem; }
+    }
+
+    /* CARDS */
+    .card { background: var(--white); border: 1px solid #ddd; border-radius: 10px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .card-full { grid-column: 1 / -1; }
+    .card h2 { font-size: 1.05rem; font-weight: 700; color: var(--text); border-bottom: 1px solid #e0ddd6; padding-bottom: 0.5rem; margin-bottom: 1.1rem; }
+
+    /* FORM */
+    .field { margin-bottom: 1.1rem; }
+    .field label { display: block; font-size: 0.82rem; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
+    .field input[type="date"],
+    .field input[type="number"],
+    .field select { width: 100%; padding: 0.55rem 0.75rem; border: 1.5px solid #ccc; border-radius: 6px; font-size: 0.95rem; font-family: inherit; background: var(--off-white); transition: border-color 0.2s; -webkit-appearance: none; appearance: none; }
+    .field input:focus, .field select:focus { outline: none; border-color: var(--blue); background: #fff; }
+    .field .hint { font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem; }
+    .badge { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700; margin-top: 0.3rem; }
+    .badge-green { background: var(--light-green); color: var(--green); }
+    .badge-red   { background: #FFEBEE; color: #C62828; }
+    .badge-gold  { background: #FFF8E1; color: #7B5E00; }
+
+    /* RANGE SLIDER */
+    .field input[type="range"] { width: 100%; accent-color: var(--blue); cursor: pointer; }
+    .range-labels { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--muted); margin-top: 0.1rem; }
+
+    /* DUAL RANGE SLIDER */
+    .dual-range-wrap { position: relative; height: 36px; margin: 0.4rem 0; }
+    .dual-range-track {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      left: 0; right: 0; height: 4px; background: #ddd; border-radius: 2px; pointer-events: none;
+    }
+    .dual-range-fill { position: absolute; height: 100%; background: var(--blue); border-radius: 2px; }
+    .dual-range-wrap input[type="range"] {
+      position: absolute; width: 100%; pointer-events: none;
+      height: 4px; -webkit-appearance: none; appearance: none;
+      background: transparent; top: 50%; transform: translateY(-50%); margin: 0;
+    }
+    .dual-range-wrap input[type="range"]::-webkit-slider-thumb {
+      pointer-events: all; width: 18px; height: 18px; border-radius: 50%;
+      background: var(--blue); cursor: pointer; -webkit-appearance: none;
+      border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    }
+    .dual-range-wrap input[type="range"]::-moz-range-thumb {
+      pointer-events: all; width: 14px; height: 14px; border-radius: 50%;
+      background: var(--blue); cursor: pointer; border: 2px solid white;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    }
+    .employer-match-line {
+      display: none; margin-top: 0.5rem; padding: 0.4rem 0.7rem;
+      background: var(--light-green); border-radius: 6px;
+      font-size: 0.82rem; color: var(--green); line-height: 1.4;
+    }
+
+    /* ELIGIBILITY BANNER */
+    .eligibility-banner { border-radius: 8px; padding: 0.9rem 1rem; margin-bottom: 0.5rem; font-size: 0.9rem; border: 1.5px solid; }
+    .eligibility-banner.eligible   { background: var(--light-green); border-color: var(--green); color: var(--green); }
+    .eligibility-banner.ineligible { background: #FFEBEE; border-color: #C62828; color: #B71C1C; }
+    .eligibility-banner strong { font-size: 1rem; display: block; margin-bottom: 0.2rem; }
+
+    /* RESULTS */
+    .result-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.2rem; }
+    .result-box { background: var(--off-white); border: 1px solid #ddd; border-radius: 8px; padding: 0.9rem 1rem; text-align: center; }
+    .result-box .label { font-size: 0.72rem; font-weight: 700; color: var(--muted); }
+    .result-box .amount { font-size: 1.5rem; font-weight: 700; color: var(--blue); margin: 0.2rem 0; }
+    .result-box .sub { font-size: 0.72rem; color: var(--muted); }
+    .result-box.highlight { border-color: var(--blue); background: #EEF3FF; }
+    .result-box.highlight .amount { color: var(--blue); }
+
+    /* CHART */
+    .chart-wrap { position: relative; width: 100%; height: 280px; margin: 0.5rem 0 1rem; }
+    canvas { width: 100% !important; height: 100% !important; }
+
+    /* BREAKDOWN TABLE */
+    .breakdown-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .breakdown-table th { background: var(--dark-blue); color: var(--white); padding: 0.5rem 0.75rem; text-align: left; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.4px; }
+    .breakdown-table th:last-child { text-align: right; }
+    .breakdown-table td { padding: 0.45rem 0.75rem; border-bottom: 1px solid #eee; }
+    .breakdown-table td:last-child { text-align: right; font-weight: 700; color: var(--green); }
+    .breakdown-table tr:nth-child(even) td { background: var(--off-white); }
+    .breakdown-table tr:last-child td { border-bottom: none; }
+
+    /* TAX TABLE */
+    .tax-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .tax-table th { background: var(--dark-blue); color: var(--white); padding: 0.45rem 0.7rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.3px; }
+    .tax-table td { padding: 0.4rem 0.7rem; border-bottom: 1px solid #eee; }
+    .tax-table tr:nth-child(even) td { background: var(--off-white); }
+    .tag { display: inline-block; padding: 0.1rem 0.45rem; border-radius: 3px; font-size: 0.7rem; font-weight: 700; }
+    .tag-free  { background: var(--light-green); color: var(--green); }
+    .tag-taxed { background: #FFEBEE; color: #C62828; }
+
+    /* ── GRANT SECTION ─────────────────────────────────────────────────── */
+    .grant-section { margin-bottom: 1.4rem; }
+    .grant-section-title {
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+      color: var(--muted); border-bottom: 1px solid #eee; padding-bottom: 0.35rem; margin-bottom: 0.8rem;
+    }
+    .grant-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.75rem; }
+    .grant-card {
+      border: 1.5px solid #ddd; border-radius: 8px; padding: 0.9rem 1rem;
+      background: var(--off-white); transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+    .grant-card.g-eligible   { border-color: var(--green); background: var(--light-green); }
+    .grant-card.g-ineligible { border-color: #ddd; opacity: 0.7; }
+    .grant-card.g-pending    { border-color: var(--gold); background: #FFF8E1; }
+    .grant-card.g-tbd        { border-color: #aaa; background: #f5f5f5; }
+
+    .grant-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.4rem; }
+    .grant-name { font-size: 0.88rem; font-weight: 700; color: var(--text); line-height: 1.3; }
+    .grant-amount {
+      font-size: 1.05rem; font-weight: 700; color: var(--blue); white-space: nowrap; margin-left: 0.5rem;
+    }
+    .grant-card.g-eligible .grant-amount { color: var(--green); }
+    .grant-card.g-tbd .grant-amount { color: #777; font-size: 0.85rem; }
+    .grant-donor { font-size: 0.73rem; color: var(--muted); margin-bottom: 0.5rem; }
+    .grant-note  { font-size: 0.72rem; color: var(--muted); margin-bottom: 0.5rem; font-style: italic; }
+    .grant-status {
+      display: inline-block; font-size: 0.72rem; font-weight: 700; padding: 0.15rem 0.5rem;
+      border-radius: 4px; margin-bottom: 0.5rem;
+    }
+    .gs-eligible   { background: var(--light-green); color: var(--green); }
+    .gs-ineligible { background: #eee; color: #888; }
+    .gs-pending    { background: #FFF8E1; color: #7B5E00; }
+    .gs-tbd        { background: #f0f0f0; color: #777; }
+    .gs-auto       { background: #E3F2FD; color: #1565C0; }
+
+    .grant-inputs { margin-top: 0.5rem; border-top: 1px solid rgba(0,0,0,0.07); padding-top: 0.5rem; }
+    .grant-inputs .gi-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; font-size: 0.8rem; }
+    .grant-inputs .gi-row label { flex: 1; color: var(--text); cursor: pointer; }
+    .grant-inputs .gi-row input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--blue); cursor: pointer; flex-shrink: 0; }
+    .grant-inputs select { width: 100%; padding: 0.35rem 0.5rem; border: 1px solid #ccc; border-radius: 5px; font-size: 0.8rem; font-family: inherit; background: white; margin-top: 0.3rem; }
+
+    /* EMPLOYER SEARCHABLE COMBOBOX */
+    .emp-combo { position: relative; width: 100%; margin-top: 0.3rem; }
+    .emp-combo-input {
+      width: 100%; padding: 0.38rem 2.2rem 0.38rem 0.55rem;
+      border: 1.5px solid #ccc; border-radius: 5px;
+      font-size: 0.8rem; font-family: inherit; background: white;
+      cursor: text; transition: border-color 0.2s;
+    }
+    .emp-combo-input:focus { outline: none; border-color: var(--blue); }
+    .emp-combo-arrow {
+      position: absolute; right: 0.55rem; top: 50%; transform: translateY(-50%);
+      pointer-events: none; color: var(--muted); font-size: 0.65rem; transition: transform 0.15s;
+    }
+    .emp-combo.open .emp-combo-arrow { transform: translateY(-50%) rotate(180deg); }
+    .emp-combo-clear {
+      position: absolute; right: 1.6rem; top: 50%; transform: translateY(-50%);
+      cursor: pointer; color: var(--muted); font-size: 0.8rem;
+      line-height: 1; display: none; padding: 0.1rem 0.2rem;
+    }
+    .emp-combo-clear:hover { color: var(--red); }
+    .emp-combo-dropdown {
+      position: absolute; top: calc(100% + 3px); left: 0; right: 0;
+      background: white; border: 1.5px solid var(--blue); border-radius: 7px;
+      max-height: 230px; overflow-y: auto; z-index: 300;
+      display: none; box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+      scroll-behavior: smooth;
+    }
+    .emp-combo.open .emp-combo-dropdown { display: block; }
+    .emp-option {
+      padding: 0.42rem 0.65rem; font-size: 0.8rem; cursor: pointer;
+      transition: background 0.1s; border-bottom: 1px solid #f0f0f0;
+    }
+    .emp-option:last-child { border-bottom: none; }
+    .emp-option:hover, .emp-option.focused { background: #EEF3FA; }
+    .emp-option.selected { background: var(--light-green); color: var(--green); font-weight: 700; }
+    .emp-option mark { background: #FFF176; color: inherit; border-radius: 2px; padding: 0 1px; font-style: normal; }
+    .emp-no-results { padding: 0.7rem; font-size: 0.8rem; color: var(--muted); text-align: center; font-style: italic; }
+
+    /* Total grants bar */
+    .grants-total {
+      background: var(--blue);
+      color: white; border-radius: 8px; padding: 0.85rem 1rem;
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 0.75rem; flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+    .grants-total .gt-label { font-size: 0.8rem; letter-spacing: 0; opacity: 0.85; }
+    .grants-total .gt-amount { font-size: 1.5rem; font-weight: 700; color: white; white-space: nowrap; flex-shrink: 0; }
+    .grants-total .gt-breakdown { font-size: 0.72rem; opacity: 0.75; margin-top: 0.15rem; }
+
+    /* DISCLAIMER */
+    .disclaimer { grid-column: 1 / -1; font-size: 0.73rem; color: var(--muted); border-top: 1px solid #ddd; padding-top: 0.8rem; line-height: 1.5; }
+    .disclaimer a { color: var(--blue); }
+
+    /* CALCULATE BUTTON */
+    .calc-btn {
+      width: 100%; padding: 0.9rem; background: var(--blue); color: white;
+      border: none; border-radius: 8px; font-size: 1.05rem; font-weight: 700;
+      font-family: inherit; cursor: pointer; letter-spacing: 0.3px;
+    }
+    .calc-btn:hover { background: var(--dark-blue); }
+    #results-section { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; min-width: 0; }
+    #results-section > * { min-width: 0; }
+
+    #eligible-grants-panel { margin-bottom: 0.5rem; }
+    .eligible-section-title {
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+      color: var(--green); border-bottom: 1px solid var(--green); padding-bottom: 0.35rem; margin-bottom: 0.8rem;
+    }
+    #grants-toggle-section { margin-top: 0.25rem; }
+    #grants-toggle-btn {
+      width: 100%; display: flex; align-items: center; justify-content: space-between;
+      padding: 0.6rem 0.9rem; background: var(--off-white); border: 1.5px solid #ddd;
+      border-radius: 8px; cursor: pointer; font-size: 0.85rem; color: var(--muted);
+      font-family: inherit; font-weight: 600;
+    }
+    #grants-toggle-btn:hover { border-color: #bbb; background: #f0f0f0; }
+    .toggle-chevron { transition: transform 0.2s; }
+    .toggle-chevron.open { transform: rotate(180deg); }
+    #other-grants-section { margin-top: 0.75rem; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Trump Account <span>Benefits Calculator</span></h1>
+  <p>One Big Beautiful Bill Act &mdash; Tax-Advantaged Child Savings</p>
+</header>
+
+<main>
+
+  <!-- ── PRIMARY INPUTS (full width, 3 columns) ──────────────────────────── -->
+  <div class="card card-full">
+    <h2>Child Information</h2>
+    <div id="child-info-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.2rem;align-items:start;">
+
+      <div class="field" style="margin-bottom:0;">
+        <label>Date of Birth</label>
+        <input type="date" id="dob" style="width:100%;max-width:100%;" />
+        <div id="dob-badge"></div>
+      </div>
+
+      <div class="field" style="margin-bottom:0;">
+        <label>State of Residence</label>
+        <select id="stateSelect">
+          <option value="">— Select state —</option>
+          <option value="AL">Alabama</option>
+          <option value="AK">Alaska</option>
+          <option value="AZ">Arizona</option>
+          <option value="AR">Arkansas</option>
+          <option value="CA">California</option>
+          <option value="CO">Colorado</option>
+          <option value="CT">Connecticut</option>
+          <option value="DE">Delaware</option>
+          <option value="FL">Florida</option>
+          <option value="GA">Georgia</option>
+          <option value="HI">Hawaii</option>
+          <option value="ID">Idaho</option>
+          <option value="IL">Illinois</option>
+          <option value="IN">Indiana</option>
+          <option value="IA">Iowa</option>
+          <option value="KS">Kansas</option>
+          <option value="KY">Kentucky</option>
+          <option value="LA">Louisiana</option>
+          <option value="ME">Maine</option>
+          <option value="MD">Maryland</option>
+          <option value="MA">Massachusetts</option>
+          <option value="MI">Michigan</option>
+          <option value="MN">Minnesota</option>
+          <option value="MS">Mississippi</option>
+          <option value="MO">Missouri</option>
+          <option value="MT">Montana</option>
+          <option value="NE">Nebraska</option>
+          <option value="NV">Nevada</option>
+          <option value="NH">New Hampshire</option>
+          <option value="NJ">New Jersey</option>
+          <option value="NM">New Mexico</option>
+          <option value="NY">New York</option>
+          <option value="NC">North Carolina</option>
+          <option value="ND">North Dakota</option>
+          <option value="OH">Ohio</option>
+          <option value="OK">Oklahoma</option>
+          <option value="OR">Oregon</option>
+          <option value="PA">Pennsylvania</option>
+          <option value="RI">Rhode Island</option>
+          <option value="SC">South Carolina</option>
+          <option value="SD">South Dakota</option>
+          <option value="TN">Tennessee</option>
+          <option value="TX">Texas</option>
+          <option value="UT">Utah</option>
+          <option value="VT">Vermont</option>
+          <option value="VA">Virginia</option>
+          <option value="WA">Washington</option>
+          <option value="WV">West Virginia</option>
+          <option value="WI">Wisconsin</option>
+          <option value="WY">Wyoming</option>
+          <option value="DC">Washington D.C.</option>
+        </select>
+        <div class="hint">Determines available state &amp; regional grant programs.</div>
+      </div>
+
+      <div class="field" style="margin-bottom:0;">
+        <label>ZIP Code</label>
+        <input type="text" id="zipCode" maxlength="5" pattern="\d{5}"
+               placeholder="e.g. 90210" autocomplete="postal-code"
+               style="width:100%;padding:0.55rem 0.75rem;border:1.5px solid #ccc;border-radius:6px;font-size:0.95rem;font-family:inherit;background:var(--off-white);" />
+        <div id="zip-result" class="hint" style="margin-top:0.3rem;"></div>
+      </div>
+
+      <div class="field" style="margin-bottom:0;">
+        <label>Employer</label>
+        <input type="hidden" id="employerSelect" />
+        <div class="emp-combo" id="emp-combo">
+          <input type="text" class="emp-combo-input" id="emp-combo-input"
+                 placeholder="Search or select employer…" autocomplete="off" spellcheck="false" />
+          <span class="emp-combo-arrow">▼</span>
+          <span class="emp-combo-clear" id="emp-combo-clear" title="Clear selection">✕</span>
+          <div class="emp-combo-dropdown" id="emp-combo-dropdown"></div>
+        </div>
+        <div id="employer-result" class="hint" style="margin-top:0.3rem;"></div>
+        <div style="margin-top:0.25rem;font-size:0.78rem;"><a href="#employer-table" style="color:var(--blue);">View all employer grants ↓</a></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── CALCULATE BUTTON ─────────────────────────────────────────────────── -->
+  <div class="card-full" id="calc-btn-wrap">
+    <button class="calc-btn" id="calc-btn">Calculate Benefits</button>
+  </div>
+
+  <!-- ── RESULTS SECTION ───────────────────────────────────────────────────── -->
+  <div id="results-section" style="display:none;">
+
+  <!-- ── TOTAL GRANTS BAR ──────────────────────────────────────────────────── -->
+  <div class="card card-full" style="padding:0;">
+    <div class="grants-total" style="border-radius:inherit;margin:0;">
+      <div>
+        <div class="gt-label">Total One-Time Grants Applied</div>
+        <div class="gt-breakdown" id="grants-breakdown">Enter child's birth date to calculate</div>
+      </div>
+      <div class="gt-amount" id="grants-total-amount">$0</div>
+    </div>
+  </div>
+
+  <!-- ── GRANT ELIGIBILITY (full width) ───────────────────────────────────── -->
+  <div class="card card-full">
+    <h2>Grant &amp; Contribution Eligibility</h2>
+
+    <!-- ELIGIBLE GRANTS (top) -->
+    <div id="eligible-grants-panel" style="display:none;">
+      <div class="eligible-section-title">Confirmed Eligible</div>
+      <div class="grant-cards" id="eligible-grants-cards"></div>
+    </div>
+
+    <!-- TOGGLE -->
+    <div id="grants-toggle-section" style="display:none;">
+      <button id="grants-toggle-btn" onclick="toggleOtherGrants()">
+        <span id="grants-toggle-label">Show other grants</span>
+        <span class="toggle-chevron" id="grants-chevron">▾</span>
+      </button>
+    </div>
+
+    <!-- OTHER GRANTS (collapsed by default) -->
+    <div id="other-grants-section" style="display:none;">
+
+    <!-- 1. FEDERAL -->
+    <div class="grant-section">
+      <div class="grant-cards">
+        <div class="grant-card" id="gc-federal">
+          <div class="grant-card-header">
+            <div class="grant-name">Federal Seed Deposit</div>
+            <div class="grant-amount" id="ga-federal">$1,000</div>
+          </div>
+          <div class="grant-donor">U.S. Department of the Treasury</div>
+          <div class="grant-note">One-time. Children born Jan 1, 2025 &ndash; Dec 31, 2028. No income limit. Does not count toward $5,000 annual cap.</div>
+          <div id="gs-federal"><span class="grant-status gs-auto">Auto-determined from birth date</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. NATIONWIDE PHILANTHROPIC -->
+    <div class="grant-section">
+      <div class="grant-cards">
+        <div class="grant-card" id="gc-dell">
+          <div class="grant-card-header">
+            <div class="grant-name">Dell Foundation</div>
+            <div class="grant-amount">$250</div>
+          </div>
+          <div class="grant-donor">Michael &amp; Susan Dell &mdash; $6.25B pledged</div>
+          <div class="grant-note">~25 million children nationwide. For children born before 2025 (age 10 or under). ZIP code median household income below $150,000. Mutually exclusive with federal $1,000 seed. Final IRS guidance pending.</div>
+          <div id="gs-dell"></div>
+          <div id="dell-zip-status" class="grant-note" style="margin-top:0.4rem;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. STATE / REGIONAL -->
+    <div class="grant-section" id="grant-section-state">
+      <div id="state-grants-wrap">
+        <p style="color:var(--muted);font-size:0.85rem;">Select your state above to see available regional programs.</p>
+      </div>
+    </div>
+
+    <!-- 4. EMPLOYER ONE-TIME GRANTS -->
+    <div class="grant-section">
+      <div class="grant-cards">
+        <div class="grant-card g-pending" id="gc-employer">
+          <div class="grant-card-header">
+            <div class="grant-name" id="gname-employer">Employer Seed Grant</div>
+            <div class="grant-amount" id="ga-employer">—</div>
+          </div>
+          <div class="grant-donor" id="gd-employer">Select your employer above</div>
+          <div id="gs-employer"><span class="grant-status gs-pending">Select employer</span></div>
+          <div class="grant-inputs">
+            <div id="ibm-conditional-row" style="display:none;" class="gi-row">
+              <input type="checkbox" id="ibmConditional" onchange="compute()" />
+              <label for="ibmConditional">Family will contribute $4,000+ within 24 months (unlocks IBM's additional $1,000)</label>
+            </div>
+          </div>
+          <div id="gn-employer" class="grant-note" style="margin-top:0.5rem;display:none;"></div>
+        </div>
+
+        <!-- Nicki Minaj fan grant — hidden until details confirmed -->
+        <div style="display:none;">
+          <input type="checkbox" id="minajCheck" />
+          <div id="gs-minaj"></div>
+        </div>
+      </div>
+    </div>
+
+    </div><!-- /#other-grants-section -->
+
+  </div>
+
+  <!-- ── ELIGIBILITY SUMMARY ───────────────────────────────────────────────── -->
+  <div class="card card-full">
+    <h2>Eligibility Summary</h2>
+    <div id="eligibility-content"><p style="color:var(--muted)">Enter a date of birth above to see eligibility details.</p></div>
+  </div>
+
+  <!-- ── CONTRIBUTIONS & FORECAST ─────────────────────────────────────────── -->
+  <div class="card">
+    <h2>Annual Contributions</h2>
+    <div class="field">
+      <label>Annual Family Contribution ($)</label>
+      <input type="number" id="familyContrib" value="1200" min="0" max="5000" step="100" />
+      <div class="hint">After-tax dollars; withdrawn tax-free. Cap: $5,000/yr total (family + employer).</div>
+      <div class="employer-match-line" id="employer-match-line">
+        <span id="employer-match-label"></span>
+      </div>
+    </div>
+    <div class="field">
+      <label>Contribution Age Window: <span id="contrib-age-display">Ages 0 → 18</span></label>
+      <div class="dual-range-wrap">
+        <div class="dual-range-track"><div class="dual-range-fill" id="dual-range-fill"></div></div>
+        <input type="range" id="contribStartAge" min="0" max="30" value="0" step="1" />
+        <input type="range" id="contribEndAge"   min="0" max="30" value="18" step="1" />
+      </div>
+      <div class="range-labels"><span>Age 0</span><span>Age <span id="contrib-age-max">30</span></span></div>
+      <div class="hint">Growth still compounds outside the window — contributions just pause.</div>
+    </div>
+    <div id="contrib-warning" class="eligibility-banner ineligible" style="display:none;">
+      <strong>Contribution Limit Exceeded</strong> Total contributions cannot exceed $5,000/year.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Forecast Settings</h2>
+    <div class="field">
+      <label>Expected Annual Return: <span id="rate-display">7%</span></label>
+      <input type="range" id="returnRate" min="3" max="14" value="7" step="0.5"
+             oninput="document.getElementById('rate-display').textContent=this.value+'%'; compute();" />
+      <div class="range-labels"><span>3% Conservative</span><span>7% Moderate</span><span>14% Aggressive</span></div>
+    </div>
+    <div class="field">
+      <label>Project Growth To Age</label>
+      <select id="targetAge">
+        <option value="18" selected>18 — First withdrawal eligible</option>
+        <option value="22">22 — College graduation</option>
+        <option value="30">30 — Early career</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- ── PROJECTED VALUE ───────────────────────────────────────────────────── -->
+  <div class="card card-full">
+    <h2>Projected Account Value</h2>
+    <div class="result-grid" id="result-grid"></div>
+    <div class="chart-wrap"><canvas id="growthChart"></canvas></div>
+  </div>
+
+  <!-- ── YEAR-BY-YEAR TABLE ────────────────────────────────────────────────── -->
+  <div class="card card-full">
+    <h2>Year-by-Year Breakdown</h2>
+    <div style="overflow-x:auto;">
+      <table class="breakdown-table">
+        <thead>
+          <tr>
+            <th>Year</th><th>Age</th><th>Contributions Added</th>
+            <th>Cumul. Contributed</th><th>Account Value</th>
+          </tr>
+        </thead>
+        <tbody id="breakdown-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── EMPLOYER GRANTS TABLE ─────────────────────────────────────────────── -->
+  <div class="card card-full" id="employer-table">
+    <h2>Employer Grant Directory</h2>
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem;">All known employer one-time seed grants for Trump Accounts. Use the search to filter.</p>
+    <input type="text" id="emp-table-search" placeholder="Search employers…"
+      style="width:100%;max-width:340px;padding:0.5rem 0.75rem;border:1.5px solid #ccc;border-radius:6px;font-size:0.9rem;font-family:inherit;background:var(--off-white);margin-bottom:1rem;" />
+    <div style="overflow-x:auto;">
+      <table class="tax-table" id="emp-table">
+        <thead>
+          <tr>
+            <th>Employer</th>
+            <th>Grant Amount</th>
+            <th>Eligibility</th>
+            <th>Contribution</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody id="emp-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── TAX TREATMENT ─────────────────────────────────────────────────────── -->
+  <div class="card card-full">
+    <h2>Tax Treatment Guide</h2>
+    <div style="overflow-x:auto;">
+    <table class="tax-table">
+      <thead>
+        <tr><th>Contribution Type</th><th>Annual Limit</th><th>Tax Deductible?</th><th>Withdrawal Tax</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Federal Seed Deposit</td><td>$1,000 one-time (birth 2025–2028)</td><td>N/A</td><td><span class="tag tag-taxed">Ordinary Income</span></td></tr>
+        <tr><td>Family / After-Tax Contributions</td><td>Up to $5,000 combined</td><td><span class="tag tag-taxed">No</span></td><td><span class="tag tag-free">Tax-Free</span></td></tr>
+        <tr><td>Recurring Employer Contributions</td><td>Up to $2,500/yr (within $5,000 cap)</td><td><span class="tag tag-free">Tax-free to employee</span></td><td><span class="tag tag-taxed">Ordinary Income</span></td></tr>
+        <tr><td>Investment Earnings / Growth</td><td>—</td><td>Tax-deferred</td><td><span class="tag tag-taxed">Ordinary Income</span></td></tr>
+        <tr><td>Philanthropic / Employer Seed Grants</td><td>Exempt from $5,000 annual cap*</td><td>N/A</td><td><span class="tag tag-taxed">Ordinary Income</span></td></tr>
+        <tr><td>Early Withdrawal (before age 18)</td><td colspan="3" style="color:#C62828;font-weight:700;">Generally prohibited</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p style="font-size:0.72rem;color:var(--muted);margin-top:0.6rem;">* Contributions from 501(c)(3)s, state/tribal governments, and qualifying philanthropic grants do not count against the $5,000 annual family contribution limit.</p>
+  </div>
+
+  <p class="disclaimer">
+    <strong>Disclaimer:</strong> This calculator is for informational and educational purposes only, based on publicly available information about the One Big Beautiful Bill Act (OBBBA) as of February 2026. Account availability begins July 4, 2026. Grant programs are pledges — amounts, eligibility criteria, and distribution processes may change. Figures are illustrative estimates; actual results depend on market performance, legislative changes, and individual circumstances. Consult a qualified financial advisor or tax professional before making financial decisions.<br><br>
+    Sources:
+    <a href="https://www.irs.gov/trumpaccounts" target="_blank">IRS Trump Accounts</a> &bull;
+    <a href="https://www.trumpaccounts.gov/" target="_blank">trumpaccounts.gov</a> &bull;
+    <a href="https://atr.org/trumpaccounts/" target="_blank">Americans for Tax Reform — Contributors List</a> &bull;
+    <a href="https://www.savingforcollege.com/article/trump-account-new-corporate-benefits-state-programs" target="_blank">SavingForCollege — 50 State Challenge</a> &bull;
+    <a href="https://www.cnbc.com/2025/12/17/trump-accounts-dalio-blackrock-bny.html" target="_blank">CNBC — Dalio, BlackRock, BNY</a> &bull;
+    <a href="https://www.cnbc.com/2026/01/28/altimeter-capital-brad-gerstner-trump-accounts-indiana.html" target="_blank">CNBC — Gerstner / Indiana</a>
+  </p>
+
+  </div><!-- /#results-section -->
+
+</main>
+
+<script src="employers.js"></script>
+<script src="zip_income.js"></script>
+<script>
+// ────────────────────────────────────────────────────────────────────────────
+// HELPERS
+// ────────────────────────────────────────────────────────────────────────────
+function fmt(n) {
+  if (n >= 1_000_000) return '$' + (n / 1_000_000).toFixed(2) + 'M';
+  if (n >= 1_000)     return '$' + (n / 1_000).toFixed(1) + 'K';
+  return '$' + Math.round(n).toLocaleString();
+}
+function fmtFull(n) { return '$' + Math.round(n).toLocaleString(); }
+
+function getAge(dob) {
+  if (!dob) return null;
+  const birth = new Date(dob + 'T00:00:00');
+  const today = new Date('2026-02-25');
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+  return { age, birth };
+}
+
+function isBirthYear(birth, yr) {
+  return birth && birth.getFullYear() === yr;
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// GRANT LOGIC
+// ────────────────────────────────────────────────────────────────────────────
+function computeGrants(dob, state, zip) {
+  const result = getAge(dob);
+  const age    = result ? result.age : null;
+  const birth  = result ? result.birth : null;
+  const under18 = age !== null && age >= 0 && age < 18;
+
+  // ZIP income lookup
+  const zipIncome    = getZipIncome(zip);
+  const zipQualifies = zipIncome !== null && zipIncome < 150000;
+
+  const items = [];
+  let total = 0;
+
+  // ── 1. Federal Seed ──────────────────────────────────────────────────────
+  const seedStart = new Date('2025-01-01');
+  const seedEnd   = new Date('2028-12-31');
+  const hasSeed   = birth && birth >= seedStart && birth <= seedEnd;
+  {
+    const el = document.getElementById('gc-federal');
+    const st = document.getElementById('gs-federal');
+    const ga = document.getElementById('ga-federal');
+    if (!dob) {
+      el.className = 'grant-card g-pending';
+      st.innerHTML = '<span class="grant-status gs-auto">Auto-determined from birth date</span>';
+    } else if (hasSeed) {
+      el.className = 'grant-card g-eligible';
+      st.innerHTML = '<span class="grant-status gs-eligible">Eligible — $1,000</span>';
+      ga.textContent = '$1,000';
+      items.push({ name: 'Federal Seed', amount: 1000 });
+      total += 1000;
+    } else if (under18) {
+      el.className = 'grant-card g-ineligible';
+      st.innerHTML = '<span class="grant-status gs-ineligible">Not eligible — born outside 2025–2028</span>';
+      ga.textContent = '$0';
+    } else {
+      el.className = 'grant-card g-ineligible';
+      st.innerHTML = '<span class="grant-status gs-ineligible">Not eligible — child must be under 18</span>';
+      ga.textContent = '$0';
+    }
+  }
+
+  // ── 2. Dell Foundation ───────────────────────────────────────────────────
+  const dellAge = age !== null && age <= 10;
+  {
+    const el  = document.getElementById('gc-dell');
+    const st  = document.getElementById('gs-dell');
+    const zst = document.getElementById('dell-zip-status');
+    if (zipIncome !== null) {
+      zst.textContent = `ZIP ${zip} median income: $${zipIncome.toLocaleString()} — ${zipQualifies ? 'qualifies (below $150,000)' : 'does not qualify ($150,000 or above)'}`;
+      zst.style.color = zipQualifies ? 'var(--green)' : '#C62828';
+    } else {
+      zst.textContent = zip && zip.length === 5 ? `ZIP ${zip} not found in Census data.` : 'Enter your ZIP code above to auto-check income eligibility.';
+      zst.style.color = 'var(--muted)';
+    }
+
+    if (!dob) {
+      el.className = 'grant-card g-pending';
+      st.innerHTML = '<span class="grant-status gs-pending">Enter birth date to check</span>';
+    } else if (!under18) {
+      el.className = 'grant-card g-ineligible';
+      st.innerHTML = '<span class="grant-status gs-ineligible">Not eligible — account requires child under 18</span>';
+    } else if (hasSeed) {
+      el.className = 'grant-card g-ineligible';
+      st.innerHTML = '<span class="grant-status gs-ineligible">Not eligible — children born 2025–2028 receive the $1,000 federal seed instead</span>';
+    } else if (dellAge && zipQualifies) {
+      el.className = 'grant-card g-eligible';
+      st.innerHTML = '<span class="grant-status gs-eligible">Eligible — $250</span>';
+      items.push({ name: 'Dell Foundation', amount: 250 });
+      total += 250;
+    } else if (!dellAge) {
+      el.className = 'grant-card g-ineligible';
+      st.innerHTML = '<span class="grant-status gs-ineligible">Not eligible — child must be age 10 or under</span>';
+    } else if (zipIncome === null) {
+      el.className = 'grant-card g-pending';
+      st.innerHTML = '<span class="grant-status gs-pending">Enter ZIP code to check income eligibility</span>';
+    } else {
+      el.className = 'grant-card g-ineligible';
+      st.innerHTML = '<span class="grant-status gs-ineligible">Not eligible — ZIP median income is $150,000 or above</span>';
+    }
+  }
+
+  // ── 3. State / Regional ──────────────────────────────────────────────────
+  const stateResult = renderStateGrants(state, age, birth, under18, zipQualifies, zip);
+  total += stateResult.total;
+  items.push(...stateResult.items);
+
+  // ── 4. Employer seed grant ───────────────────────────────────────────────
+  const empVal = document.getElementById('employerSelect').value;
+  const empTyped = document.getElementById('emp-combo-input').value.trim();
+  const ibmCond = document.getElementById('ibmConditional').checked;
+  {
+    const gaEl = document.getElementById('ga-employer');
+    const gdEl = document.getElementById('gd-employer');
+    const gsEl = document.getElementById('gs-employer');
+    const gnEl = document.getElementById('gn-employer');
+    const ibmRow = document.getElementById('ibm-conditional-row');
+
+    ibmRow.style.display = 'none';
+    gnEl.style.display = 'none';
+
+    const empResultEl = document.getElementById('employer-result');
+    const gcEmpEl = document.getElementById('gc-employer');
+
+    if (!empVal) {
+      if (empTyped) {
+        gcEmpEl.className = 'grant-card g-ineligible';
+        gaEl.textContent = '—';
+        gdEl.textContent = empTyped;
+        gsEl.innerHTML = '<span class="grant-status gs-ineligible">No known employer grant found</span>';
+        gnEl.textContent = 'No Trump Account grant or match has been announced for this employer. If you believe one exists, contact HR or check your employer\'s public announcements.';
+        gnEl.style.display = 'block';
+        empResultEl.textContent = 'No known Trump Account grant for this employer.';
+        empResultEl.style.color = 'var(--red)';
+      } else {
+        gcEmpEl.className = 'grant-card g-pending';
+        gaEl.textContent = '—';
+        gdEl.textContent = 'Select your employer above';
+        gsEl.innerHTML = '<span class="grant-status gs-pending">Select employer</span>';
+        empResultEl.textContent = '';
+      }
+    } else {
+      const [id, amtStr, condition, contribType] = empVal.split('|');
+      const amt = parseInt(amtStr) || 0;
+      const names = {
+        bny_mellon:'BNY Mellon', ibm:'IBM', blackrock:'BlackRock', steak_n_shake:"Steak 'n Shake",
+        nvidia:'Nvidia', chipotle:'Chipotle', uber:'Uber', visa:'Visa', citi:'Citi',
+        fox:'Fox Corporation', newscorp:'News Corporation', acorns:'Acorns',
+        statestreet:'State Street', jpmorgan:'JPMorgan Chase', robinhood:'Robinhood',
+        chime:'Chime', sofi:'SoFi', schwab:'Charles Schwab', russell:'Russell Investments',
+        bofa:'Bank of America', coinbase:'Coinbase', empower:'Empower', intel:'Intel',
+        ici:'Investment Company Institute', tpusa:'Turning Point USA',
+        wellsfargo:'Wells Fargo', mastercard:'Mastercard', comcast:'Comcast',
+        dell_corp:'Dell Technologies', broadcom:'Broadcom', continental:'Continental Resources',
+        charter:'Charter Communications', ctia:'CTIA'
+      };
+      gdEl.textContent = names[id] || id;
+      empResultEl.style.color = '';
+      const gnameEl = document.getElementById('gname-employer');
+      if (gnameEl) gnameEl.textContent = contribType === 'employer_match' ? 'Employer Annual Match' : 'Employer Seed Grant';
+
+      if (condition === 'variable') {
+        gcEmpEl.className = 'grant-card g-tbd';
+        gaEl.textContent = 'Variable';
+        gsEl.innerHTML = '<span class="grant-status gs-tbd">Contact HR for exact amount</span>';
+        gnEl.textContent = 'This employer has pledged contributions but has not published a specific per-child dollar amount. Contact HR.';
+        gnEl.style.display = 'block';
+        empResultEl.textContent = (names[id] || id) + ' has pledged a grant — contact HR for the exact amount.';
+        empResultEl.style.color = 'var(--muted)';
+      } else if (!under18 && dob) {
+        gcEmpEl.className = 'grant-card g-ineligible';
+        gaEl.textContent = '$0';
+        gsEl.innerHTML = '<span class="grant-status gs-ineligible">Not eligible — account requires child under 18</span>';
+        empResultEl.textContent = 'Not eligible — child must be under 18.';
+        empResultEl.style.color = 'var(--red)';
+      } else if (condition === 'seed' && !hasSeed) {
+        gcEmpEl.className = 'grant-card g-ineligible';
+        gaEl.textContent = '$0';
+        gsEl.innerHTML = '<span class="grant-status gs-ineligible">Not eligible — requires child born 2025–2028</span>';
+        empResultEl.textContent = 'Not eligible — grant requires child born 2025–2028.';
+        empResultEl.style.color = 'var(--red)';
+      } else if (condition === 'newborn' && !hasSeed) {
+        gcEmpEl.className = 'grant-card g-ineligible';
+        gaEl.textContent = '$0';
+        gsEl.innerHTML = '<span class="grant-status gs-ineligible">Not eligible — BNY Mellon grant is for newborns (born 2025–2028)</span>';
+        empResultEl.textContent = 'Not eligible — BNY Mellon grant is for newborns (born 2025–2028).';
+        empResultEl.style.color = 'var(--red)';
+      } else if (id === 'ibm') {
+        ibmRow.style.display = 'flex';
+        const ibmTotal = amt + (ibmCond ? 1000 : 0);
+        gcEmpEl.className = 'grant-card g-eligible';
+        gaEl.textContent = '$' + ibmTotal.toLocaleString();
+        gsEl.innerHTML = ibmCond
+          ? '<span class="grant-status gs-eligible">Eligible — $2,000 (base + conditional)</span>'
+          : '<span class="grant-status gs-eligible">Eligible — $1,000 (check box below for +$1,000)</span>';
+        empResultEl.textContent = 'Eligible — $' + ibmTotal.toLocaleString() + ' IBM employer grant.';
+        empResultEl.style.color = 'var(--green)';
+        gnEl.textContent = contribType === 'employer_match'
+          ? 'Annual match — counts toward $2,500 employer sub-cap'
+          : 'One-time seed grant — does not count toward $5,000 annual cap';
+        gnEl.style.display = 'block';
+        if (dob && under18) {
+          items.push({ name: 'IBM Grant', amount: ibmTotal });
+          total += ibmTotal;
+        }
+      } else if (amt > 0 && (dob ? under18 : true)) {
+        gcEmpEl.className = dob && under18 ? 'grant-card g-eligible' : 'grant-card g-pending';
+        gaEl.textContent = '$' + amt.toLocaleString();
+        gsEl.innerHTML = dob
+          ? '<span class="grant-status gs-eligible">Eligible — $' + amt.toLocaleString() + '</span>'
+          : '<span class="grant-status gs-pending">Enter birth date to confirm</span>';
+        empResultEl.textContent = dob
+          ? 'Eligible — $' + amt.toLocaleString() + ' employer grant.'
+          : (names[id] || id) + ' offers a $' + amt.toLocaleString() + ' grant — enter birth date to confirm eligibility.';
+        empResultEl.style.color = dob ? 'var(--green)' : 'var(--muted)';
+        gnEl.textContent = contribType === 'employer_match'
+          ? 'Annual match — counts toward $2,500 employer sub-cap'
+          : 'One-time seed grant — does not count toward $5,000 annual cap';
+        gnEl.style.display = 'block';
+        if (dob && under18) {
+          items.push({ name: (names[id] || id) + ' Grant', amount: amt });
+          total += amt;
+        }
+      }
+    }
+  }
+
+  // ── 5. Nicki Minaj ───────────────────────────────────────────────────────
+  const minajCheck = document.getElementById('minajCheck').checked;
+  if (minajCheck) {
+    items.push({ name: 'Nicki Minaj Fan Grant', amount: 250, tbd: true });
+    // Don't add to total — amount is TBD/estimated
+    document.getElementById('gs-minaj').innerHTML = '<span class="grant-status gs-pending">Applied (est. $250–$500; final amount pending)</span>';
+  } else {
+    document.getElementById('gs-minaj').innerHTML = '<span class="grant-status gs-tbd">Details pending</span>';
+  }
+
+  return { total, items };
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// STATE GRANTS RENDERER
+// ────────────────────────────────────────────────────────────────────────────
+function renderStateGrants(state, age, birth, under18, zipQualifies, zip) {
+  const wrap = document.getElementById('state-grants-wrap');
+  const items = [];
+  let total = 0;
+
+  if (!state) {
+    wrap.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;">Select your state above to see available regional programs.</p>';
+    return { total, items };
+  }
+
+  const STATE_PROGRAMS = new Set(['CA', 'CT', 'IN', 'WY']);
+  if (state && !STATE_PROGRAMS.has(state)) {
+    wrap.innerHTML = `
+      <div class="grant-card g-tbd">
+        <div class="grant-card-header"><div class="grant-name">State Program (Your State)</div><div class="grant-amount" style="font-size:0.85rem;color:#777;">TBD</div></div>
+        <div class="grant-donor">50 State Challenge — Treasury Dept.</div>
+        <div class="grant-note">20+ states are working to meet the 50 State Challenge. No specific program has been publicly announced for your state yet. Check back as more philanthropists and states join the initiative.</div>
+        <span class="grant-status gs-tbd">Not yet announced</span>
+      </div>`;
+    return { total, items };
+  }
+
+  let html = '<div class="grant-cards">';
+
+  if (state === 'CT') {
+    const ctAge = age !== null && age < 10;
+    let status, cardClass, zipNote = '';
+    if (zip && zip.length === 5) {
+      zipNote = `<div class="grant-note" style="margin-top:0.4rem;color:${zipQualifies ? 'var(--green)' : '#C62828'}">ZIP ${zip} median income: ${zipQualifies ? 'qualifies (below $150,000)' : 'does not qualify ($150,000 or above)'}</div>`;
+    }
+    if (!birth) {
+      status = '<span class="grant-status gs-pending">Enter birth date to check</span>';
+      cardClass = 'g-pending';
+    } else if (!under18) {
+      status = '<span class="grant-status gs-ineligible">Not eligible — child must be under 18</span>';
+      cardClass = 'g-ineligible';
+    } else if (ctAge && zipQualifies) {
+      status = '<span class="grant-status gs-eligible">Eligible — $250</span>';
+      cardClass = 'g-eligible';
+      items.push({ name: 'Dalio Foundation (CT)', amount: 250 });
+      total += 250;
+    } else if (!ctAge) {
+      status = '<span class="grant-status gs-ineligible">Not eligible — child must be under age 10</span>';
+      cardClass = 'g-ineligible';
+    } else if (!zip || zip.length !== 5) {
+      status = '<span class="grant-status gs-pending">Enter ZIP code to check income eligibility</span>';
+      cardClass = 'g-pending';
+    } else {
+      status = '<span class="grant-status gs-ineligible">Not eligible — ZIP median income exceeds $150,000</span>';
+      cardClass = 'g-ineligible';
+    }
+    html += `
+      <div class="grant-card ${cardClass}">
+        <div class="grant-card-header"><div class="grant-name">Dalio Foundation</div><div class="grant-amount">$250</div></div>
+        <div class="grant-donor">Ray &amp; Barbara Dalio &mdash; $75M for ~300,000 CT children</div>
+        <div class="grant-note">Child must be under age 10. ZIP code median income &le; $150,000. ~87% of CT ZIP codes qualify.</div>
+        ${status}${zipNote}
+      </div>`;
+  }
+
+  if (state === 'IN') {
+    const inAge = age !== null && age < 5;
+    let status, cardClass;
+    if (!birth) {
+      status = '<span class="grant-status gs-pending">Enter birth date to check</span>';
+      cardClass = 'g-pending';
+    } else if (!under18) {
+      status = '<span class="grant-status gs-ineligible">Not eligible — child must be under 18</span>';
+      cardClass = 'g-ineligible';
+    } else if (inAge) {
+      status = '<span class="grant-status gs-eligible">Eligible — $250</span>';
+      cardClass = 'g-eligible';
+      items.push({ name: 'Gerstner / Altimeter (IN)', amount: 250 });
+      total += 250;
+    } else {
+      status = '<span class="grant-status gs-ineligible">Not eligible — child must be under age 5</span>';
+      cardClass = 'g-ineligible';
+    }
+    html += `
+      <div class="grant-card ${cardClass}">
+        <div class="grant-card-header"><div class="grant-name">Altimeter Capital (Brad Gerstner)</div><div class="grant-amount">$250</div></div>
+        <div class="grant-donor">Brad Gerstner, CEO Altimeter Capital &mdash; ~406,000 Indiana children</div>
+        <div class="grant-note">$250 for all Indiana children under age 5. No income requirement.</div>
+        ${status}
+      </div>`;
+  }
+
+  if (state === 'WY') {
+    const wyBorn2026 = birth && isBirthYear(birth, 2026);
+    let status, cardClass;
+    if (!birth) {
+      status = '<span class="grant-status gs-pending">Enter birth date to check</span>';
+      cardClass = 'g-pending';
+    } else if (wyBorn2026) {
+      status = '<span class="grant-status gs-pending">Potentially eligible — amount TBD</span>';
+      cardClass = 'g-pending';
+    } else {
+      status = '<span class="grant-status gs-ineligible">Not eligible — requires birth in Wyoming in 2026</span>';
+      cardClass = 'g-ineligible';
+    }
+    html += `
+      <div class="grant-card ${cardClass}">
+        <div class="grant-card-header"><div class="grant-name">Kraken</div><div class="grant-amount" style="font-size:0.85rem;">Amount TBD</div></div>
+        <div class="grant-donor">Kraken (cryptocurrency exchange)</div>
+        <div class="grant-note">For all children born in Wyoming during 2026. Dollar amount not yet published. Monitor Kraken's announcements.</div>
+        ${status}
+      </div>`;
+  }
+
+  if (state === 'CA') {
+    // SF Anonymous Grant
+    const SF_ZIPS = new Set(['94102','94103','94104','94105','94107','94108','94109','94110','94111','94112','94114','94115','94116','94117','94118','94119','94120','94121','94122','94123','94124','94125','94126','94127','94128','94129','94130','94131','94132','94133','94134','94137','94139','94140','94141','94142','94143','94144','94145','94146','94147','94151','94153','94154','94156','94158','94159','94160','94161','94162','94163','94164','94171','94172','94177','94188']);
+    const sfBorn2026 = birth && isBirthYear(birth, 2026);
+    const sfInSF = zip && zip.length === 5 && SF_ZIPS.has(zip);
+    let sfStatus, sfClass;
+    if (!birth) {
+      sfStatus = '<span class="grant-status gs-pending">Enter birth date to check</span>';
+      sfClass = 'g-pending';
+    } else if (!sfBorn2026) {
+      sfStatus = '<span class="grant-status gs-ineligible">Not eligible — requires birth in San Francisco in 2026</span>';
+      sfClass = 'g-ineligible';
+    } else if (!zip || zip.length !== 5) {
+      sfStatus = '<span class="grant-status gs-pending">Enter ZIP code to confirm San Francisco address</span>';
+      sfClass = 'g-pending';
+    } else if (sfInSF) {
+      sfStatus = '<span class="grant-status gs-eligible">Eligible — ~$500</span>';
+      sfClass = 'g-eligible';
+      items.push({ name: 'Anonymous SF Donor', amount: 500 });
+      total += 500;
+    } else {
+      sfStatus = '<span class="grant-status gs-ineligible">Not eligible — ZIP code is not in San Francisco</span>';
+      sfClass = 'g-ineligible';
+    }
+    html += `
+      <div class="grant-card ${sfClass}">
+        <div class="grant-card-header"><div class="grant-name">Anonymous SF Donor</div><div class="grant-amount">~$500</div></div>
+        <div class="grant-donor">Anonymous donor &mdash; $3.5M pledged for SF newborns</div>
+        <div class="grant-note">~$500 per eligible child born in San Francisco in 2026. Exact amount depends on final number of applicants. Full eligibility criteria TBD — check <a href="https://sfmayor.org" target="_blank">sfmayor.org</a> for official details.</div>
+        ${sfStatus}
+      </div>`;
+
+    // Kern County / Anand Legacy
+    const kernCbId = 'kernCountyCheck';
+    const rehabCbId = 'motherRehabCheck';
+    const kernChecked  = (document.getElementById(kernCbId) || {}).checked || false;
+    const rehabChecked = (document.getElementById(rehabCbId) || {}).checked || false;
+    let kernStatus, kernClass;
+    if (kernChecked && rehabChecked && birth && under18) {
+      kernStatus = '<span class="grant-status gs-pending">Potentially eligible — contact Anand Legacy Foundation</span>';
+      kernClass = 'g-pending';
+    } else {
+      kernStatus = '<span class="grant-status gs-tbd">Check boxes to assess eligibility</span>';
+      kernClass = 'g-tbd';
+    }
+    html += `
+      <div class="grant-card ${kernClass}">
+        <div class="grant-card-header"><div class="grant-name">Anand Legacy Foundation</div><div class="grant-amount" style="font-size:0.85rem;">~TBD</div></div>
+        <div class="grant-donor">Anand Legacy Foundation (Bakersfield, CA) &mdash; $500,000 pledged</div>
+        <div class="grant-note">For newborns of mothers in eligible rehabilitation programs in Kern County, CA. Contact the foundation directly for exact per-child amounts and program details.</div>
+        ${kernStatus}
+        <div class="grant-inputs">
+          <div class="gi-row">
+            <input type="checkbox" id="${kernCbId}" onchange="compute()" ${kernChecked ? 'checked' : ''} />
+            <label for="${kernCbId}">Child is a newborn in Kern County, CA</label>
+          </div>
+          <div class="gi-row">
+            <input type="checkbox" id="${rehabCbId}" onchange="compute()" ${rehabChecked ? 'checked' : ''} />
+            <label for="${rehabCbId}">Mother is in an eligible rehabilitation program</label>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  html += '</div>';
+  wrap.innerHTML = html;
+  return { total, items };
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// MAIN COMPUTE
+// ────────────────────────────────────────────────────────────────────────────
+function compute() {
+  const dob        = document.getElementById('dob').value;
+  const zip        = (document.getElementById('zipCode').value || '').trim();
+  const familyRaw  = parseFloat(document.getElementById('familyContrib').value) || 0;
+  const returnRate = parseFloat(document.getElementById('returnRate').value) / 100;
+  const targetAge  = parseInt(document.getElementById('targetAge').value);
+  const state      = document.getElementById('stateSelect').value;
+
+  // Auto-derive employer annual match from employer selection
+  const empVal = document.getElementById('employerSelect').value;
+  let employerRaw = 0;
+  let employerMatchDisplay = '';
+  if (empVal) {
+    const [empId, amtStr, condition, contribType] = empVal.split('|');
+    if (contribType === 'employer_match' && condition !== 'variable') {
+      employerRaw = Math.min(parseInt(amtStr) || 0, 2500);
+      const empNames = { bny_mellon:'BNY Mellon', ibm:'IBM', blackrock:'BlackRock',
+        steak_n_shake:"Steak 'n Shake", nvidia:'Nvidia', chipotle:'Chipotle', uber:'Uber',
+        visa:'Visa', citi:'Citi', fox:'Fox Corporation', newscorp:'News Corporation',
+        acorns:'Acorns', statestreet:'State Street', jpmorgan:'JPMorgan Chase',
+        robinhood:'Robinhood', chime:'Chime', sofi:'SoFi', schwab:'Charles Schwab',
+        russell:'Russell Investments', bofa:'Bank of America', coinbase:'Coinbase',
+        empower:'Empower', intel:'Intel', ici:'Investment Company Institute',
+        tpusa:'Turning Point USA', wellsfargo:'Wells Fargo', mastercard:'Mastercard',
+        comcast:'Comcast', dell_corp:'Dell Technologies', broadcom:'Broadcom',
+        continental:'Continental Resources', charter:'Charter Communications', ctia:'CTIA' };
+      employerMatchDisplay = `${empNames[empId] || empId} annual match: +$${employerRaw.toLocaleString()}/yr`;
+    }
+  }
+  const matchLine = document.getElementById('employer-match-line');
+  if (employerMatchDisplay) {
+    document.getElementById('employer-match-label').textContent = employerMatchDisplay;
+    matchLine.style.display = 'block';
+  } else {
+    matchLine.style.display = 'none';
+  }
+
+  const contribStartAge = parseInt(document.getElementById('contribStartAge').value) || 0;
+  const contribEndAge   = parseInt(document.getElementById('contribEndAge').value)   || 18;
+
+  // ZIP income display in primary inputs
+  const zipIncome = getZipIncome(zip);
+  const zipEl = document.getElementById('zip-result');
+  if (zip.length === 5) {
+    if (zipIncome !== null) {
+      const meta = typeof ZIP_INCOME_META !== 'undefined'
+        ? ` · ${ZIP_INCOME_META.source}, ${ZIP_INCOME_META.vintage_year}`
+        : '';
+      zipEl.innerHTML = `<span style="color:var(--muted);">Median household income: $${zipIncome.toLocaleString()}${meta}</span>`;
+    } else {
+      zipEl.textContent = 'ZIP not found in Census data.';
+      zipEl.style.color = 'var(--muted)';
+    }
+  } else {
+    zipEl.textContent = '';
+  }
+
+  // Cap recurring contributions
+  const totalContrib = Math.min(familyRaw + employerRaw, 5000);
+
+  document.getElementById('contrib-warning').style.display =
+    (familyRaw + employerRaw > 5000) ? 'block' : 'none';
+
+  // Age / eligibility
+  const ageResult = getAge(dob);
+  const age       = ageResult ? ageResult.age : null;
+  const birth     = ageResult ? ageResult.birth : null;
+  const under18   = age !== null && age >= 0 && age < 18;
+
+  // DOB badge
+  const dobBadge = document.getElementById('dob-badge');
+  if (dob) {
+    const seedStart = new Date('2025-01-01'), seedEnd = new Date('2028-12-31');
+    const hasSeed = birth && birth >= seedStart && birth <= seedEnd;
+    if (hasSeed)   dobBadge.innerHTML = '<span class="badge badge-green">Eligible for $1,000 seed deposit</span>';
+    else if (under18) dobBadge.innerHTML = '<span class="badge badge-gold">Eligible for Trump Account (no seed deposit)</span>';
+    else           dobBadge.innerHTML = '<span class="badge badge-red">Not eligible (must be under 18)</span>';
+  } else {
+    dobBadge.innerHTML = '';
+  }
+
+  // Compute grants
+  const { total: grantsTotal, items: grantItems } = computeGrants(dob, state, zip);
+
+  // Grants total bar
+  document.getElementById('grants-total-amount').textContent = fmtFull(grantsTotal);
+  if (grantItems.length === 0) {
+    document.getElementById('grants-breakdown').textContent = dob ? 'No confirmed grants at this time' : 'Enter birth date to calculate';
+  } else {
+    document.getElementById('grants-breakdown').textContent =
+      grantItems.filter(g => !g.tbd).map(g => g.name + ' $' + g.amount.toLocaleString()).join(' + ');
+  }
+
+  // ── Eligibility card ──
+  const eligCard = document.getElementById('eligibility-content');
+  if (!dob) {
+    eligCard.innerHTML = '<p style="color:var(--muted)">Enter a date of birth above to see eligibility details.</p>';
+  } else if (!under18) {
+    eligCard.innerHTML = `<div class="eligibility-banner ineligible"><strong>Not Eligible</strong>Child must be under 18 years old. Entered age: ${age}.</div>`;
+  } else {
+    const items = [
+      `<li>Account eligible: <strong>Yes</strong> (age ${age})</li>`,
+      `<li>$1,000 gov seed deposit: <strong>${(() => { const s=new Date('2025-01-01'),e=new Date('2028-12-31'); return birth>=s&&birth<=e?'YES — born Jan 2025–Dec 2028':'No — outside birth window'; })()}</strong></li>`,
+      `<li>Annual contribution limit: <strong>$5,000 total</strong> (family + employer recurring)</li>`,
+      `<li>One-time grants applied: <strong>${fmtFull(grantsTotal)}</strong> (exempt from annual cap)</li>`,
+      `<li>First eligible withdrawal: <strong>Age 18</strong> (${Math.max(0, 18 - age)} year${18-age!==1?'s':''} away)</li>`,
+    ];
+    eligCard.innerHTML = `<div class="eligibility-banner eligible"><strong>Eligible for Trump Account</strong></div><ul style="padding-left:1.2rem;line-height:2;font-size:0.9rem;margin-top:0.5rem;">${items.join('')}</ul>`;
+  }
+
+  // ── Projection ──
+  const seedStart = new Date('2025-01-01'), seedEnd = new Date('2028-12-31');
+  const hasSeed   = birth && birth >= seedStart && birth <= seedEnd;
+  const startingAge  = under18 ? age : 0;
+  const yearsToGrow  = Math.max(0, targetAge - startingAge);
+
+  // Starting value = all one-time grants
+  let value = grantsTotal;
+  let cumulContrib = grantsTotal;
+  const rows = [{ year: 0, age: startingAge, contrib: grantsTotal, cumul: cumulContrib, value }];
+  const chartLabels = ['Age ' + startingAge];
+  const chartValues = [value];
+
+  for (let y = 1; y <= yearsToGrow; y++) {
+    const currentAge = startingAge + y;
+    const contrib = (currentAge >= contribStartAge && currentAge <= contribEndAge) ? totalContrib : 0;
+    value = (value + contrib) * (1 + returnRate);
+    cumulContrib += contrib;
+    rows.push({ year: y, age: currentAge, contrib, cumul: cumulContrib, value });
+    chartLabels.push('Age ' + currentAge);
+    chartValues.push(value);
+  }
+
+  // Milestone boxes
+  const at18 = rows.find(r => r.age === 18);
+  const at22 = rows.find(r => r.age === 22);
+  const at30 = rows.find(r => r.age === 30);
+  const atTarget = rows[rows.length - 1];
+
+  const boxes = [];
+  if (grantsTotal > 0) boxes.push({ label: 'One-Time Grants', amount: grantsTotal, sub: 'Starting balance boost' });
+  if (at18) boxes.push({ label: 'At Age 18', amount: at18.value, sub: 'First eligible withdrawal' });
+  if (at22 && at22 !== atTarget) boxes.push({ label: 'At Age 22', amount: at22.value, sub: 'College graduation' });
+  if (at30 && at30 !== atTarget) boxes.push({ label: 'At Age 30', amount: at30.value, sub: 'Early career' });
+  boxes.push({ label: `At Age ${atTarget.age}`, amount: atTarget.value, sub: 'Target projection', highlight: true });
+  boxes.push({ label: 'Total Invested', amount: cumulContrib, sub: 'Your dollars in' });
+  boxes.push({ label: 'Total Growth', amount: Math.max(0, atTarget.value - cumulContrib), sub: 'Investment earnings' });
+
+  document.getElementById('result-grid').innerHTML = boxes.map(b => `
+    <div class="result-box${b.highlight ? ' highlight' : ''}">
+      <div class="label">${b.label}</div>
+      <div class="amount">${fmt(b.amount)}</div>
+      <div class="sub">${b.sub}</div>
+    </div>`).join('');
+
+  // Year-by-year table
+  const sparse  = rows.length > 25;
+  const keyAges = new Set([18, 22, 30, 40, 65, targetAge]);
+  const display = sparse ? rows.filter(r => r.year % 5 === 0 || keyAges.has(r.age) || r.year === rows.length - 1) : rows;
+  document.getElementById('breakdown-body').innerHTML = display.map(r => `
+    <tr>
+      <td>${r.year === 0 ? 'Start' : r.year}</td>
+      <td>${r.age}</td>
+      <td>${fmtFull(r.contrib)}</td>
+      <td>${fmtFull(r.cumul)}</td>
+      <td>${fmtFull(r.value)}</td>
+    </tr>`).join('');
+
+  drawChart(chartLabels, chartValues);
+  reorganizeGrants();
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// GRANT LAYOUT: ELIGIBLE TOP / OTHER COLLAPSED
+// ────────────────────────────────────────────────────────────────────────────
+let CARD_HOMES = null;
+
+function initCardHomes() {
+  CARD_HOMES = {};
+  ['gc-federal', 'gc-dell', 'gc-employer'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) CARD_HOMES[id] = el.parentElement;
+  });
+}
+
+function reorganizeGrants() {
+  if (!CARD_HOMES) initCardHomes();
+
+  const eligibleCards = document.getElementById('eligible-grants-cards');
+  const eligiblePanel = document.getElementById('eligible-grants-panel');
+  const toggleSection = document.getElementById('grants-toggle-section');
+  const otherSection  = document.getElementById('other-grants-section');
+  const chevron       = document.getElementById('grants-chevron');
+  const isOpen        = chevron.classList.contains('open');
+
+  // 1. Restore static cards to original homes
+  ['gc-federal', 'gc-dell', 'gc-employer'].forEach(id => {
+    const el = document.getElementById(id);
+    const home = CARD_HOMES[id];
+    if (el && home && el.parentElement !== home) home.appendChild(el);
+  });
+
+  // 2. Clear eligible panel, then move g-eligible cards into it
+  eligibleCards.innerHTML = '';
+  document.querySelectorAll('#other-grants-section .grant-card.g-eligible').forEach(card => {
+    eligibleCards.appendChild(card);
+  });
+
+  // 3. Show/hide eligible panel
+  const hasEligible = eligibleCards.children.length > 0;
+  eligiblePanel.style.display = hasEligible ? 'block' : 'none';
+
+  // 4. Count remaining non-eligible cards in other section
+  const otherCount = document.querySelectorAll('#other-grants-section .grant-card').length;
+  if (otherCount === 0) {
+    toggleSection.style.display = 'none';
+    otherSection.style.display = 'none';
+  } else {
+    toggleSection.style.display = 'block';
+    otherSection.style.display = isOpen ? 'block' : 'none';
+    const n = otherCount;
+    document.getElementById('grants-toggle-label').textContent = isOpen
+      ? `Hide ${n} other grant${n !== 1 ? 's' : ''}`
+      : `Show ${n} other grant${n !== 1 ? 's' : ''} (pending & not eligible)`;
+  }
+
+  // 5. Hide empty grant-sections in other panel (not state section)
+  document.querySelectorAll('#other-grants-section .grant-section').forEach(sec => {
+    if (sec.id === 'grant-section-state') return;
+    sec.style.display = sec.querySelectorAll('.grant-card').length > 0 ? '' : 'none';
+  });
+}
+
+function toggleOtherGrants() {
+  document.getElementById('grants-chevron').classList.toggle('open');
+  reorganizeGrants();
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// CANVAS CHART
+// ────────────────────────────────────────────────────────────────────────────
+function drawChart(labels, values) {
+  const canvas = document.getElementById('growthChart');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.clientWidth;
+  const H = canvas.parentElement.clientHeight;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  ctx.scale(dpr, dpr);
+
+  const pad = { top: 20, right: 24, bottom: 40, left: 68 };
+  const cw = W - pad.left - pad.right;
+  const ch = H - pad.top - pad.bottom;
+  ctx.clearRect(0, 0, W, H);
+  if (!values.length) return;
+
+  const maxVal = Math.max(...values) * 1.05 || 1;
+  const xScale = i => pad.left + (i / (values.length - 1 || 1)) * cw;
+  const yScale = v => pad.top + ch - (v / maxVal) * ch;
+
+  // Grid
+  ctx.strokeStyle = '#E0E0E0'; ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + (ch / 4) * i;
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + cw, y); ctx.stroke();
+    ctx.fillStyle = '#888'; ctx.font = '10px sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText(fmt(maxVal - (maxVal / 4) * i), pad.left - 6, y + 4);
+  }
+
+  // Fill
+  ctx.beginPath();
+  ctx.moveTo(xScale(0), yScale(0));
+  values.forEach((v, i) => ctx.lineTo(xScale(i), yScale(v)));
+  ctx.lineTo(xScale(values.length - 1), yScale(0));
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + ch);
+  grad.addColorStop(0, 'rgba(28,63,110,0.25)');
+  grad.addColorStop(1, 'rgba(28,63,110,0.03)');
+  ctx.fillStyle = grad; ctx.fill();
+
+  // Line
+  ctx.beginPath(); ctx.strokeStyle = '#1C3F6E'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
+  values.forEach((v, i) => i === 0 ? ctx.moveTo(xScale(i), yScale(v)) : ctx.lineTo(xScale(i), yScale(v)));
+  ctx.stroke();
+
+  // X labels
+  const step = Math.ceil(values.length / 10);
+  ctx.fillStyle = '#666'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+  labels.forEach((l, i) => { if (i % step === 0 || i === labels.length - 1) ctx.fillText(l, xScale(i), H - 8); });
+
+  // End dot
+  const lx = xScale(values.length - 1), ly = yScale(values[values.length - 1]);
+  ctx.beginPath(); ctx.arc(lx, ly, 5, 0, Math.PI * 2); ctx.fillStyle = '#B22234'; ctx.fill();
+  ctx.fillStyle = '#B22234'; ctx.font = 'bold 11px sans-serif';
+  ctx.textAlign = lx > W - 80 ? 'right' : 'center';
+  ctx.fillText(fmt(values[values.length - 1]), lx, ly - 10);
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// EMPLOYER SEARCHABLE COMBOBOX
+// EMPLOYER_DATA is loaded from employers.js (generated by export.py)
+// ────────────────────────────────────────────────────────────────────────────
+if (typeof EMPLOYER_DATA === 'undefined') {
+  console.warn('employers.js not found. Run `python3 seed.py && python3 export.py` to generate it.');
+  window.EMPLOYER_DATA = [];
+}
+if (typeof ZIP_INCOME === 'undefined') {
+  console.warn('zip_income.js not found. Run `python3 census_import.py && python3 export.py` to generate it.');
+  window.ZIP_INCOME = {};
+}
+
+// ── ZIP lookup helper ─────────────────────────────────────────────────────
+function getZipIncome(zip) {
+  if (!zip || zip.length !== 5) return null;
+  const income = ZIP_INCOME[zip];
+  return income !== undefined ? income : null;
+}
+
+function initEmployerCombo() {
+  const combo     = document.getElementById('emp-combo');
+  const textInput = document.getElementById('emp-combo-input');
+  const dropdown  = document.getElementById('emp-combo-dropdown');
+  const clearBtn  = document.getElementById('emp-combo-clear');
+  const hidden    = document.getElementById('employerSelect');
+
+  let focusedIndex = -1;
+  let selectedValue = '';
+  let selectedLabel = '';
+
+  function highlight(text, query) {
+    if (!query) return text;
+    const idx = text.toLowerCase().indexOf(query.toLowerCase());
+    if (idx === -1) return text;
+    return text.slice(0, idx) + '<mark>' + text.slice(idx, idx + query.length) + '</mark>' + text.slice(idx + query.length);
+  }
+
+  function getVisibleOptions() {
+    return Array.from(dropdown.querySelectorAll('.emp-option'));
+  }
+
+  function renderDropdown(query) {
+    const q = (query || '').trim().toLowerCase();
+    let html = '';
+    let currentGroup = null;
+    let visibleCount = 0;
+
+    EMPLOYER_DATA.forEach(emp => {
+      const matchLabel = emp.label.toLowerCase().includes(q);
+      const matchGroup = emp.group.toLowerCase().includes(q);
+      const matchNote  = (emp.note || '').toLowerCase().includes(q);
+      if (q && !matchLabel && !matchGroup && !matchNote) return;
+
+      const labelHtml = highlight(emp.label, q);
+      const isSel     = emp.value === selectedValue;
+      html += `<div class="emp-option${isSel ? ' selected' : ''}" data-value="${emp.value}" data-label="${emp.label}">${labelHtml}</div>`;
+      visibleCount++;
+    });
+
+    if (visibleCount === 0) {
+      html = '<div class="emp-no-results">No matching employers found</div>';
+    }
+
+    dropdown.innerHTML = html;
+    focusedIndex = -1;
+
+    dropdown.querySelectorAll('.emp-option').forEach(opt => {
+      opt.addEventListener('mousedown', e => {
+        e.preventDefault();
+        selectOption(opt.dataset.value, opt.dataset.label);
+      });
+    });
+  }
+
+  function selectOption(value, label) {
+    selectedValue = value;
+    selectedLabel = label;
+    hidden.value  = value;
+    textInput.value = label;
+    clearBtn.style.display = label ? 'block' : 'none';
+    closeDropdown();
+    compute();
+  }
+
+  function openDropdown() {
+    combo.classList.add('open');
+    renderDropdown(textInput.value);
+  }
+
+  function closeDropdown() {
+    combo.classList.remove('open');
+    focusedIndex = -1;
+    const typed = textInput.value.trim();
+    if (!typed) {
+      selectedValue = '';
+      selectedLabel = '';
+      hidden.value = '';
+      clearBtn.style.display = 'none';
+    } else if (hidden.value) {
+      // Valid selection — restore display label
+      textInput.value = selectedLabel;
+    }
+    // If typed but no list match, leave text as-is so compute() can show "no match"
+    compute();
+  }
+
+  function moveFocus(dir) {
+    const opts = getVisibleOptions();
+    if (!opts.length) return;
+    focusedIndex = Math.max(0, Math.min(opts.length - 1, focusedIndex + dir));
+    opts.forEach((o, i) => o.classList.toggle('focused', i === focusedIndex));
+    opts[focusedIndex].scrollIntoView({ block: 'nearest' });
+  }
+
+  textInput.addEventListener('focus', () => openDropdown());
+  textInput.addEventListener('click', () => openDropdown());
+
+  textInput.addEventListener('input', () => {
+    if (!combo.classList.contains('open')) combo.classList.add('open');
+    renderDropdown(textInput.value);
+    // If user is typing, temporarily clear the hidden value so compute() doesn't use stale selection
+    if (textInput.value !== selectedLabel) {
+      hidden.value = '';
+    }
+  });
+
+  textInput.addEventListener('keydown', e => {
+    if (!combo.classList.contains('open')) { openDropdown(); return; }
+    if (e.key === 'ArrowDown')  { e.preventDefault(); moveFocus(1); }
+    else if (e.key === 'ArrowUp')   { e.preventDefault(); moveFocus(-1); }
+    else if (e.key === 'Enter') {
+      e.preventDefault();
+      const opts = getVisibleOptions();
+      const target = focusedIndex >= 0 ? opts[focusedIndex] : opts[0];
+      if (target) selectOption(target.dataset.value, target.dataset.label);
+    }
+    else if (e.key === 'Escape') { closeDropdown(); textInput.blur(); }
+    else if (e.key === 'Tab')    { closeDropdown(); }
+  });
+
+  clearBtn.addEventListener('mousedown', e => {
+    e.preventDefault();
+    selectOption('', '');
+    clearBtn.style.display = 'none';
+    textInput.focus();
+  });
+
+  document.addEventListener('mousedown', e => {
+    if (!combo.contains(e.target)) closeDropdown();
+  });
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// EMPLOYER TABLE
+// ────────────────────────────────────────────────────────────────────────────
+function renderEmployerTable(filter) {
+  const tbody = document.getElementById('emp-table-body');
+  if (!tbody || typeof EMPLOYER_DATA === 'undefined') return;
+  const q = (filter || '').trim().toLowerCase();
+  const conditionLabels = {
+    all: 'All eligible children',
+    seed: 'Born 2025–2028',
+    newborn: 'Newborns only',
+    conditional: 'Conditional',
+    variable: 'Amount TBD'
+  };
+  const rows = EMPLOYER_DATA.filter(e =>
+    !q || e.label.toLowerCase().includes(q) || (e.note || '').toLowerCase().includes(q) || e.group.toLowerCase().includes(q)
+  );
+  const contribLabels = { seed_grant: 'One-time grant', employer_match: 'Annual match' };
+  tbody.innerHTML = rows.map(e => {
+    const [, amtStr, condition, contribType] = e.value.split('|');
+    const amt = parseInt(amtStr) || 0;
+    const amtDisplay = condition === 'variable' ? '<em style="color:var(--muted)">TBD</em>' : '$' + amt.toLocaleString();
+    const condDisplay = conditionLabels[condition] || condition;
+    const contribDisplay = contribLabels[contribType] || contribType || '—';
+    const note = e.note ? `<span style="color:var(--muted);font-size:0.82rem;">${e.note}</span>` : '—';
+    return `<tr><td>${e.label}</td><td>${amtDisplay}</td><td>${condDisplay}</td><td>${contribDisplay}</td><td>${note}</td></tr>`;
+  }).join('');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);text-align:center;">No matching employers found.</td></tr>';
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// WIRE UP
+// ────────────────────────────────────────────────────────────────────────────
+['dob','zipCode','familyContrib','stateSelect']
+  .forEach(id => document.getElementById(id).addEventListener('input', compute));
+document.getElementById('targetAge').addEventListener('input', function() {
+  document.getElementById('contribStartAge').max = this.value;
+  document.getElementById('contribEndAge').max   = this.value;
+  document.getElementById('contrib-age-max').textContent = this.value;
+  updateDualRange();
+  compute();
+});
+window.addEventListener('resize', compute);
+
+initEmployerCombo();
+renderEmployerTable();
+
+// ── DUAL RANGE SLIDER ────────────────────────────────────────────────────
+function updateDualRange() {
+  const startEl = document.getElementById('contribStartAge');
+  const endEl   = document.getElementById('contribEndAge');
+  const fill    = document.getElementById('dual-range-fill');
+
+  let start = parseInt(startEl.value);
+  let end   = parseInt(endEl.value);
+  const max = parseInt(startEl.max);
+  const min = parseInt(startEl.min);
+
+  if (start > end) { start = end; startEl.value = start; }
+  if (end < start) { end = start; endEl.value = end; }
+
+  const range = max - min || 1;
+  fill.style.left  = ((start - min) / range * 100).toFixed(1) + '%';
+  fill.style.width = ((end - start) / range * 100).toFixed(1) + '%';
+  document.getElementById('contrib-age-display').textContent = `Ages ${start} → ${end}`;
+}
+
+document.getElementById('contribStartAge').addEventListener('input', () => { updateDualRange(); compute(); });
+document.getElementById('contribEndAge').addEventListener('input',   () => { updateDualRange(); compute(); });
+updateDualRange();
+document.getElementById('emp-table-search').addEventListener('input', e => renderEmployerTable(e.target.value));
+compute();
+
+document.getElementById('calc-btn').addEventListener('click', function () {
+  document.getElementById('results-section').style.display = 'grid';
+  document.getElementById('calc-btn-wrap').style.display = 'none';
+  compute();
+});
+</script>
+</body>
+</html>
