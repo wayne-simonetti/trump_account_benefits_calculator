@@ -2,7 +2,7 @@
 
 A single-page web calculator for the **Trump Account** program established by the One Big Beautiful Bill Act (OBBBA). Helps parents determine grant eligibility and project long-term account growth for their child's tax-advantaged savings account.
 
-🔗 **[Live Calculator](https://trumpaccountcalculator.netlify.app)**
+🔗 **[Live Calculator](https://trump-account-benefits-calculator.pages.dev)**
 
 ---
 
