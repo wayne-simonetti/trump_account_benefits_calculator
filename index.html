@@ -435,9 +435,14 @@
             <div class="grant-amount">$250</div>
           </div>
           <div class="grant-donor">Michael &amp; Susan Dell &mdash; $6.25B pledged</div>
-          <div class="grant-note">~25 million children nationwide. For children born before 2025 (age 10 or under). ZIP code median household income below $150,000. Mutually exclusive with federal $1,000 seed. Final IRS guidance pending.</div>
+          <ul style="font-size:0.72rem;color:var(--muted);margin:0.4rem 0 0.5rem 1.1rem;line-height:1.7;">
+            <li>~25 million children nationwide</li>
+            <li>Child born before 2025 (age 10 or under)</li>
+            <li>ZIP code median household income below $150,000</li>
+            <li>Mutually exclusive with federal $1,000 seed</li>
+            <li>Final IRS guidance pending</li>
+          </ul>
           <div id="gs-dell"></div>
-          <div id="dell-zip-status" class="grant-note" style="margin-top:0.4rem;"></div>
         </div>
       </div>
     </div>
@@ -687,14 +692,6 @@ function computeGrants(dob, state, zip) {
   {
     const el  = document.getElementById('gc-dell');
     const st  = document.getElementById('gs-dell');
-    const zst = document.getElementById('dell-zip-status');
-    if (zipIncome !== null) {
-      zst.textContent = `ZIP ${zip} median income: $${zipIncome.toLocaleString()} — ${zipQualifies ? 'qualifies (below $150,000)' : 'does not qualify ($150,000 or above)'}`;
-      zst.style.color = zipQualifies ? 'var(--green)' : '#C62828';
-    } else {
-      zst.textContent = zip && zip.length === 5 ? `ZIP ${zip} not found in Census data.` : 'Enter your ZIP code above to auto-check income eligibility.';
-      zst.style.color = 'var(--muted)';
-    }
 
     if (!dob) {
       el.className = 'grant-card g-pending';
