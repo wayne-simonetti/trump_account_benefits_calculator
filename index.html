@@ -63,7 +63,7 @@
     .field input[type="date"],
     .field input[type="number"],
     .field select { width: 100%; padding: 0.55rem 0.75rem; border: 1.5px solid #ccc; border-radius: 6px; font-size: 0.95rem; font-family: inherit; background: var(--off-white); transition: border-color 0.2s; -webkit-appearance: none; appearance: none; }
-    .field input[type="date"], .field select { min-height: 44px; }
+    .field select { min-height: 44px; }
     .field input:focus, .field select:focus { outline: none; border-color: var(--blue); background: #fff; }
     .field .hint { font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem; }
     .badge { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700; margin-top: 0.3rem; }
@@ -280,8 +280,10 @@
 
       <div class="field" style="margin-bottom:0;">
         <label>Date of Birth</label>
-        <input type="date" id="dob" style="width:100%;max-width:100%;" />
-        <div class="hint">MM/DD/YYYY</div>
+        <input type="text" id="dob" placeholder="MM/DD/YYYY"
+               onfocus="this.type='date'"
+               onblur="if(!this.value) this.type='text'"
+               style="width:100%;max-width:100%;" />
         <div id="dob-badge"></div>
       </div>
 
