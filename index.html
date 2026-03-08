@@ -566,7 +566,7 @@
             <th>Grant Amount</th>
             <th>Eligibility</th>
             <th>Contribution</th>
-            <th>Notes</th>
+            <th>Source</th>
           </tr>
         </thead>
         <tbody id="emp-table-body"></tbody>
@@ -1511,7 +1511,7 @@ function renderEmployerTable(filter) {
     const amtDisplay = condition === 'variable' ? '<em style="color:var(--muted)">TBD</em>' : '$' + amt.toLocaleString();
     const condDisplay = conditionLabels[condition] || condition;
     const contribDisplay = contribLabels[contribType] || contribType || '—';
-    const note = e.note ? `<span style="color:var(--muted);font-size:0.82rem;">${e.note}</span>` : '—';
+    const note = e.source_url ? `<a href="${e.source_url}" target="_blank" rel="noopener" style="font-size:0.82rem;">Source ↗</a>` : '—';
     return `<tr><td>${e.label}</td><td>${amtDisplay}</td><td>${condDisplay}</td><td>${contribDisplay}</td><td>${note}</td></tr>`;
   }).join('');
   if (!rows.length) {
