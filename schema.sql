@@ -14,5 +14,6 @@ CREATE TABLE IF NOT EXISTS employers (
     note           TEXT,                            -- optional detail shown in grant card
     sort_order        INTEGER NOT NULL DEFAULT 0,
     contribution_type TEXT    NOT NULL DEFAULT 'seed_grant'
-                      CHECK(contribution_type IN ('seed_grant', 'employer_match'))
+                      CHECK(contribution_type IN ('seed_grant', 'employer_match')),
+    source_url        TEXT
 );

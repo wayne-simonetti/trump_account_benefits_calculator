@@ -3,3 +3,9 @@ __pycache__/
 *.pyc
 deploy/
 .claude/
+trump_accounts.db
+employers.js
+zip_income.js
+employers_seed.sql
+zip_income_seed.sql
+.wrangler/

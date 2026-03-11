@@ -1,0 +1,8 @@
+name = "trump-account-tool"
+compatibility_date = "2024-09-23"
+pages_build_output_dir = "."
+
+[[d1_databases]]
+binding = "DB"
+database_name = "trump-accounts"
+database_id = "e9ffe52c-2cae-456c-8659-f1035d3827ae"
