@@ -89,6 +89,53 @@ def export_zip_income(conn, timestamp):
     print(f"✓ zip_income.js written ({len(zip_dict):,} ZIPs, {size_kb:.0f} KB)")
 
 
+def sql_quote(v):
+    if v is None:
+        return "NULL"
+    return "'" + str(v).replace("'", "''") + "'"
+
+
+def export_employers_sql(conn):
+    rows = conn.execute(
+        "SELECT id, name, grant_amount, condition_type, group_label, note, "
+        "sort_order, contribution_type, source_url FROM employers ORDER BY sort_order, name"
+    ).fetchall()
+    lines = ["DELETE FROM employers;"]
+    for r in rows:
+        amt = r["grant_amount"] if r["grant_amount"] is not None else "NULL"
+        lines.append(
+            f"INSERT INTO employers (id,name,grant_amount,condition_type,group_label,note,"
+            f"sort_order,contribution_type,source_url) VALUES ("
+            f"{sql_quote(r['id'])},{sql_quote(r['name'])},{amt},"
+            f"{sql_quote(r['condition_type'])},{sql_quote(r['group_label'])},{sql_quote(r['note'])},"
+            f"{r['sort_order']},{sql_quote(r['contribution_type'])},{sql_quote(r['source_url'])});"
+        )
+    Path("employers_seed.sql").write_text("\n".join(lines))
+    print(f"✓ employers_seed.sql written ({len(rows)} employers)")
+
+
+def export_zip_income_sql(conn):
+    exists = conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='zip_income'"
+    ).fetchone()
+    if not exists:
+        print("  zip_income table not found — skipping zip_income_seed.sql.")
+        return
+    rows = conn.execute(
+        "SELECT zip, median_income, year FROM zip_income WHERE median_income IS NOT NULL"
+    ).fetchall()
+    lines = ["DELETE FROM zip_income;"]
+    for i in range(0, len(rows), 500):
+        chunk = rows[i:i + 500]
+        vals = ",".join(
+            f"({sql_quote(r['zip'])},{r['median_income']},{r['year']})" for r in chunk
+        )
+        lines.append(f"INSERT INTO zip_income (zip,median_income,year) VALUES {vals};")
+    Path("zip_income_seed.sql").write_text("\n".join(lines))
+    size_kb = Path("zip_income_seed.sql").stat().st_size / 1024
+    print(f"✓ zip_income_seed.sql written ({len(rows):,} ZIPs, {size_kb:.0f} KB)")
+
+
 def main():
     if not DB_PATH.exists():
         raise FileNotFoundError("trump_accounts.db not found. Run `python3 seed.py` first.")
@@ -99,6 +146,8 @@ def main():
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     export_employers(conn, timestamp)
     export_zip_income(conn, timestamp)
+    export_employers_sql(conn)
+    export_zip_income_sql(conn)
 
     conn.close()
 
