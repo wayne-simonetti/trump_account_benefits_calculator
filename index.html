@@ -236,6 +236,17 @@
     .disclaimer { grid-column: 1 / -1; font-size: 0.73rem; color: var(--muted); border-top: 1px solid #ddd; padding-top: 0.8rem; line-height: 1.5; }
     .disclaimer a { color: var(--blue); }
 
+    /* NAV */
+    nav { background: var(--dark-blue); text-align: center; }
+    nav a {
+      display: inline-block; padding: 0.6rem 1.4rem;
+      color: rgba(255,255,255,0.75); text-decoration: none;
+      font-size: 0.85rem; font-weight: 700; letter-spacing: 0.3px;
+      border-bottom: 3px solid transparent; transition: color 0.15s, border-color 0.15s;
+    }
+    nav a:hover { color: #fff; }
+    nav a.active { color: #fff; border-bottom-color: var(--gold); }
+
     /* CALCULATE BUTTON */
     .calc-btn {
       width: 100%; padding: 0.9rem; background: var(--blue); color: white;
@@ -270,6 +281,10 @@
   <h1>Trump Account <span>Benefits Calculator</span></h1>
   <p>One Big Beautiful Bill Act &mdash; Tax-Advantaged Child Savings</p>
 </header>
+<nav>
+  <a href="/" class="active">Calculator</a>
+  <a href="/employers.html">Employer Directory</a>
+</nav>
 
 <main>
 

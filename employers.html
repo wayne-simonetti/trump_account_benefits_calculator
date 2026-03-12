@@ -33,9 +33,6 @@
     header h1 { font-size: clamp(1.4rem, 4vw, 2.2rem); font-weight: 700; color: var(--text); }
     header h1 span { color: var(--blue); }
     header p { margin-top: 0.4rem; font-size: 0.95rem; color: var(--muted); }
-    header .back-link { display: inline-block; margin-top: 0.75rem; font-size: 0.85rem; color: var(--blue); text-decoration: none; }
-    header .back-link:hover { text-decoration: underline; }
-
     main { max-width: 980px; margin: 2rem auto; padding: 0 1rem 3rem; }
 
     .card { background: var(--white); border: 1px solid #ddd; border-radius: 10px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
@@ -49,6 +46,16 @@
     .tag-free  { background: var(--light-green); color: var(--green); }
     .tag-taxed { background: #FFEBEE; color: #C62828; }
 
+    nav { background: var(--dark-blue); text-align: center; }
+    nav a {
+      display: inline-block; padding: 0.6rem 1.4rem;
+      color: rgba(255,255,255,0.75); text-decoration: none;
+      font-size: 0.85rem; font-weight: 700; letter-spacing: 0.3px;
+      border-bottom: 3px solid transparent; transition: color 0.15s, border-color 0.15s;
+    }
+    nav a:hover { color: #fff; }
+    nav a.active { color: #fff; border-bottom-color: var(--gold); }
+
     @media (max-width: 680px) {
       .tax-table th, .tax-table td { font-size: 0.76rem; padding: 0.35rem 0.5rem; }
       #emp-table th:nth-child(4), #emp-table td:nth-child(4) { display: none; }
@@ -60,8 +67,11 @@
 <header>
   <h1>Trump Account <span>Employer Grant Directory</span></h1>
   <p>All known employer seed grants and matches for Trump Accounts (OBBBA)</p>
-  <a class="back-link" href="/">← Back to Calculator</a>
 </header>
+<nav>
+  <a href="/">Calculator</a>
+  <a href="/employers.html" class="active">Employer Directory</a>
+</nav>
 
 <main>
   <div class="card">
