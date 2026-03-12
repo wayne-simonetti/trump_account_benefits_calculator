@@ -351,7 +351,6 @@
         <input type="text" id="zipCode" maxlength="5" pattern="\d{5}"
                placeholder="e.g. 90210" autocomplete="postal-code"
                style="width:100%;padding:0.55rem 0.75rem;border:1.5px solid #ccc;border-radius:6px;font-size:0.95rem;font-family:inherit;background:var(--off-white);" />
-        <div id="zip-result" class="hint" style="margin-top:0.3rem;"></div>
       </div>
 
       <div class="field" style="margin-bottom:0;">
@@ -364,8 +363,6 @@
           <span class="emp-combo-clear" id="emp-combo-clear" title="Clear selection">✕</span>
           <div class="emp-combo-dropdown" id="emp-combo-dropdown"></div>
         </div>
-        <div id="employer-result" class="hint" style="margin-top:0.3rem;"></div>
-        <div style="margin-top:0.25rem;font-size:0.78rem;"><a href="#employer-table" style="color:var(--blue);">View all employer grants ↓</a></div>
       </div>
 
     </div>
@@ -552,28 +549,6 @@
     </div>
   </div>
 
-  <!-- ── EMPLOYER GRANTS TABLE ─────────────────────────────────────────────── -->
-  <div class="card card-full" id="employer-table">
-    <h2>Employer Grant Directory</h2>
-    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem;">All known employer one-time seed grants for Trump Accounts. Use the search to filter.</p>
-    <input type="text" id="emp-table-search" placeholder="Search employers…"
-      style="width:100%;max-width:340px;padding:0.5rem 0.75rem;border:1.5px solid #ccc;border-radius:6px;font-size:0.9rem;font-family:inherit;background:var(--off-white);margin-bottom:1rem;" />
-    <div style="overflow-x:auto;">
-      <table class="tax-table" id="emp-table">
-        <thead>
-          <tr>
-            <th>Employer</th>
-            <th>Grant Amount</th>
-            <th>Eligibility</th>
-            <th>Contribution</th>
-            <th>Source</th>
-          </tr>
-        </thead>
-        <tbody id="emp-table-body"></tbody>
-      </table>
-    </div>
-  </div>
-
   <!-- ── TAX TREATMENT ─────────────────────────────────────────────────────── -->
   <div class="card card-full">
     <h2>Tax Treatment Guide</h2>
@@ -730,7 +705,6 @@ async function computeGrants(dob, state, zip) {
     ibmRow.style.display = 'none';
     gnEl.style.display = 'none';
 
-    const empResultEl = document.getElementById('employer-result');
     const gcEmpEl = document.getElementById('gc-employer');
 
     if (!empVal) {
@@ -741,14 +715,11 @@ async function computeGrants(dob, state, zip) {
         gsEl.innerHTML = '<span class="grant-status gs-ineligible">No known employer grant found</span>';
         gnEl.textContent = 'No Trump Account grant or match has been announced for this employer. If you believe one exists, contact HR or check your employer\'s public announcements.';
         gnEl.style.display = 'block';
-        empResultEl.textContent = 'No known Trump Account grant for this employer.';
-        empResultEl.style.color = 'var(--red)';
       } else {
         gcEmpEl.className = 'grant-card g-pending';
         gaEl.textContent = '—';
         gdEl.textContent = 'Select your employer above';
         gsEl.innerHTML = '<span class="grant-status gs-pending">Select employer</span>';
-        empResultEl.textContent = '';
       }
     } else {
       const [id, amtStr, condition, contribType] = empVal.split('|');
@@ -766,7 +737,6 @@ async function computeGrants(dob, state, zip) {
         charter:'Charter Communications', ctia:'CTIA'
       };
       gdEl.textContent = names[id] || id;
-      empResultEl.style.color = '';
       const gnameEl = document.getElementById('gname-employer');
       if (gnameEl) gnameEl.textContent = contribType === 'employer_match' ? 'Employer Annual Match' : 'Employer Seed Grant';
 
@@ -776,26 +746,18 @@ async function computeGrants(dob, state, zip) {
         gsEl.innerHTML = '<span class="grant-status gs-tbd">Contact HR for exact amount</span>';
         gnEl.textContent = 'This employer has pledged contributions but has not published a specific per-child dollar amount. Contact HR.';
         gnEl.style.display = 'block';
-        empResultEl.textContent = (names[id] || id) + ' has pledged a grant — contact HR for the exact amount.';
-        empResultEl.style.color = 'var(--muted)';
       } else if (!under18 && dob) {
         gcEmpEl.className = 'grant-card g-ineligible';
         gaEl.textContent = '$0';
         gsEl.innerHTML = '<span class="grant-status gs-ineligible">Not eligible — account requires child under 18</span>';
-        empResultEl.textContent = 'Not eligible — child must be under 18.';
-        empResultEl.style.color = 'var(--red)';
       } else if (condition === 'seed' && !hasSeed) {
         gcEmpEl.className = 'grant-card g-ineligible';
         gaEl.textContent = '$0';
         gsEl.innerHTML = '<span class="grant-status gs-ineligible">Not eligible — requires child born 2025–2028</span>';
-        empResultEl.textContent = 'Not eligible — grant requires child born 2025–2028.';
-        empResultEl.style.color = 'var(--red)';
       } else if (condition === 'newborn' && !hasSeed) {
         gcEmpEl.className = 'grant-card g-ineligible';
         gaEl.textContent = '$0';
         gsEl.innerHTML = '<span class="grant-status gs-ineligible">Not eligible — BNY Mellon grant is for newborns (born 2025–2028)</span>';
-        empResultEl.textContent = 'Not eligible — BNY Mellon grant is for newborns (born 2025–2028).';
-        empResultEl.style.color = 'var(--red)';
       } else if (id === 'ibm') {
         ibmRow.style.display = 'flex';
         const ibmTotal = amt + (ibmCond ? 1000 : 0);
@@ -804,8 +766,6 @@ async function computeGrants(dob, state, zip) {
         gsEl.innerHTML = ibmCond
           ? '<span class="grant-status gs-eligible">Eligible — $2,000 (base + conditional)</span>'
           : '<span class="grant-status gs-eligible">Eligible — $1,000 (check box below for +$1,000)</span>';
-        empResultEl.textContent = 'Eligible — $' + ibmTotal.toLocaleString() + ' IBM employer grant.';
-        empResultEl.style.color = 'var(--green)';
         gnEl.textContent = contribType === 'employer_match'
           ? 'Annual match — counts toward $2,500 employer sub-cap'
           : 'One-time seed grant — does not count toward $5,000 annual cap';
@@ -820,10 +780,6 @@ async function computeGrants(dob, state, zip) {
         gsEl.innerHTML = dob
           ? '<span class="grant-status gs-eligible">Eligible — $' + amt.toLocaleString() + '</span>'
           : '<span class="grant-status gs-pending">Enter birth date to confirm</span>';
-        empResultEl.textContent = dob
-          ? 'Eligible — $' + amt.toLocaleString() + ' employer grant.'
-          : (names[id] || id) + ' offers a $' + amt.toLocaleString() + ' grant — enter birth date to confirm eligibility.';
-        empResultEl.style.color = dob ? 'var(--green)' : 'var(--muted)';
         gnEl.textContent = contribType === 'employer_match'
           ? 'Annual match — counts toward $2,500 employer sub-cap'
           : 'One-time seed grant — does not count toward $5,000 annual cap';
@@ -1073,22 +1029,7 @@ async function compute() {
   const contribStartAge = parseInt(document.getElementById('contribStartAge').value) || 0;
   const contribEndAge   = parseInt(document.getElementById('contribEndAge').value)   || 18;
 
-  // ZIP income display in primary inputs
   const zipIncome = await getZipIncome(zip);
-  const zipEl = document.getElementById('zip-result');
-  if (zip.length === 5) {
-    if (zipIncome !== null) {
-      const meta = typeof ZIP_INCOME_META !== 'undefined'
-        ? ` · ${ZIP_INCOME_META.source}, ${ZIP_INCOME_META.vintage_year}`
-        : '';
-      zipEl.innerHTML = `<span style="color:var(--muted);">Median household income: $${zipIncome.toLocaleString()}${meta}</span>`;
-    } else {
-      zipEl.textContent = 'ZIP not found in Census data.';
-      zipEl.style.color = 'var(--muted)';
-    }
-  } else {
-    zipEl.textContent = '';
-  }
 
   // Cap recurring contributions
   const totalContrib = Math.min(familyRaw + employerRaw, 5000);
@@ -1347,7 +1288,6 @@ async function loadEmployers() {
     console.warn('Could not load employer data:', e);
   }
   initEmployerCombo();
-  renderEmployerTable();
 }
 
 // ── ZIP lookup helper ─────────────────────────────────────────────────────
@@ -1504,38 +1444,6 @@ function initEmployerCombo() {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// EMPLOYER TABLE
-// ────────────────────────────────────────────────────────────────────────────
-function renderEmployerTable(filter) {
-  const tbody = document.getElementById('emp-table-body');
-  if (!tbody || typeof EMPLOYER_DATA === 'undefined') return;
-  const q = (filter || '').trim().toLowerCase();
-  const conditionLabels = {
-    all: 'All eligible children',
-    seed: 'Born 2025–2028',
-    newborn: 'Newborns only',
-    conditional: 'Conditional',
-    variable: 'Amount TBD'
-  };
-  const rows = EMPLOYER_DATA.filter(e =>
-    !q || e.label.toLowerCase().includes(q) || (e.note || '').toLowerCase().includes(q) || e.group.toLowerCase().includes(q)
-  );
-  const contribLabels = { seed_grant: 'One-time grant', employer_match: 'Annual match' };
-  tbody.innerHTML = rows.map(e => {
-    const [, amtStr, condition, contribType] = e.value.split('|');
-    const amt = parseInt(amtStr) || 0;
-    const amtDisplay = condition === 'variable' ? '<em style="color:var(--muted)">TBD</em>' : '$' + amt.toLocaleString();
-    const condDisplay = conditionLabels[condition] || condition;
-    const contribDisplay = contribLabels[contribType] || contribType || '—';
-    const note = e.source_url ? `<a href="${e.source_url}" target="_blank" rel="noopener" style="font-size:0.82rem;">Source ↗</a>` : '—';
-    return `<tr><td>${e.label}</td><td>${amtDisplay}</td><td>${condDisplay}</td><td>${contribDisplay}</td><td>${note}</td></tr>`;
-  }).join('');
-  if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);text-align:center;">No matching employers found.</td></tr>';
-  }
-}
-
-// ────────────────────────────────────────────────────────────────────────────
 // WIRE UP
 // ────────────────────────────────────────────────────────────────────────────
 ['dob','zipCode','familyContrib','stateSelect']
@@ -1574,7 +1482,6 @@ function updateDualRange() {
 document.getElementById('contribStartAge').addEventListener('input', () => { updateDualRange(); compute(); });
 document.getElementById('contribEndAge').addEventListener('input',   () => { updateDualRange(); compute(); });
 updateDualRange();
-document.getElementById('emp-table-search').addEventListener('input', e => renderEmployerTable(e.target.value));
 compute();
 
 document.getElementById('calc-btn').addEventListener('click', function () {

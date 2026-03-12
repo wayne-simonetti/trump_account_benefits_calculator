@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Employer Grant Directory — Trump Account Calculator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red: #C0392B;
+      --blue: #2B60D8;
+      --dark-blue: #1A3FA0;
+      --gold: #C9A84C;
+      --white: #FFFFFF;
+      --off-white: #ECEAE4;
+      --gray: #E2DED6;
+      --text: #1C1C1E;
+      --muted: #6B6B80;
+      --green: #2E7D32;
+      --light-green: #E8F5E9;
+    }
+
+    body { font-family: 'Georgia', serif; background: var(--off-white); color: var(--text); min-height: 100vh; }
+
+    header {
+      background: var(--white);
+      color: var(--text);
+      padding: 2rem 1rem 1.5rem;
+      text-align: center;
+      border-bottom: 1px solid #e0ddd6;
+    }
+    header h1 { font-size: clamp(1.4rem, 4vw, 2.2rem); font-weight: 700; color: var(--text); }
+    header h1 span { color: var(--blue); }
+    header p { margin-top: 0.4rem; font-size: 0.95rem; color: var(--muted); }
+    header .back-link { display: inline-block; margin-top: 0.75rem; font-size: 0.85rem; color: var(--blue); text-decoration: none; }
+    header .back-link:hover { text-decoration: underline; }
+
+    main { max-width: 980px; margin: 2rem auto; padding: 0 1rem 3rem; }
+
+    .card { background: var(--white); border: 1px solid #ddd; border-radius: 10px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .card h2 { font-size: 1.05rem; font-weight: 700; color: var(--text); border-bottom: 1px solid #e0ddd6; padding-bottom: 0.5rem; margin-bottom: 1.1rem; }
+
+    .tax-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .tax-table th { background: var(--dark-blue); color: var(--white); padding: 0.45rem 0.7rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.3px; }
+    .tax-table td { padding: 0.4rem 0.7rem; border-bottom: 1px solid #eee; }
+    .tax-table tr:nth-child(even) td { background: var(--off-white); }
+    .tag { display: inline-block; padding: 0.1rem 0.45rem; border-radius: 3px; font-size: 0.7rem; font-weight: 700; }
+    .tag-free  { background: var(--light-green); color: var(--green); }
+    .tag-taxed { background: #FFEBEE; color: #C62828; }
+
+    @media (max-width: 680px) {
+      .tax-table th, .tax-table td { font-size: 0.76rem; padding: 0.35rem 0.5rem; }
+      #emp-table th:nth-child(4), #emp-table td:nth-child(4) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Trump Account <span>Employer Grant Directory</span></h1>
+  <p>All known employer seed grants and matches for Trump Accounts (OBBBA)</p>
+  <a class="back-link" href="/">← Back to Calculator</a>
+</header>
+
+<main>
+  <div class="card">
+    <h2>Employer Grant Directory</h2>
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem;">All known employer one-time seed grants for Trump Accounts. Use the search to filter.</p>
+    <input type="text" id="emp-table-search" placeholder="Search employers…"
+      style="width:100%;max-width:340px;padding:0.5rem 0.75rem;border:1.5px solid #ccc;border-radius:6px;font-size:0.9rem;font-family:inherit;background:var(--off-white);margin-bottom:1rem;" />
+    <div style="overflow-x:auto;">
+      <table class="tax-table" id="emp-table">
+        <thead>
+          <tr>
+            <th>Employer</th>
+            <th>Grant Amount</th>
+            <th>Eligibility</th>
+            <th>Contribution</th>
+            <th>Source</th>
+          </tr>
+        </thead>
+        <tbody id="emp-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script>
+window.EMPLOYER_DATA = [];
+
+async function loadEmployers() {
+  try {
+    const res = await fetch('/api/employers');
+    if (res.ok) window.EMPLOYER_DATA = await res.json();
+  } catch (e) {
+    console.warn('Could not load employer data:', e);
+  }
+  renderEmployerTable();
+}
+
+function renderEmployerTable(filter) {
+  const tbody = document.getElementById('emp-table-body');
+  if (!tbody) return;
+  const q = (filter || '').trim().toLowerCase();
+  const conditionLabels = {
+    all: 'All eligible children',
+    seed: 'Born 2025–2028',
+    newborn: 'Newborns only',
+    conditional: 'Conditional',
+    variable: 'Amount TBD'
+  };
+  const rows = EMPLOYER_DATA.filter(e =>
+    !q || e.label.toLowerCase().includes(q) || (e.note || '').toLowerCase().includes(q) || e.group.toLowerCase().includes(q)
+  );
+  const contribLabels = { seed_grant: 'One-time grant', employer_match: 'Annual match' };
+  tbody.innerHTML = rows.map(e => {
+    const [, amtStr, condition, contribType] = e.value.split('|');
+    const amt = parseInt(amtStr) || 0;
+    const amtDisplay = condition === 'variable' ? '<em style="color:var(--muted)">TBD</em>' : '$' + amt.toLocaleString();
+    const condDisplay = conditionLabels[condition] || condition;
+    const contribDisplay = contribLabels[contribType] || contribType || '—';
+    const note = e.source_url ? `<a href="${e.source_url}" target="_blank" rel="noopener" style="font-size:0.82rem;">Source ↗</a>` : '—';
+    return `<tr><td>${e.label}</td><td>${amtDisplay}</td><td>${condDisplay}</td><td>${contribDisplay}</td><td>${note}</td></tr>`;
+  }).join('');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);text-align:center;">No matching employers found.</td></tr>';
+  }
+}
+
+document.getElementById('emp-table-search').addEventListener('input', e => renderEmployerTable(e.target.value));
+loadEmployers();
+</script>
+</body>
+</html>
