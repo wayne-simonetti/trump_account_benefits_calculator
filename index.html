@@ -477,6 +477,7 @@
             </div>
           </div>
           <div id="gn-employer" class="grant-note" style="margin-top:0.5rem;display:none;"></div>
+          <div id="gsrc-employer" style="margin-top:0.5rem;font-size:0.75rem;display:none;"></div>
         </div>
 
         <!-- Nicki Minaj fan grant — hidden until details confirmed -->
@@ -720,6 +721,10 @@ async function computeGrants(dob, state, zip) {
     ibmRow.style.display = 'none';
     gnEl.style.display = 'none';
 
+    const gsrcEl = document.getElementById('gsrc-employer');
+    gsrcEl.style.display = 'none';
+    gsrcEl.innerHTML = '';
+
     const gcEmpEl = document.getElementById('gc-employer');
 
     if (!empVal) {
@@ -752,6 +757,11 @@ async function computeGrants(dob, state, zip) {
         charter:'Charter Communications', ctia:'CTIA'
       };
       gdEl.textContent = names[id] || id;
+      const empRecord = (window.EMPLOYER_DATA || []).find(e => e.value.startsWith(id + '|'));
+      if (empRecord && empRecord.source_url) {
+        gsrcEl.innerHTML = `<a href="${empRecord.source_url}" target="_blank" rel="noopener" style="color:var(--blue);">Source ↗</a>`;
+        gsrcEl.style.display = 'block';
+      }
       const gnameEl = document.getElementById('gname-employer');
       if (gnameEl) gnameEl.textContent = contribType === 'employer_match' ? 'Employer Annual Match' : 'Employer Seed Grant';
 
