@@ -439,18 +439,8 @@
     </div>
 
     <!-- 2. NATIONWIDE PHILANTHROPIC -->
-    <div class="grant-section">
-      <div class="grant-cards">
-        <div class="grant-card" id="gc-dell">
-          <div class="grant-card-header">
-            <div class="grant-name">Dell Foundation</div>
-            <div class="grant-amount">$250</div>
-          </div>
-          <div class="grant-donor">Michael &amp; Susan Dell &mdash; $6.25B pledged</div>
-          <div class="grant-note">For children born before 2025 (age 10 or under) with ZIP median income below $150,000. Mutually exclusive with federal $1,000 seed. Final IRS guidance pending.</div>
-          <div id="gs-dell"></div>
-        </div>
-      </div>
+    <div class="grant-section" id="grant-section-philanthropic">
+      <div class="grant-cards" id="philanthropic-grants-wrap"></div>
     </div>
 
     <!-- 3. STATE / REGIONAL -->
@@ -670,42 +660,12 @@ async function computeGrants(dob, state, zip) {
     }
   }
 
-  // ── 2. Dell Foundation ───────────────────────────────────────────────────
-  const dellAge = age !== null && age <= 10;
-  {
-    const el  = document.getElementById('gc-dell');
-    const st  = document.getElementById('gs-dell');
-
-    if (!dob) {
-      el.className = 'grant-card g-pending';
-      st.innerHTML = '<span class="grant-status gs-pending">Enter birth date to check</span>';
-    } else if (!under18) {
-      el.className = 'grant-card g-ineligible';
-      st.innerHTML = '<span class="grant-status gs-ineligible">Not eligible — account requires child under 18</span>';
-    } else if (hasSeed) {
-      el.className = 'grant-card g-ineligible';
-      st.innerHTML = '<span class="grant-status gs-ineligible">Not eligible — children born 2025–2028 receive the $1,000 federal seed instead</span>';
-    } else if (dellAge && zipQualifies) {
-      el.className = 'grant-card g-eligible';
-      st.innerHTML = '<span class="grant-status gs-eligible">Eligible — $250</span>';
-      items.push({ name: 'Dell Foundation', amount: 250 });
-      total += 250;
-    } else if (!dellAge) {
-      el.className = 'grant-card g-ineligible';
-      st.innerHTML = '<span class="grant-status gs-ineligible">Not eligible — child must be age 10 or under</span>';
-    } else if (zipIncome === null) {
-      el.className = 'grant-card g-pending';
-      st.innerHTML = '<span class="grant-status gs-pending">Enter ZIP code to check income eligibility</span>';
-    } else {
-      el.className = 'grant-card g-ineligible';
-      st.innerHTML = '<span class="grant-status gs-ineligible">Not eligible — ZIP median income is $150,000 or above</span>';
-    }
-  }
-
-  // ── 3. State / Regional ──────────────────────────────────────────────────
-  const stateResult = renderStateGrants(state, age, birth, under18, zipQualifies, zip);
-  total += stateResult.total;
-  items.push(...stateResult.items);
+  // ── 2 & 3. Philanthropic + State grants (data-driven) ────────────────────
+  const ctx = { dob, age, birth, hasSeed, under18, zip, zipIncome, zipQualifies };
+  const philResult   = renderGrantSection('philanthropic-grants-wrap', null, ctx);
+  const stateResult  = renderStateGrants(state, ctx);
+  total += philResult.total + stateResult.total;
+  items.push(...philResult.items, ...stateResult.items);
 
   // ── 4. Employer seed grant ───────────────────────────────────────────────
   const empVal = document.getElementById('employerSelect').value;
@@ -833,182 +793,121 @@ async function computeGrants(dob, state, zip) {
 // ────────────────────────────────────────────────────────────────────────────
 // STATE GRANTS RENDERER
 // ────────────────────────────────────────────────────────────────────────────
-function renderStateGrants(state, age, birth, under18, zipQualifies, zip) {
-  const wrap = document.getElementById('state-grants-wrap');
+// ── Grant evaluation helper ───────────────────────────────────────────────
+function evaluateGrant(g, ctx) {
+  const { dob, age, birth, hasSeed, under18, zip, zipIncome, zipQualifies } = ctx;
+  const amtDisplay = g.amount_display || (g.grant_amount !== null ? '$' + g.grant_amount.toLocaleString() : 'TBD');
+
+  if (!dob) return { cls: 'g-pending', badge: 'gs-pending', msg: 'Enter birth date to check', eligible: false, amount: null };
+  if (!under18) return { cls: 'g-ineligible', badge: 'gs-ineligible', msg: 'Not eligible — child must be under 18', eligible: false, amount: null };
+  if (g.req_no_seed && hasSeed) return { cls: 'g-ineligible', badge: 'gs-ineligible', msg: 'Not eligible — children born 2025–2028 receive the $1,000 federal seed instead', eligible: false, amount: null };
+  if (g.req_has_seed && !hasSeed) return { cls: 'g-ineligible', badge: 'gs-ineligible', msg: 'Not eligible — requires child born 2025–2028', eligible: false, amount: null };
+
+  if (g.req_age_max !== null && age > g.req_age_max) {
+    return { cls: 'g-ineligible', badge: 'gs-ineligible', msg: `Not eligible — child must be age ${g.req_age_max} or under`, eligible: false, amount: null };
+  }
+  if (g.req_born_year !== null && (!birth || birth.getFullYear() !== g.req_born_year)) {
+    return { cls: 'g-ineligible', badge: 'gs-ineligible', msg: `Not eligible — requires birth in ${g.req_born_year}`, eligible: false, amount: null };
+  }
+  if (g.req_zip_set) {
+    const zipSet = new Set(JSON.parse(g.req_zip_set));
+    if (!zip || zip.length !== 5) return { cls: 'g-pending', badge: 'gs-pending', msg: 'Enter ZIP code to confirm location', eligible: false, amount: null };
+    if (!zipSet.has(zip)) return { cls: 'g-ineligible', badge: 'gs-ineligible', msg: 'Not eligible — ZIP code is not in eligible area', eligible: false, amount: null };
+  }
+  if (g.req_zip_income) {
+    const cap = g.income_cap || 150000;
+    if (!zip || zip.length !== 5) return { cls: 'g-pending', badge: 'gs-pending', msg: 'Enter ZIP code to check income eligibility', eligible: false, amount: null };
+    if (zipIncome === null) return { cls: 'g-pending', badge: 'gs-pending', msg: 'ZIP income data unavailable', eligible: false, amount: null };
+    if (zipIncome >= cap) return { cls: 'g-ineligible', badge: 'gs-ineligible', msg: `Not eligible — ZIP median income exceeds $${cap.toLocaleString()}`, eligible: false, amount: null };
+  }
+  // county checkbox handled in render; if we get here without it, it's eligible
+  return { cls: 'g-eligible', badge: 'gs-eligible', msg: `Eligible — ${amtDisplay}`, eligible: true, amount: g.grant_amount };
+}
+
+// ── Render a grant section from STATE_GRANTS data ────────────────────────
+function renderGrantSection(wrapId, filterState, ctx) {
+  const wrap = document.getElementById(wrapId);
   const items = [];
   let total = 0;
+  if (!wrap) return { total, items };
 
+  const grants = (window.STATE_GRANTS || []).filter(g =>
+    filterState === null ? g.state_code === null : g.state_code === filterState
+  );
+
+  if (!grants.length) { wrap.innerHTML = ''; return { total, items }; }
+
+  let html = '';
+  for (const g of grants) {
+    const amtDisplay = g.amount_display || (g.grant_amount !== null ? '$' + g.grant_amount.toLocaleString() : 'TBD');
+    const amtStyle = g.grant_amount === null ? ' style="font-size:0.85rem;"' : '';
+    const srcHtml = g.source_url ? `<div style="margin-top:0.4rem;font-size:0.75rem;"><a href="${g.source_url}" target="_blank" rel="noopener" style="color:var(--blue);">Source ↗</a></div>` : '';
+
+    if (g.req_county_checkbox) {
+      // Special case: manual checkbox eligibility
+      const cb1Id = `cb_${g.id}_1`;
+      const cb2Id = g.county_checkbox_label2 ? `cb_${g.id}_2` : null;
+      const cb1Checked = (document.getElementById(cb1Id) || {}).checked || false;
+      const cb2Checked = cb2Id ? ((document.getElementById(cb2Id) || {}).checked || false) : true;
+      const allChecked = cb1Checked && cb2Checked && ctx.dob && ctx.under18;
+      const cls = allChecked ? 'g-pending' : 'g-tbd';
+      const badge = allChecked
+        ? '<span class="grant-status gs-pending">Potentially eligible — contact the foundation directly</span>'
+        : '<span class="grant-status gs-tbd">Check boxes to assess eligibility</span>';
+      html += `
+      <div class="grant-card ${cls}">
+        <div class="grant-card-header"><div class="grant-name">${g.grantor_name}</div><div class="grant-amount"${amtStyle}>${amtDisplay}</div></div>
+        ${g.donor_line ? `<div class="grant-donor">${g.donor_line}</div>` : ''}
+        ${g.note ? `<div class="grant-note">${g.note}</div>` : ''}
+        ${badge}${srcHtml}
+        <div class="grant-inputs">
+          <div class="gi-row">
+            <input type="checkbox" id="${cb1Id}" onchange="compute()" ${cb1Checked ? 'checked' : ''} />
+            <label for="${cb1Id}">${g.county_checkbox_label}</label>
+          </div>
+          ${cb2Id ? `<div class="gi-row">
+            <input type="checkbox" id="${cb2Id}" onchange="compute()" ${cb2Checked ? '' : ''} />
+            <label for="${cb2Id}">${g.county_checkbox_label2}</label>
+          </div>` : ''}
+        </div>
+      </div>`;
+    } else {
+      const ev = evaluateGrant(g, ctx);
+      if (ev.eligible && g.grant_amount) {
+        items.push({ name: g.grantor_name, amount: g.grant_amount });
+        total += g.grant_amount;
+      }
+      html += `
+      <div class="grant-card ${ev.cls}">
+        <div class="grant-card-header"><div class="grant-name">${g.grantor_name}</div><div class="grant-amount"${amtStyle}>${amtDisplay}</div></div>
+        ${g.donor_line ? `<div class="grant-donor">${g.donor_line}</div>` : ''}
+        ${g.note ? `<div class="grant-note">${g.note}</div>` : ''}
+        <span class="grant-status ${ev.badge}">${ev.msg}</span>${srcHtml}
+      </div>`;
+    }
+  }
+  wrap.innerHTML = html;
+  return { total, items };
+}
+
+function renderStateGrants(state, ctx) {
+  const wrap = document.getElementById('state-grants-wrap');
   if (!state) {
     wrap.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;">Select your state above to see available regional programs.</p>';
-    return { total, items };
+    return { total: 0, items: [] };
   }
-
-  const STATE_PROGRAMS = new Set(['CA', 'CT', 'IN', 'WY']);
-  if (state && !STATE_PROGRAMS.has(state)) {
+  const stateGrants = (window.STATE_GRANTS || []).filter(g => g.state_code === state);
+  if (!stateGrants.length) {
     wrap.innerHTML = `
       <div class="grant-card g-tbd">
         <div class="grant-card-header"><div class="grant-name">State Program (Your State)</div><div class="grant-amount" style="font-size:0.85rem;color:#777;">TBD</div></div>
         <div class="grant-donor">50 State Challenge — Treasury Dept.</div>
-        <div class="grant-note">20+ states are working to meet the 50 State Challenge. No specific program has been publicly announced for your state yet. Check back as more philanthropists and states join the initiative.</div>
+        <div class="grant-note">20+ states are working to meet the 50 State Challenge. No specific program has been publicly announced for your state yet.</div>
         <span class="grant-status gs-tbd">Not yet announced</span>
       </div>`;
-    return { total, items };
+    return { total: 0, items: [] };
   }
-
-  let html = '<div class="grant-cards">';
-
-  if (state === 'CT') {
-    const ctAge = age !== null && age < 10;
-    let status, cardClass, zipNote = '';
-    if (zip && zip.length === 5) {
-      zipNote = `<div class="grant-note" style="margin-top:0.4rem;color:${zipQualifies ? 'var(--green)' : '#C62828'}">ZIP ${zip} median income: ${zipQualifies ? 'qualifies (below $150,000)' : 'does not qualify ($150,000 or above)'}</div>`;
-    }
-    if (!birth) {
-      status = '<span class="grant-status gs-pending">Enter birth date to check</span>';
-      cardClass = 'g-pending';
-    } else if (!under18) {
-      status = '<span class="grant-status gs-ineligible">Not eligible — child must be under 18</span>';
-      cardClass = 'g-ineligible';
-    } else if (ctAge && zipQualifies) {
-      status = '<span class="grant-status gs-eligible">Eligible — $250</span>';
-      cardClass = 'g-eligible';
-      items.push({ name: 'Dalio Foundation (CT)', amount: 250 });
-      total += 250;
-    } else if (!ctAge) {
-      status = '<span class="grant-status gs-ineligible">Not eligible — child must be under age 10</span>';
-      cardClass = 'g-ineligible';
-    } else if (!zip || zip.length !== 5) {
-      status = '<span class="grant-status gs-pending">Enter ZIP code to check income eligibility</span>';
-      cardClass = 'g-pending';
-    } else {
-      status = '<span class="grant-status gs-ineligible">Not eligible — ZIP median income exceeds $150,000</span>';
-      cardClass = 'g-ineligible';
-    }
-    html += `
-      <div class="grant-card ${cardClass}">
-        <div class="grant-card-header"><div class="grant-name">Dalio Foundation</div><div class="grant-amount">$250</div></div>
-        <div class="grant-donor">Ray &amp; Barbara Dalio &mdash; $75M for ~300,000 CT children</div>
-        <div class="grant-note">Child must be under age 10. ZIP code median income &le; $150,000. ~87% of CT ZIP codes qualify.</div>
-        ${status}${zipNote}
-      </div>`;
-  }
-
-  if (state === 'IN') {
-    const inAge = age !== null && age < 5;
-    let status, cardClass;
-    if (!birth) {
-      status = '<span class="grant-status gs-pending">Enter birth date to check</span>';
-      cardClass = 'g-pending';
-    } else if (!under18) {
-      status = '<span class="grant-status gs-ineligible">Not eligible — child must be under 18</span>';
-      cardClass = 'g-ineligible';
-    } else if (inAge) {
-      status = '<span class="grant-status gs-eligible">Eligible — $250</span>';
-      cardClass = 'g-eligible';
-      items.push({ name: 'Gerstner / Altimeter (IN)', amount: 250 });
-      total += 250;
-    } else {
-      status = '<span class="grant-status gs-ineligible">Not eligible — child must be under age 5</span>';
-      cardClass = 'g-ineligible';
-    }
-    html += `
-      <div class="grant-card ${cardClass}">
-        <div class="grant-card-header"><div class="grant-name">Altimeter Capital (Brad Gerstner)</div><div class="grant-amount">$250</div></div>
-        <div class="grant-donor">Brad Gerstner, CEO Altimeter Capital &mdash; ~406,000 Indiana children</div>
-        <div class="grant-note">$250 for all Indiana children under age 5. No income requirement.</div>
-        ${status}
-      </div>`;
-  }
-
-  if (state === 'WY') {
-    const wyBorn2026 = birth && isBirthYear(birth, 2026);
-    let status, cardClass;
-    if (!birth) {
-      status = '<span class="grant-status gs-pending">Enter birth date to check</span>';
-      cardClass = 'g-pending';
-    } else if (wyBorn2026) {
-      status = '<span class="grant-status gs-pending">Potentially eligible — amount TBD</span>';
-      cardClass = 'g-pending';
-    } else {
-      status = '<span class="grant-status gs-ineligible">Not eligible — requires birth in Wyoming in 2026</span>';
-      cardClass = 'g-ineligible';
-    }
-    html += `
-      <div class="grant-card ${cardClass}">
-        <div class="grant-card-header"><div class="grant-name">Kraken</div><div class="grant-amount" style="font-size:0.85rem;">Amount TBD</div></div>
-        <div class="grant-donor">Kraken (cryptocurrency exchange)</div>
-        <div class="grant-note">For all children born in Wyoming during 2026. Dollar amount not yet published. Monitor Kraken's announcements.</div>
-        ${status}
-      </div>`;
-  }
-
-  if (state === 'CA') {
-    // SF Anonymous Grant
-    const SF_ZIPS = new Set(['94102','94103','94104','94105','94107','94108','94109','94110','94111','94112','94114','94115','94116','94117','94118','94119','94120','94121','94122','94123','94124','94125','94126','94127','94128','94129','94130','94131','94132','94133','94134','94137','94139','94140','94141','94142','94143','94144','94145','94146','94147','94151','94153','94154','94156','94158','94159','94160','94161','94162','94163','94164','94171','94172','94177','94188']);
-    const sfBorn2026 = birth && isBirthYear(birth, 2026);
-    const sfInSF = zip && zip.length === 5 && SF_ZIPS.has(zip);
-    let sfStatus, sfClass;
-    if (!birth) {
-      sfStatus = '<span class="grant-status gs-pending">Enter birth date to check</span>';
-      sfClass = 'g-pending';
-    } else if (!sfBorn2026) {
-      sfStatus = '<span class="grant-status gs-ineligible">Not eligible — requires birth in San Francisco in 2026</span>';
-      sfClass = 'g-ineligible';
-    } else if (!zip || zip.length !== 5) {
-      sfStatus = '<span class="grant-status gs-pending">Enter ZIP code to confirm San Francisco address</span>';
-      sfClass = 'g-pending';
-    } else if (sfInSF) {
-      sfStatus = '<span class="grant-status gs-eligible">Eligible — ~$500</span>';
-      sfClass = 'g-eligible';
-      items.push({ name: 'Anonymous SF Donor', amount: 500 });
-      total += 500;
-    } else {
-      sfStatus = '<span class="grant-status gs-ineligible">Not eligible — ZIP code is not in San Francisco</span>';
-      sfClass = 'g-ineligible';
-    }
-    html += `
-      <div class="grant-card ${sfClass}">
-        <div class="grant-card-header"><div class="grant-name">Anonymous SF Donor</div><div class="grant-amount">~$500</div></div>
-        <div class="grant-donor">Anonymous donor &mdash; $3.5M pledged for SF newborns</div>
-        <div class="grant-note">~$500 per eligible child born in San Francisco in 2026. Exact amount depends on final number of applicants. Full eligibility criteria TBD — check <a href="https://sfmayor.org" target="_blank">sfmayor.org</a> for official details.</div>
-        ${sfStatus}
-      </div>`;
-
-    // Kern County / Anand Legacy
-    const kernCbId = 'kernCountyCheck';
-    const rehabCbId = 'motherRehabCheck';
-    const kernChecked  = (document.getElementById(kernCbId) || {}).checked || false;
-    const rehabChecked = (document.getElementById(rehabCbId) || {}).checked || false;
-    let kernStatus, kernClass;
-    if (kernChecked && rehabChecked && birth && under18) {
-      kernStatus = '<span class="grant-status gs-pending">Potentially eligible — contact Anand Legacy Foundation</span>';
-      kernClass = 'g-pending';
-    } else {
-      kernStatus = '<span class="grant-status gs-tbd">Check boxes to assess eligibility</span>';
-      kernClass = 'g-tbd';
-    }
-    html += `
-      <div class="grant-card ${kernClass}">
-        <div class="grant-card-header"><div class="grant-name">Anand Legacy Foundation</div><div class="grant-amount" style="font-size:0.85rem;">~TBD</div></div>
-        <div class="grant-donor">Anand Legacy Foundation (Bakersfield, CA) &mdash; $500,000 pledged</div>
-        <div class="grant-note">For newborns of mothers in eligible rehabilitation programs in Kern County, CA. Contact the foundation directly for exact per-child amounts and program details.</div>
-        ${kernStatus}
-        <div class="grant-inputs">
-          <div class="gi-row">
-            <input type="checkbox" id="${kernCbId}" onchange="compute()" ${kernChecked ? 'checked' : ''} />
-            <label for="${kernCbId}">Child is a newborn in Kern County, CA</label>
-          </div>
-          <div class="gi-row">
-            <input type="checkbox" id="${rehabCbId}" onchange="compute()" ${rehabChecked ? 'checked' : ''} />
-            <label for="${rehabCbId}">Mother is in an eligible rehabilitation program</label>
-          </div>
-        </div>
-      </div>`;
-  }
-
-  html += '</div>';
-  wrap.innerHTML = html;
-  return { total, items };
+  return renderGrantSection('state-grants-wrap', state, ctx);
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -1178,7 +1077,7 @@ let CARD_HOMES = null;
 
 function initCardHomes() {
   CARD_HOMES = {};
-  ['gc-federal', 'gc-dell', 'gc-employer'].forEach(id => {
+  ['gc-federal', 'gc-employer'].forEach(id => {
     const el = document.getElementById(id);
     if (el) CARD_HOMES[id] = el.parentElement;
   });
@@ -1195,7 +1094,7 @@ function reorganizeGrants() {
   const isOpen        = chevron.classList.contains('open');
 
   // 1. Restore static cards to original homes
-  ['gc-federal', 'gc-dell', 'gc-employer'].forEach(id => {
+  ['gc-federal', 'gc-employer'].forEach(id => {
     const el = document.getElementById(id);
     const home = CARD_HOMES[id];
     if (el && home && el.parentElement !== home) home.appendChild(el);
@@ -1303,6 +1202,7 @@ function drawChart(labels, values) {
 // EMPLOYER_DATA is loaded from /api/employers at runtime
 // ────────────────────────────────────────────────────────────────────────────
 window.EMPLOYER_DATA = [];
+window.STATE_GRANTS = [];
 window.ZIP_INCOME_META = null;
 
 async function loadEmployers() {
@@ -1313,6 +1213,15 @@ async function loadEmployers() {
     console.warn('Could not load employer data:', e);
   }
   initEmployerCombo();
+}
+
+async function loadStateGrants() {
+  try {
+    const res = await fetch('/api/state-grants');
+    if (res.ok) window.STATE_GRANTS = await res.json();
+  } catch (e) {
+    console.warn('Could not load state grants:', e);
+  }
 }
 
 // ── ZIP lookup helper ─────────────────────────────────────────────────────
@@ -1483,6 +1392,7 @@ document.getElementById('targetAge').addEventListener('input', function() {
 window.addEventListener('resize', compute);
 
 loadEmployers();
+loadStateGrants();
 
 // ── DUAL RANGE SLIDER ────────────────────────────────────────────────────
 function updateDualRange() {
