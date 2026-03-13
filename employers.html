@@ -23,16 +23,14 @@
 
     body { font-family: 'Georgia', serif; background: var(--off-white); color: var(--text); min-height: 100vh; }
 
-    header {
-      background: var(--white);
-      color: var(--text);
-      padding: 2rem 1rem 1.5rem;
+    .hero {
+      background: var(--dark-blue);
       text-align: center;
-      border-bottom: 1px solid #e0ddd6;
+      padding: 1.6rem 1rem 1.4rem;
     }
-    header h1 { font-size: clamp(1.4rem, 4vw, 2.2rem); font-weight: 700; color: var(--text); }
-    header h1 span { color: var(--blue); }
-    header p { margin-top: 0.4rem; font-size: 0.95rem; color: var(--muted); }
+    .hero h1 { font-size: clamp(1.3rem, 3.5vw, 2rem); font-weight: 700; color: var(--white); }
+    .hero h1 span { color: var(--gold); }
+    .hero p { margin-top: 0.4rem; font-size: 0.9rem; color: rgba(255,255,255,0.7); }
     main { max-width: 980px; margin: 2rem auto; padding: 0 1rem 3rem; }
 
     .card { background: var(--white); border: 1px solid #ddd; border-radius: 10px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
@@ -64,14 +62,14 @@
 </head>
 <body>
 
-<header>
-  <h1>Trump Account <span>Employer Grant Directory</span></h1>
-  <p>All known employer seed grants and matches for Trump Accounts (OBBBA)</p>
-</header>
 <nav>
   <a href="/">Calculator</a>
   <a href="/employers.html" class="active">Employer Directory</a>
 </nav>
+<section class="hero">
+  <h1>Trump Account <span>Employer Grant Directory</span></h1>
+  <p>All known employer seed grants and matches for Trump Accounts</p>
+</section>
 
 <main>
   <div class="card">

@@ -23,17 +23,15 @@
 
     body { font-family: 'Georgia', serif; background: var(--off-white); color: var(--text); min-height: 100vh; }
 
-    /* HEADER */
-    header {
-      background: var(--white);
-      color: var(--text);
-      padding: 2rem 1rem 1.5rem;
+    /* HERO */
+    .hero {
+      background: var(--dark-blue);
       text-align: center;
-      border-bottom: 1px solid #e0ddd6;
+      padding: 1.6rem 1rem 1.4rem;
     }
-    header h1 { font-size: clamp(1.6rem, 4vw, 2.6rem); font-weight: 700; letter-spacing: 0; color: var(--text); }
-    header h1 span { color: var(--blue); }
-    header p { margin-top: 0.4rem; font-size: 0.95rem; color: var(--muted); }
+    .hero h1 { font-size: clamp(1.3rem, 3.5vw, 2rem); font-weight: 700; color: var(--white); }
+    .hero h1 span { color: var(--gold); }
+    .hero p { margin-top: 0.4rem; font-size: 0.9rem; color: rgba(255,255,255,0.7); }
 
     /* LAYOUT */
     main { max-width: 980px; margin: 2rem auto; padding: 0 1rem 3rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
@@ -277,14 +275,14 @@
 </head>
 <body>
 
-<header>
-  <h1>Trump Account <span>Benefits Calculator</span></h1>
-  <p>One Big Beautiful Bill Act &mdash; Tax-Advantaged Child Savings</p>
-</header>
 <nav>
   <a href="/" class="active">Calculator</a>
   <a href="/employers.html">Employer Directory</a>
 </nav>
+<section class="hero">
+  <h1>Trump Account <span>Benefits Calculator</span></h1>
+  <p>See what grants your child qualifies for — federal seed, employer, state, and philanthropic.</p>
+</section>
 
 <main>
 
@@ -577,7 +575,7 @@
   </div>
 
   <p class="disclaimer">
-    <strong>Disclaimer:</strong> This calculator is for informational and educational purposes only, based on publicly available information about the One Big Beautiful Bill Act (OBBBA) as of February 2026. Account availability begins July 4, 2026. Grant programs are pledges — amounts, eligibility criteria, and distribution processes may change. Figures are illustrative estimates; actual results depend on market performance, legislative changes, and individual circumstances. Consult a qualified financial advisor or tax professional before making financial decisions.<br><br>
+    <strong>Disclaimer:</strong> This calculator is for informational and educational purposes only, based on publicly available information about Trump Accounts as of March 2026. Account availability begins July 4, 2026. Grant programs are pledges — amounts, eligibility criteria, and distribution processes may change. Figures are illustrative estimates; actual results depend on market performance, legislative changes, and individual circumstances. Consult a qualified financial advisor or tax professional before making financial decisions.<br><br>
     Sources:
     <a href="https://www.irs.gov/trumpaccounts" target="_blank">IRS Trump Accounts</a> &bull;
     <a href="https://www.trumpaccounts.gov/" target="_blank">trumpaccounts.gov</a> &bull;
