@@ -21,10 +21,10 @@ Helps users determine grant eligibility and project account growth.
 | `seed.py` | One-time DB population |
 | `export.py` | Exports DB → JS files; run after any DB change |
 | `census_import.py` | Downloads ACS ZIP income data into DB |
-| `tweet_ingest.py` | Extracts employer grant data from tweet text via Claude API |
+| `ingest.py` | Extracts employer + state/philanthropic grant data from text via Claude API |
 
 ## Data Management Workflow
-1. Update data in `trump_accounts.db` (via `seed.py`, `tweet_ingest.py`, or DB Browser)
+1. Update data in `trump_accounts.db` (via `seed.py`, `ingest.py`, or DB Browser)
 2. Run `python3 export.py` to regenerate `employers.js` and `zip_income.js`
 3. Refresh the browser
 
