@@ -400,6 +400,7 @@
         <input type="text" id="zipCode" maxlength="5" pattern="\d{5}"
                placeholder="e.g. 90210" autocomplete="postal-code"
                style="width:100%;padding:0.55rem 0.75rem;border:1.5px solid #ccc;border-radius:6px;font-size:0.95rem;font-family:inherit;background:var(--off-white);" />
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:0.3rem;">Used to check income-based grant eligibility</div>
       </div>
 
       <div class="field" style="margin-bottom:0;">
@@ -639,7 +640,8 @@ function fmtFull(n) { return '$' + Math.round(n).toLocaleString(); }
 function getAge(dob) {
   if (!dob) return null;
   const birth = new Date(dob + 'T00:00:00');
-  const today = new Date('2026-02-25');
+  if (isNaN(birth)) return null;
+  const today = new Date();
   let age = today.getFullYear() - birth.getFullYear();
   const m = today.getMonth() - birth.getMonth();
   if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
@@ -1004,11 +1006,15 @@ async function compute() {
   // DOB badge
   const dobBadge = document.getElementById('dob-badge');
   if (dob) {
-    const seedStart = new Date('2025-01-01'), seedEnd = new Date('2028-12-31');
-    const hasSeed = birth && birth >= seedStart && birth <= seedEnd;
-    if (hasSeed)   dobBadge.innerHTML = '<span class="badge badge-green">Eligible for $1,000 seed deposit</span>';
-    else if (under18) dobBadge.innerHTML = '<span class="badge badge-gold">Eligible for Trump Account (no seed deposit)</span>';
-    else           dobBadge.innerHTML = '<span class="badge badge-red">Not eligible (must be under 18)</span>';
+    if (!birth) {
+      dobBadge.innerHTML = '<span class="badge badge-red">Invalid date — please use MM/DD/YYYY</span>';
+    } else {
+      const seedStart = new Date('2025-01-01'), seedEnd = new Date('2028-12-31');
+      const hasSeed = birth >= seedStart && birth <= seedEnd;
+      if (hasSeed)   dobBadge.innerHTML = '<span class="badge badge-green">Eligible for $1,000 seed deposit</span>';
+      else if (under18) dobBadge.innerHTML = '<span class="badge badge-gold">Eligible for Trump Account (no seed deposit)</span>';
+      else           dobBadge.innerHTML = '<span class="badge badge-red">Not eligible (must be under 18)</span>';
+    }
   } else {
     dobBadge.innerHTML = '';
   }
