@@ -109,16 +109,11 @@
   </div>
 </main>
 
+<script src="employers.js"></script>
 <script>
-window.EMPLOYER_DATA = [];
+window.EMPLOYER_DATA = typeof EMPLOYER_DATA !== 'undefined' ? EMPLOYER_DATA : [];
 
-async function loadEmployers() {
-  try {
-    const res = await fetch('/api/employers');
-    if (res.ok) window.EMPLOYER_DATA = await res.json();
-  } catch (e) {
-    console.warn('Could not load employer data:', e);
-  }
+function loadEmployers() {
   renderEmployerTable();
 }
 
