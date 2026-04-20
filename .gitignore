@@ -4,9 +4,6 @@ __pycache__/
 deploy/
 .claude/
 trump_accounts.db
-/employers.js
-/zip_income.js
-/state_grants.js
 /employers_seed.sql
 /zip_income_seed.sql
 /state_grants_seed.sql
