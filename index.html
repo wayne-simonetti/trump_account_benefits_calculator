@@ -301,6 +301,9 @@
     .toggle-chevron.open { transform: rotate(180deg); }
     #other-grants-section { margin-top: 0.75rem; }
   </style>
+  <script src="employers.js"></script>
+  <script src="state_grants.js"></script>
+  <script src="zip_income.js"></script>
 </head>
 <body>
 
@@ -1255,49 +1258,20 @@ function drawChart(labels, values) {
 
 // ────────────────────────────────────────────────────────────────────────────
 // EMPLOYER SEARCHABLE COMBOBOX
-// EMPLOYER_DATA is loaded from /api/employers at runtime
+// EMPLOYER_DATA, STATE_GRANTS, ZIP_INCOME loaded from static JS files
 // ────────────────────────────────────────────────────────────────────────────
-window.EMPLOYER_DATA = [];
-window.STATE_GRANTS = [];
-window.ZIP_INCOME_META = null;
-
-async function loadEmployers() {
-  try {
-    const res = await fetch('/api/employers');
-    if (res.ok) window.EMPLOYER_DATA = await res.json();
-  } catch (e) {
-    console.warn('Could not load employer data:', e);
-  }
+function loadEmployers() {
   initEmployerCombo();
 }
 
-async function loadStateGrants() {
-  try {
-    const res = await fetch('/api/state-grants');
-    if (res.ok) window.STATE_GRANTS = await res.json();
-  } catch (e) {
-    console.warn('Could not load state grants:', e);
-  }
+function loadStateGrants() {
+  // STATE_GRANTS already available from state_grants.js
 }
 
 // ── ZIP lookup helper ─────────────────────────────────────────────────────
-const _zipCache = {};
-async function getZipIncome(zip) {
+function getZipIncome(zip) {
   if (!zip || zip.length !== 5) return null;
-  if (_zipCache[zip] !== undefined) return _zipCache[zip];
-  try {
-    const res = await fetch(`/api/zip-income?zip=${zip}`);
-    const data = await res.json();
-    if (data.vintage_year) window.ZIP_INCOME_META = {
-      source: 'U.S. Census Bureau',
-      survey: 'American Community Survey (ACS) 5-Year Estimates',
-      vintage_year: data.vintage_year,
-    };
-    _zipCache[zip] = data.median_income ?? null;
-  } catch (e) {
-    _zipCache[zip] = null;
-  }
-  return _zipCache[zip];
+  return ZIP_INCOME[zip] ?? null;
 }
 
 function initEmployerCombo() {
