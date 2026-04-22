@@ -961,15 +961,6 @@ function renderStateGrants(state, ctx) {
 // MAIN COMPUTE
 // ────────────────────────────────────────────────────────────────────────────
 async function compute() {
-  const ssnConfirmed = document.getElementById('ssn-confirm').checked;
-  const ssnError = document.getElementById('ssn-error');
-  if (!ssnConfirmed) {
-    ssnError.innerHTML = 'A U.S. Social Security Number is required to open a Trump Account. Please check the box above to confirm eligibility.';
-    ssnError.style.display = 'block';
-    return;
-  }
-  ssnError.style.display = 'none';
-  ssnError.innerHTML = '';
 
   const dob        = document.getElementById('dob').value;
   const zip        = (document.getElementById('zipCode').value || '').trim();
@@ -1452,6 +1443,15 @@ updateDualRange();
 compute();
 
 document.getElementById('calc-btn').addEventListener('click', function () {
+  const ssnConfirmed = document.getElementById('ssn-confirm').checked;
+  const ssnError = document.getElementById('ssn-error');
+  if (!ssnConfirmed) {
+    ssnError.innerHTML = 'A U.S. Social Security Number is required to open a Trump Account. Please check the box above to confirm eligibility.';
+    ssnError.style.display = 'block';
+    return;
+  }
+  ssnError.style.display = 'none';
+  ssnError.innerHTML = '';
   document.getElementById('results-section').style.display = 'grid';
   document.getElementById('calc-btn-wrap').style.display = 'none';
   compute();
