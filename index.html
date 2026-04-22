@@ -420,7 +420,7 @@
     <div style="margin-top:1rem;">
       <label style="display:flex;align-items:flex-start;gap:0.55rem;cursor:pointer;font-size:0.9rem;">
         <input type="checkbox" id="ssn-confirm" style="margin-top:0.2rem;accent-color:var(--blue);width:1rem;height:1rem;flex-shrink:0;" />
-        <span>This child has or will have a U.S. Social Security Number <span style="color:var(--muted);font-size:0.8rem;">(required for Trump Account eligibility)</span></span>
+        <span>Child has or will have a U.S. Social Security Number</span>
       </label>
       <div id="ssn-error" style="display:none;font-size:0.8rem;color:#C62828;margin-top:0.3rem;margin-left:1.55rem;">Please confirm SSN eligibility to continue.</div>
     </div>
@@ -962,11 +962,9 @@ async function compute() {
   const ssnError = document.getElementById('ssn-error');
   if (!ssnConfirmed) {
     ssnError.style.display = 'block';
-    document.getElementById('ssn-confirm').closest('label').style.color = '#C62828';
     return;
   }
   ssnError.style.display = 'none';
-  document.getElementById('ssn-confirm').closest('label').style.color = '';
 
   const dob        = document.getElementById('dob').value;
   const zip        = (document.getElementById('zipCode').value || '').trim();
