@@ -1303,7 +1303,8 @@ function initEmployerCombo() {
 
       const labelHtml = highlight(emp.label, q);
       const isSel     = emp.value === selectedValue;
-      html += `<div class="emp-option${isSel ? ' selected' : ''}" data-value="${emp.value}" data-label="${emp.label}">${labelHtml}</div>`;
+      const verifiedBadge = emp.verified ? ' <span style="font-size:0.65rem;color:var(--gold);font-weight:700;">✓</span>' : '';
+      html += `<div class="emp-option${isSel ? ' selected' : ''}" data-value="${emp.value}" data-label="${emp.label}">${labelHtml}${verifiedBadge}</div>`;
       visibleCount++;
     });
 
