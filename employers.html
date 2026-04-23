@@ -104,7 +104,7 @@
             <th class="sortable" data-col="1">Grant Amount<em class="sort-icon">⇅</em></th>
             <th class="sortable" data-col="2">Eligibility<em class="sort-icon">⇅</em></th>
             <th class="sortable" data-col="3">Contribution<em class="sort-icon">⇅</em></th>
-            <th>Source</th>
+            <th class="sortable" data-col="4">Source<em class="sort-icon">⇅</em></th>
           </tr>
         </thead>
         <tbody id="emp-table-body"></tbody>
@@ -135,6 +135,7 @@ function getSortValue(e, col) {
   if (col === 1) return parseInt(amtStr) || 0;
   if (col === 2) return conditionLabels[condition] || condition;
   if (col === 3) return contribLabels[contribType] || contribType || '';
+  if (col === 4) return e.source_url ? rootDomain(e.source_url) : '';
   return '';
 }
 
