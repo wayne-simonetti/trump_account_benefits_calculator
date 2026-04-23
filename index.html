@@ -454,7 +454,13 @@
 
     <!-- ELIGIBLE GRANTS (top) -->
     <div id="eligible-grants-panel" style="display:none;">
-      <div class="eligible-section-title">Confirmed Eligible</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.4rem;">
+        <div class="eligible-section-title" style="margin-bottom:0;">Confirmed Eligible</div>
+        <div style="font-size:0.78rem;color:var(--muted);display:flex;align-items:center;gap:0.4rem;">
+          <span style="display:inline-flex;align-items:center;justify-content:center;border:1.5px solid var(--gold);color:var(--gold);font-size:0.7rem;font-weight:700;width:1rem;height:1rem;border-radius:2px;flex-shrink:0;">✓</span>
+          Employer has directly confirmed their Trump Account benefit
+        </div>
+      </div>
       <div class="grant-cards" id="eligible-grants-cards"></div>
     </div>
 
