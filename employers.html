@@ -97,7 +97,13 @@
     <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:1rem;flex-wrap:wrap;">
       <input type="text" id="emp-table-search" placeholder="Search employers…"
         style="width:100%;max-width:340px;padding:0.5rem 0.75rem;border:1.5px solid #ccc;border-radius:6px;font-size:0.9rem;font-family:inherit;background:var(--off-white);" />
-      <button id="verified-filter" style="padding:0.5rem 0.9rem;border:1.5px solid var(--gold);border-radius:6px;background:transparent;color:var(--gold);font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">✓ Verified Only</button>
+      <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;color:var(--muted);white-space:nowrap;">
+        Show:
+        <select id="verified-filter" style="padding:0.45rem 0.6rem;border:1.5px solid #ccc;border-radius:6px;font-size:0.85rem;font-family:inherit;background:var(--off-white);cursor:pointer;">
+          <option value="all">All</option>
+          <option value="verified">Verified Only</option>
+        </select>
+      </label>
     </div>
     <div style="overflow-x:auto;">
       <table class="tax-table" id="emp-table">
@@ -196,10 +202,8 @@ document.querySelectorAll('#emp-table th.sortable').forEach(th => {
 
 document.getElementById('emp-table-search').addEventListener('input', e => renderEmployerTable(e.target.value));
 
-document.getElementById('verified-filter').addEventListener('click', function() {
-  verifiedOnly = !verifiedOnly;
-  this.style.background = verifiedOnly ? 'var(--gold)' : 'transparent';
-  this.style.color = verifiedOnly ? '#fff' : 'var(--gold)';
+document.getElementById('verified-filter').addEventListener('change', function() {
+  verifiedOnly = this.value === 'verified';
   renderEmployerTable(document.getElementById('emp-table-search').value);
 });
 
