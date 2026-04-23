@@ -122,6 +122,13 @@ const contribLabels = { seed_grant: 'One-time grant', employer_match: 'Annual ma
 
 let sortCol = -1, sortAsc = true;
 
+function rootDomain(url) {
+  try {
+    const parts = new URL(url).hostname.replace(/^www\./, '').split('.');
+    return parts.slice(-2).join('.');
+  } catch { return url; }
+}
+
 function getSortValue(e, col) {
   const [, amtStr, condition, contribType] = e.value.split('|');
   if (col === 0) return e.label.toLowerCase();
@@ -153,7 +160,7 @@ function renderEmployerTable(filter) {
     const amtDisplay = condition === 'variable' ? '<em style="color:var(--muted)">TBD</em>' : '$' + amt.toLocaleString();
     const condDisplay = conditionLabels[condition] || condition;
     const contribDisplay = contribLabels[contribType] || contribType || '—';
-    const note = e.source_url ? `<a href="${e.source_url}" target="_blank" rel="noopener" style="font-size:0.82rem;">Source ↗</a>` : '—';
+    const note = e.source_url ? `<a href="${e.source_url}" target="_blank" rel="noopener" style="font-size:0.82rem;">${rootDomain(e.source_url)} ↗</a>` : '—';
     return `<tr><td>${e.label}</td><td>${amtDisplay}</td><td>${condDisplay}</td><td>${contribDisplay}</td><td>${note}</td></tr>`;
   }).join('');
   if (!rows.length) {
