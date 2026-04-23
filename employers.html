@@ -158,7 +158,7 @@ function renderEmployerTable(filter) {
   tbody.innerHTML = rows.map(e => {
     const [, amtStr, condition, contribType] = e.value.split('|');
     const amt = parseInt(amtStr) || 0;
-    const amtDisplay = condition === 'variable' ? '<em style="color:var(--muted)">TBD</em>' : '$' + amt.toLocaleString();
+    const amtDisplay = condition === 'variable' ? 'TBD' : '$' + amt.toLocaleString();
     const condDisplay = conditionLabels[condition] || condition;
     const contribDisplay = contribLabels[contribType] || contribType || '—';
     const note = e.source_url ? `<a href="${e.source_url}" target="_blank" rel="noopener" style="font-size:0.82rem;">${rootDomain(e.source_url)} ↗</a>` : '—';
