@@ -765,10 +765,10 @@ async function computeGrants(dob, state, zip) {
       if (gnameEl) gnameEl.textContent = contribType === 'employer_match' ? 'Employer Annual Match' : 'Employer Seed Grant';
 
       if (condition === 'variable') {
-        gcEmpEl.className = 'grant-card g-tbd';
+        gcEmpEl.className = 'grant-card g-eligible';
         gaEl.textContent = 'Variable';
-        gsEl.innerHTML = '<span class="grant-status gs-tbd">Contact HR for exact amount</span>';
-        gnEl.textContent = 'This employer has pledged contributions but has not published a specific per-child dollar amount. Contact HR.';
+        gsEl.innerHTML = '<span class="grant-status gs-eligible">Confirmed Eligible — Contact HR for exact amount</span>';
+        gnEl.textContent = 'This employer has confirmed a Trump Account benefit. Contact HR for the specific per-child dollar amount.';
         gnEl.style.display = 'block';
       } else if (!under18 && dob) {
         gcEmpEl.className = 'grant-card g-ineligible';
