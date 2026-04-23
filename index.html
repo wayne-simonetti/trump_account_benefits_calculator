@@ -742,10 +742,6 @@ async function computeGrants(dob, state, zip) {
         ? ' <span style="display:inline-flex;align-items:center;justify-content:center;border:1.5px solid var(--gold);color:var(--gold);font-size:0.65rem;font-weight:700;width:0.95rem;height:0.95rem;border-radius:2px;vertical-align:middle;margin-left:0.3rem;">✓</span>'
         : '';
       gdEl.innerHTML = empLabel + verifiedBadge;
-      if (empRecord && empRecord.source_url) {
-        gsrcEl.innerHTML = `<a href="${empRecord.source_url}" target="_blank" rel="noopener" style="color:var(--blue);">Source ↗</a>`;
-        gsrcEl.style.display = 'block';
-      }
       const gnameEl = document.getElementById('gname-employer');
       if (gnameEl) gnameEl.textContent = contribType === 'employer_match' ? 'Employer Annual Match' : 'Employer Seed Grant';
 
