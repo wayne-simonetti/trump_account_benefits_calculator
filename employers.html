@@ -51,7 +51,11 @@
     .card h2 { font-size: 1.05rem; font-weight: 700; color: var(--text); border-bottom: 1px solid #e0ddd6; padding-bottom: 0.5rem; margin-bottom: 1.1rem; }
 
     .tax-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-    .tax-table th { background: var(--dark-blue); color: var(--white); padding: 0.45rem 0.7rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.3px; text-align: center; }
+    .tax-table th { background: var(--dark-blue); color: var(--white); padding: 0.45rem 0.7rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.3px; text-align: center; user-select: none; }
+    .tax-table th.sortable { cursor: pointer; }
+    .tax-table th.sortable:hover { background: #1e4db5; }
+    .tax-table th .sort-icon { margin-left: 0.35rem; opacity: 0.5; font-style: normal; }
+    .tax-table th.sort-asc .sort-icon, .tax-table th.sort-desc .sort-icon { opacity: 1; }
     .tax-table td { padding: 0.4rem 0.7rem; border-bottom: 1px solid #eee; text-align: center; }
     .tax-table tr:nth-child(even) td { background: var(--off-white); }
     .tag { display: inline-block; padding: 0.1rem 0.45rem; border-radius: 3px; font-size: 0.7rem; font-weight: 700; }
@@ -96,10 +100,10 @@
       <table class="tax-table" id="emp-table">
         <thead>
           <tr>
-            <th>Employer</th>
-            <th>Grant Amount</th>
-            <th>Eligibility</th>
-            <th>Contribution</th>
+            <th class="sortable" data-col="0">Employer<em class="sort-icon">⇅</em></th>
+            <th class="sortable" data-col="1">Grant Amount<em class="sort-icon">⇅</em></th>
+            <th class="sortable" data-col="2">Eligibility<em class="sort-icon">⇅</em></th>
+            <th class="sortable" data-col="3">Contribution<em class="sort-icon">⇅</em></th>
             <th>Source</th>
           </tr>
         </thead>
@@ -113,25 +117,36 @@
 <script>
 window.EMPLOYER_DATA = typeof EMPLOYER_DATA !== 'undefined' ? EMPLOYER_DATA : [];
 
-function loadEmployers() {
-  renderEmployerTable();
+const conditionLabels = { all: 'All eligible children', seed: 'Born 2025–2028', newborn: 'Newborns only', conditional: 'Conditional', variable: 'Amount TBD' };
+const contribLabels = { seed_grant: 'One-time grant', employer_match: 'Annual match' };
+
+let sortCol = -1, sortAsc = true;
+
+function getSortValue(e, col) {
+  const [, amtStr, condition, contribType] = e.value.split('|');
+  if (col === 0) return e.label.toLowerCase();
+  if (col === 1) return parseInt(amtStr) || 0;
+  if (col === 2) return conditionLabels[condition] || condition;
+  if (col === 3) return contribLabels[contribType] || contribType || '';
+  return '';
 }
+
+function loadEmployers() { renderEmployerTable(); }
 
 function renderEmployerTable(filter) {
   const tbody = document.getElementById('emp-table-body');
   if (!tbody) return;
   const q = (filter || '').trim().toLowerCase();
-  const conditionLabels = {
-    all: 'All eligible children',
-    seed: 'Born 2025–2028',
-    newborn: 'Newborns only',
-    conditional: 'Conditional',
-    variable: 'Amount TBD'
-  };
-  const rows = EMPLOYER_DATA.filter(e =>
+  let rows = EMPLOYER_DATA.filter(e =>
     !q || e.label.toLowerCase().includes(q) || (e.note || '').toLowerCase().includes(q) || e.group.toLowerCase().includes(q)
   );
-  const contribLabels = { seed_grant: 'One-time grant', employer_match: 'Annual match' };
+  if (sortCol >= 0) {
+    rows = [...rows].sort((a, b) => {
+      const av = getSortValue(a, sortCol), bv = getSortValue(b, sortCol);
+      const cmp = typeof av === 'number' ? av - bv : av.localeCompare(bv);
+      return sortAsc ? cmp : -cmp;
+    });
+  }
   tbody.innerHTML = rows.map(e => {
     const [, amtStr, condition, contribType] = e.value.split('|');
     const amt = parseInt(amtStr) || 0;
@@ -144,7 +159,25 @@ function renderEmployerTable(filter) {
   if (!rows.length) {
     tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);text-align:center;">No matching employers found.</td></tr>';
   }
+  // Update header icons
+  document.querySelectorAll('#emp-table th.sortable').forEach(th => {
+    th.classList.remove('sort-asc', 'sort-desc');
+    th.querySelector('.sort-icon').textContent = '⇅';
+    if (parseInt(th.dataset.col) === sortCol) {
+      th.classList.add(sortAsc ? 'sort-asc' : 'sort-desc');
+      th.querySelector('.sort-icon').textContent = sortAsc ? '↑' : '↓';
+    }
+  });
 }
+
+document.querySelectorAll('#emp-table th.sortable').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = parseInt(th.dataset.col);
+    if (sortCol === col) sortAsc = !sortAsc;
+    else { sortCol = col; sortAsc = true; }
+    renderEmployerTable(document.getElementById('emp-table-search').value);
+  });
+});
 
 document.getElementById('emp-table-search').addEventListener('input', e => renderEmployerTable(e.target.value));
 loadEmployers();
