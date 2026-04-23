@@ -751,20 +751,12 @@ async function computeGrants(dob, state, zip) {
     } else {
       const [id, amtStr, condition, contribType] = empVal.split('|');
       const amt = parseInt(amtStr) || 0;
-      const names = {
-        bny_mellon:'BNY Mellon', ibm:'IBM', blackrock:'BlackRock', steak_n_shake:"Steak 'n Shake",
-        nvidia:'Nvidia', chipotle:'Chipotle', uber:'Uber', visa:'Visa', citi:'Citi',
-        fox:'Fox Corporation', newscorp:'News Corporation', acorns:'Acorns',
-        statestreet:'State Street', jpmorgan:'JPMorgan Chase', robinhood:'Robinhood',
-        chime:'Chime', sofi:'SoFi', schwab:'Charles Schwab', russell:'Russell Investments',
-        bofa:'Bank of America', coinbase:'Coinbase', empower:'Empower', intel:'Intel',
-        ici:'Investment Company Institute', tpusa:'Turning Point USA',
-        wellsfargo:'Wells Fargo', mastercard:'Mastercard', comcast:'Comcast',
-        dell_corp:'Dell Technologies', broadcom:'Broadcom', continental:'Continental Resources',
-        charter:'Charter Communications', ctia:'CTIA'
-      };
-      gdEl.textContent = names[id] || id;
       const empRecord = (window.EMPLOYER_DATA || []).find(e => e.value.startsWith(id + '|'));
+      const empLabel = empRecord ? empRecord.label : id;
+      const verifiedBadge = empRecord && empRecord.verified
+        ? ' <span style="display:inline-flex;align-items:center;justify-content:center;border:1.5px solid var(--gold);color:var(--gold);font-size:0.65rem;font-weight:700;width:0.95rem;height:0.95rem;border-radius:2px;vertical-align:middle;margin-left:0.3rem;">✓</span>'
+        : '';
+      gdEl.innerHTML = empLabel + verifiedBadge;
       if (empRecord && empRecord.source_url) {
         gsrcEl.innerHTML = `<a href="${empRecord.source_url}" target="_blank" rel="noopener" style="color:var(--blue);">Source ↗</a>`;
         gsrcEl.style.display = 'block';
@@ -817,7 +809,7 @@ async function computeGrants(dob, state, zip) {
           : 'One-time seed grant — does not count toward $5,000 annual cap';
         gnEl.style.display = 'block';
         if (dob && under18) {
-          items.push({ name: (names[id] || id) + ' Grant', amount: amt });
+          items.push({ name: empLabel + ' Grant', amount: amt });
           total += amt;
         }
       }
