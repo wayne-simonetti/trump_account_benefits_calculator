@@ -94,8 +94,11 @@
   <div class="card">
     <h2>Employer Grant Directory</h2>
     <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem;">All known employer one-time seed grants for Trump Accounts. Use the search to filter.</p>
-    <input type="text" id="emp-table-search" placeholder="Search employers…"
-      style="width:100%;max-width:340px;padding:0.5rem 0.75rem;border:1.5px solid #ccc;border-radius:6px;font-size:0.9rem;font-family:inherit;background:var(--off-white);margin-bottom:1rem;" />
+    <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:1rem;flex-wrap:wrap;">
+      <input type="text" id="emp-table-search" placeholder="Search employers…"
+        style="width:100%;max-width:340px;padding:0.5rem 0.75rem;border:1.5px solid #ccc;border-radius:6px;font-size:0.9rem;font-family:inherit;background:var(--off-white);" />
+      <button id="verified-filter" style="padding:0.5rem 0.9rem;border:1.5px solid var(--gold);border-radius:6px;background:transparent;color:var(--gold);font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">✓ Verified Only</button>
+    </div>
     <div style="overflow-x:auto;">
       <table class="tax-table" id="emp-table">
         <thead>
@@ -120,7 +123,7 @@ window.EMPLOYER_DATA = typeof EMPLOYER_DATA !== 'undefined' ? EMPLOYER_DATA : []
 const conditionLabels = { all: 'All eligible children', seed: 'Born 2025–2028', newborn: 'Newborns only', conditional: 'Conditional', variable: 'TBD' };
 const contribLabels = { seed_grant: 'One-time grant', employer_match: 'Annual match' };
 
-let sortCol = -1, sortAsc = true;
+let sortCol = -1, sortAsc = true, verifiedOnly = false;
 
 function rootDomain(url) {
   try {
@@ -146,7 +149,8 @@ function renderEmployerTable(filter) {
   if (!tbody) return;
   const q = (filter || '').trim().toLowerCase();
   let rows = EMPLOYER_DATA.filter(e =>
-    !q || e.label.toLowerCase().includes(q) || (e.note || '').toLowerCase().includes(q) || e.group.toLowerCase().includes(q)
+    (!verifiedOnly || e.verified) &&
+    (!q || e.label.toLowerCase().includes(q) || (e.note || '').toLowerCase().includes(q) || e.group.toLowerCase().includes(q))
   );
   if (sortCol >= 0) {
     rows = [...rows].sort((a, b) => {
@@ -154,6 +158,8 @@ function renderEmployerTable(filter) {
       const cmp = typeof av === 'number' ? av - bv : av.localeCompare(bv);
       return sortAsc ? cmp : -cmp;
     });
+  } else {
+    rows = [...rows].sort((a, b) => (b.verified ? 1 : 0) - (a.verified ? 1 : 0));
   }
   tbody.innerHTML = rows.map(e => {
     const [, amtStr, condition, contribType] = e.value.split('|');
@@ -162,7 +168,8 @@ function renderEmployerTable(filter) {
     const condDisplay = conditionLabels[condition] || condition;
     const contribDisplay = contribLabels[contribType] || contribType || '—';
     const note = e.source_url ? `<a href="${e.source_url}" target="_blank" rel="noopener" style="font-size:0.82rem;">${rootDomain(e.source_url)} ↗</a>` : '—';
-    return `<tr><td>${e.label}</td><td>${amtDisplay}</td><td>${condDisplay}</td><td>${contribDisplay}</td><td>${note}</td></tr>`;
+    const badge = e.verified ? ' <span style="display:inline-block;background:var(--gold);color:#fff;font-size:0.65rem;font-weight:700;padding:0.1rem 0.4rem;border-radius:3px;letter-spacing:0.3px;vertical-align:middle;">✓ VERIFIED</span>' : '';
+    return `<tr${e.verified ? ' style="background:rgba(201,168,76,0.06);"' : ''}><td>${e.label}${badge}</td><td>${amtDisplay}</td><td>${condDisplay}</td><td>${contribDisplay}</td><td>${note}</td></tr>`;
   }).join('');
   if (!rows.length) {
     tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);text-align:center;">No matching employers found.</td></tr>';
@@ -188,6 +195,14 @@ document.querySelectorAll('#emp-table th.sortable').forEach(th => {
 });
 
 document.getElementById('emp-table-search').addEventListener('input', e => renderEmployerTable(e.target.value));
+
+document.getElementById('verified-filter').addEventListener('click', function() {
+  verifiedOnly = !verifiedOnly;
+  this.style.background = verifiedOnly ? 'var(--gold)' : 'transparent';
+  this.style.color = verifiedOnly ? '#fff' : 'var(--gold)';
+  renderEmployerTable(document.getElementById('emp-table-search').value);
+});
+
 loadEmployers();
 </script>
 </body>
