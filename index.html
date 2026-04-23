@@ -1018,7 +1018,6 @@ async function compute() {
       `<li>$1,000 gov seed deposit: <strong>${(() => { const s=new Date('2025-01-01'),e=new Date('2028-12-31'); return birth>=s&&birth<=e?'YES — born Jan 2025–Dec 2028':'No — outside birth window'; })()}</strong></li>`,
       `<li>Annual contribution limit: <strong>$5,000 total</strong> (family + employer recurring)</li>`,
       `<li>One-time grants applied: <strong>${fmtFull(grantsTotal)}</strong> (exempt from annual cap)</li>`,
-      `<li>First eligible withdrawal: <strong>Age 18</strong> (${Math.max(0, 18 - age)} year${18-age!==1?'s':''} away)</li>`,
     ];
     eligCard.innerHTML = `<div class="eligibility-banner eligible"><strong>Eligible for Trump Account</strong></div><ul style="padding-left:1.2rem;line-height:2;font-size:0.9rem;margin-top:0.5rem;">${items.join('')}</ul>`;
   }
