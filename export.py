@@ -18,7 +18,7 @@ DB_PATH = Path(__file__).parent / "trump_accounts.db"
 def export_employers(conn, timestamp):
     rows = conn.execute(
         """
-        SELECT id, name, grant_amount, condition_type, group_label, note, contribution_type, source_url, verified, sort_order
+        SELECT id, name, grant_amount, condition_type, group_label, note, contribution_type, source_url, verified, sort_order, announcement_date
         FROM   employers
         ORDER  BY sort_order, name
         """
@@ -39,6 +39,8 @@ def export_employers(conn, timestamp):
         if r["verified"]:
             entry["verified"] = True
         entry["sort_order"] = r["sort_order"] if r["sort_order"] is not None else 0
+        if r["announcement_date"]:
+            entry["announcement_date"] = r["announcement_date"]
         employers.append(entry)
 
     js = (
