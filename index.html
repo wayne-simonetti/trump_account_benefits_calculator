@@ -300,6 +300,24 @@
     .toggle-chevron { transition: transform 0.2s; }
     .toggle-chevron.open { transform: rotate(180deg); }
     #other-grants-section { margin-top: 0.75rem; }
+
+    /* EMPLOYER TICKER */
+    .employer-ticker {
+      background: var(--dark-blue); border-top: 1px solid rgba(201,168,76,0.3);
+      padding: 0.45rem 0; overflow: hidden; white-space: nowrap;
+    }
+    .ticker-inner {
+      display: inline-block;
+      animation: ticker-scroll 18s linear infinite;
+    }
+    .ticker-inner:hover { animation-play-state: paused; }
+    @keyframes ticker-scroll {
+      0%   { transform: translateX(100vw); }
+      100% { transform: translateX(-100%); }
+    }
+    .ticker-new { color: var(--gold); font-weight: 700; font-size: 0.72rem; letter-spacing: 0.5px; text-transform: uppercase; margin-right: 0.5rem; }
+    .ticker-text { color: rgba(255,255,255,0.9); font-size: 0.82rem; }
+    .ticker-text a { color: rgba(255,255,255,0.9); text-decoration: underline; text-underline-offset: 2px; }
   </style>
   <script src="employers.js"></script>
   <script src="state_grants.js"></script>
@@ -318,9 +336,13 @@
   <a href="#calculator" class="hero-cta">Calculate Your Benefits →</a>
   <div class="hero-stats">
     <div class="hero-stat"><strong>$1,000</strong><span>Federal Seed</span></div>
-    <div class="hero-stat"><strong>35+</strong><span>Employers</span></div>
+    <div class="hero-stat"><strong id="hero-employer-count">46</strong><span>Employers</span></div>
   </div>
 </section>
+
+<div class="employer-ticker" id="employer-ticker" style="display:none;">
+  <span class="ticker-inner" id="ticker-inner"></span>
+</div>
 
 <main id="calculator">
 
@@ -1379,6 +1401,20 @@ document.getElementById('targetAge').addEventListener('input', function() {
 window.addEventListener('resize', compute);
 
 loadEmployers();
+
+// Employer ticker
+(function() {
+  if (!EMPLOYER_DATA || !EMPLOYER_DATA.length) return;
+  const newest = EMPLOYER_DATA.reduce((a, b) => (b.sort_order || 0) > (a.sort_order || 0) ? b : a);
+  const total = EMPLOYER_DATA.length;
+  const countEl = document.getElementById('hero-employer-count');
+  if (countEl) countEl.textContent = total;
+  const ticker = document.getElementById('employer-ticker');
+  const inner  = document.getElementById('ticker-inner');
+  if (!ticker || !inner) return;
+  inner.innerHTML = `<span class="ticker-new">New</span><span class="ticker-text"><strong>${newest.label}</strong> just joined — <a href="/employers.html">${total} employers</a> now offering Trump Account benefits</span>`;
+  ticker.style.display = 'block';
+})();
 loadStateGrants();
 
 // ── DUAL RANGE SLIDER ────────────────────────────────────────────────────
