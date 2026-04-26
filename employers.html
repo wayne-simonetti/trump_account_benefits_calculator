@@ -114,9 +114,9 @@
         <thead>
           <tr>
             <th class="sortable" data-col="0">Employer<em class="sort-icon">⇅</em></th>
-            <th class="sortable" data-col="1">Grant Amount<em class="sort-icon">⇅</em></th>
-            <th class="sortable" data-col="2">Eligibility<em class="sort-icon">⇅</em></th>
-            <th class="sortable" data-col="3">Contribution<em class="sort-icon">⇅</em></th>
+            <th class="sortable" data-col="1">Amount<em class="sort-icon">⇅</em></th>
+            <th class="sortable" data-col="2">Type<em class="sort-icon">⇅</em></th>
+            <th class="sortable" data-col="3">Eligibility<em class="sort-icon">⇅</em></th>
             <th class="sortable" data-col="4">Source<em class="sort-icon">⇅</em></th>
           </tr>
         </thead>
@@ -146,8 +146,8 @@ function getSortValue(e, col) {
   const [, amtStr, condition, contribType] = e.value.split('|');
   if (col === 0) return e.label.toLowerCase();
   if (col === 1) return parseInt(amtStr) || 0;
-  if (col === 2) return conditionLabels[condition] || condition;
-  if (col === 3) return contribLabels[contribType] || contribType || '';
+  if (col === 2) return contribLabels[contribType] || contribType || '';
+  if (col === 3) return conditionLabels[condition] || condition;
   if (col === 4) return e.source_url ? rootDomain(e.source_url) : '';
   return '';
 }
@@ -179,7 +179,7 @@ function renderEmployerTable(filter) {
     const contribDisplay = contribLabels[contribType] || contribType || '—';
     const note = e.source_url ? `<a href="${e.source_url}" target="_blank" rel="noopener" style="font-size:0.82rem;">${rootDomain(e.source_url)} ↗</a>` : '—';
     const badge = e.verified ? ' <span style="display:inline-flex;align-items:center;justify-content:center;border:1.5px solid var(--gold);color:var(--gold);font-size:0.65rem;font-weight:700;width:0.95rem;height:0.95rem;border-radius:2px;vertical-align:middle;margin-left:0.25rem;">✓</span>' : '';
-    return `<tr${e.verified ? ' style="background:rgba(201,168,76,0.06);"' : ''}><td>${e.label}${badge}</td><td>${amtDisplay}</td><td>${condDisplay}</td><td>${contribDisplay}</td><td>${note}</td></tr>`;
+    return `<tr${e.verified ? ' style="background:rgba(201,168,76,0.06);"' : ''}><td>${e.label}${badge}</td><td>${amtDisplay}</td><td>${contribDisplay}</td><td>${condDisplay}</td><td>${note}</td></tr>`;
   }).join('');
   if (!rows.length) {
     tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);text-align:center;">No matching employers found.</td></tr>';
