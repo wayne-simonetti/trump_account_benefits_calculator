@@ -74,7 +74,6 @@
       .card { padding: 1.1rem; }
       .chart-wrap { height: 200px; }
       .grant-cards { grid-template-columns: 1fr; }
-      .tax-table th, .tax-table td { font-size: 0.76rem; padding: 0.35rem 0.5rem; }
       .breakdown-table th, .breakdown-table td { font-size: 0.76rem; padding: 0.35rem 0.5rem; }
       #emp-table th:nth-child(4), #emp-table td:nth-child(4) { display: none; }
       .field input, .field select, .emp-combo-input { font-size: 1rem; }
@@ -158,15 +157,6 @@
     .breakdown-table td:last-child { text-align: right; font-weight: 700; color: var(--green); }
     .breakdown-table tr:nth-child(even) td { background: var(--off-white); }
     .breakdown-table tr:last-child td { border-bottom: none; }
-
-    /* TAX TABLE */
-    .tax-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-    .tax-table th { background: var(--dark-blue); color: var(--white); padding: 0.45rem 0.7rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.3px; }
-    .tax-table td { padding: 0.4rem 0.7rem; border-bottom: 1px solid #eee; }
-    .tax-table tr:nth-child(even) td { background: var(--off-white); }
-    .tag { display: inline-block; padding: 0.1rem 0.45rem; border-radius: 3px; font-size: 0.7rem; font-weight: 700; }
-    .tag-free  { background: var(--light-green); color: var(--green); }
-    .tag-taxed { background: #FFEBEE; color: #C62828; }
 
     /* ── GRANT SECTION ─────────────────────────────────────────────────── */
     .grant-section { margin-bottom: 1.4rem; }
@@ -337,7 +327,7 @@
   <a href="#calculator" class="hero-cta">Calculate Your Benefits →</a>
   <div class="hero-stats">
     <div class="hero-stat"><strong>$1,000</strong><span>Federal Seed</span></div>
-    <div class="hero-stat"><strong id="hero-employer-count">46</strong><span>Employers</span></div>
+    <div class="hero-stat"><strong id="hero-employer-count">—</strong><span>Employers</span></div>
   </div>
 </section>
 
@@ -372,6 +362,7 @@
           <option value="CA">California</option>
           <option value="CO">Colorado</option>
           <option value="CT">Connecticut</option>
+          <option value="DC">Washington D.C.</option>
           <option value="DE">Delaware</option>
           <option value="FL">Florida</option>
           <option value="GA">Georgia</option>
@@ -415,7 +406,6 @@
           <option value="WV">West Virginia</option>
           <option value="WI">Wisconsin</option>
           <option value="WY">Wyoming</option>
-          <option value="DC">Washington D.C.</option>
         </select>
         <div class="hint">Determines available state &amp; regional grant programs.</div>
       </div>
@@ -447,7 +437,7 @@
         <input type="checkbox" id="ssn-confirm" style="margin-top:0.2rem;accent-color:var(--blue);width:1rem;height:1rem;flex-shrink:0;" />
         <span>Child has or will have a U.S. Social Security Number</span>
       </label>
-      <div id="ssn-error" style="display:none;font-size:0.85rem;color:#C62828;margin-top:0.4rem;margin-left:1.55rem;"></div>
+      <div id="ssn-error" role="alert" style="display:none;font-size:0.85rem;color:#C62828;margin-top:0.4rem;margin-left:1.55rem;"></div>
     </div>
   </div>
 
@@ -544,11 +534,6 @@
           <div id="gsrc-employer" style="margin-top:0.5rem;font-size:0.75rem;display:none;"></div>
         </div>
 
-        <!-- Nicki Minaj fan grant — hidden until details confirmed -->
-        <div style="display:none;">
-          <input type="checkbox" id="minajCheck" />
-          <div id="gs-minaj"></div>
-        </div>
       </div>
     </div>
 
@@ -646,6 +631,12 @@
 
 <script>
 // ────────────────────────────────────────────────────────────────────────────
+// CONSTANTS
+// ────────────────────────────────────────────────────────────────────────────
+const SEED_START = new Date('2025-01-01');
+const SEED_END   = new Date('2028-12-31');
+
+// ────────────────────────────────────────────────────────────────────────────
 // HELPERS
 // ────────────────────────────────────────────────────────────────────────────
 function fmt(n) {
@@ -687,9 +678,7 @@ async function computeGrants(dob, state, zip) {
   let total = 0;
 
   // ── 1. Federal Seed ──────────────────────────────────────────────────────
-  const seedStart = new Date('2025-01-01');
-  const seedEnd   = new Date('2028-12-31');
-  const hasSeed   = birth && birth >= seedStart && birth <= seedEnd;
+  const hasSeed = birth && birth >= SEED_START && birth <= SEED_END;
   {
     const el = document.getElementById('gc-federal');
     const st = document.getElementById('gs-federal');
@@ -819,16 +808,6 @@ async function computeGrants(dob, state, zip) {
     }
   }
 
-  // ── 5. Nicki Minaj ───────────────────────────────────────────────────────
-  const minajCheck = document.getElementById('minajCheck').checked;
-  if (minajCheck) {
-    items.push({ name: 'Nicki Minaj Fan Grant', amount: 250, tbd: true });
-    // Don't add to total — amount is TBD/estimated
-    document.getElementById('gs-minaj').innerHTML = '<span class="grant-status gs-pending">Applied (est. $250–$500; final amount pending)</span>';
-  } else {
-    document.getElementById('gs-minaj').innerHTML = '<span class="grant-status gs-tbd">Details pending</span>';
-  }
-
   return { total, items };
 }
 
@@ -908,7 +887,7 @@ function renderGrantSection(wrapId, filterState, ctx) {
             <label for="${cb1Id}">${g.county_checkbox_label}</label>
           </div>
           ${cb2Id ? `<div class="gi-row">
-            <input type="checkbox" id="${cb2Id}" onchange="compute()" ${cb2Checked ? '' : ''} />
+            <input type="checkbox" id="${cb2Id}" onchange="compute()" ${cb2Checked ? 'checked' : ''} />
             <label for="${cb2Id}">${g.county_checkbox_label2}</label>
           </div>` : ''}
         </div>
@@ -1008,8 +987,7 @@ async function compute() {
     if (!birth) {
       dobBadge.innerHTML = '<span class="badge badge-red">Invalid date — please use MM/DD/YYYY</span>';
     } else {
-      const seedStart = new Date('2025-01-01'), seedEnd = new Date('2028-12-31');
-      const hasSeed = birth >= seedStart && birth <= seedEnd;
+      const hasSeed = birth >= SEED_START && birth <= SEED_END;
       if (hasSeed)   dobBadge.innerHTML = '<span class="badge badge-green">Eligible for $1,000 seed deposit</span>';
       else if (under18) dobBadge.innerHTML = '<span class="badge badge-gold">Eligible for Trump Account (no seed deposit)</span>';
       else           dobBadge.innerHTML = '<span class="badge badge-red">Not eligible (must be under 18)</span>';
@@ -1039,7 +1017,7 @@ async function compute() {
   } else {
     const items = [
       `<li>Account eligible: <strong>Yes</strong> (age ${age})</li>`,
-      `<li>$1,000 gov seed deposit: <strong>${(() => { const s=new Date('2025-01-01'),e=new Date('2028-12-31'); return birth>=s&&birth<=e?'YES — born Jan 2025–Dec 2028':'No — outside birth window'; })()}</strong></li>`,
+      `<li>$1,000 gov seed deposit: <strong>${birth>=SEED_START&&birth<=SEED_END?'YES — born Jan 2025–Dec 2028':'No — outside birth window'}</strong></li>`,
       `<li>Annual contribution limit: <strong>$5,000 total</strong> (family + employer recurring)</li>`,
       `<li>One-time grants applied: <strong>${fmtFull(grantsTotal)}</strong> (exempt from annual cap)</li>`,
     ];
@@ -1047,8 +1025,6 @@ async function compute() {
   }
 
   // ── Projection ──
-  const seedStart = new Date('2025-01-01'), seedEnd = new Date('2028-12-31');
-  const hasSeed   = birth && birth >= seedStart && birth <= seedEnd;
   const startingAge  = under18 ? Math.max(0, age) : 0;
   const yearsToGrow  = Math.max(0, targetAge - startingAge);
 
