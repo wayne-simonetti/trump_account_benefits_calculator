@@ -238,17 +238,34 @@
     .emp-option mark { background: #FFF176; color: inherit; border-radius: 2px; padding: 0 1px; font-style: normal; }
     .emp-no-results { padding: 0.7rem; font-size: 0.8rem; color: var(--muted); text-align: center; font-style: italic; }
 
-    /* Total grants bar */
+    /* Total grants hero card */
     .grants-total {
-      background: var(--blue);
-      color: white; border-radius: 8px; padding: 0.85rem 1rem;
-      display: flex; justify-content: space-between; align-items: center;
-      gap: 0.75rem; flex-wrap: wrap;
-      margin-top: 0.5rem;
+      background: linear-gradient(135deg, var(--dark-blue) 0%, var(--blue) 100%);
+      color: white; border-radius: 8px;
+      padding: 1.75rem 1.25rem;
+      display: flex; flex-direction: column; align-items: center; gap: 0.35rem;
+      text-align: center;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 4px 14px rgba(26,63,160,0.25);
     }
-    .grants-total .gt-label { font-size: 0.8rem; letter-spacing: 0; opacity: 0.85; }
-    .grants-total .gt-amount { font-size: 1.5rem; font-weight: 700; color: white; white-space: nowrap; flex-shrink: 0; }
-    .grants-total .gt-breakdown { font-size: 0.72rem; opacity: 0.75; margin-top: 0.15rem; }
+    .grants-total .gt-eyebrow {
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 1.2px;
+      text-transform: uppercase; color: var(--gold);
+    }
+    .grants-total .gt-amount {
+      font-size: 3.5rem; font-weight: 800; color: var(--gold);
+      line-height: 1; letter-spacing: -1px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.18);
+    }
+    .grants-total .gt-sub { font-size: 0.95rem; opacity: 0.9; }
+    .grants-total .gt-breakdown {
+      font-size: 0.75rem; opacity: 0.85; margin-top: 0.5rem;
+      padding: 0.35rem 0.85rem; background: rgba(255,255,255,0.12);
+      border-radius: 999px; max-width: 100%;
+    }
+    @media (max-width: 600px) {
+      .grants-total { padding: 1.4rem 1rem; }
+      .grants-total .gt-amount { font-size: 2.6rem; }
+    }
 
     /* DISCLAIMER */
     .disclaimer { grid-column: 1 / -1; font-size: 0.73rem; color: var(--muted); border-top: 1px solid #ddd; padding-top: 0.8rem; line-height: 1.5; }
@@ -452,11 +469,10 @@
   <!-- ── TOTAL GRANTS BAR ──────────────────────────────────────────────────── -->
   <div class="card card-full" style="padding:0;">
     <div class="grants-total" style="border-radius:inherit;margin:0;">
-      <div>
-        <div class="gt-label">Total One-Time Grants Applied</div>
-        <div class="gt-breakdown" id="grants-breakdown">Enter child's birth date to calculate</div>
-      </div>
+      <div class="gt-eyebrow" id="grants-eyebrow">Estimate your child's grants</div>
       <div class="gt-amount" id="grants-total-amount">$0</div>
+      <div class="gt-sub" id="grants-total-sub" style="visibility:hidden;">in one-time grants</div>
+      <div class="gt-breakdown" id="grants-breakdown">Enter child's birth date to calculate</div>
     </div>
   </div>
 
@@ -1004,13 +1020,24 @@ async function compute() {
   // Compute grants
   const { total: grantsTotal, items: grantItems } = await computeGrants(dob, state, zip);
 
-  // Grants total bar
+  // Grants total hero card
   document.getElementById('grants-total-amount').textContent = fmtFull(grantsTotal);
+  const eyebrowEl = document.getElementById('grants-eyebrow');
+  const subEl = document.getElementById('grants-total-sub');
+  const breakdownEl = document.getElementById('grants-breakdown');
   if (grantItems.length === 0) {
-    document.getElementById('grants-breakdown').textContent = dob ? 'No confirmed grants at this time' : 'Enter birth date to calculate';
+    if (!dob) {
+      eyebrowEl.textContent = "Estimate your child's grants";
+      breakdownEl.textContent = "Enter birth date to calculate";
+    } else {
+      eyebrowEl.textContent = "No confirmed grants for your child";
+      breakdownEl.textContent = "Try a different state or check back as new programs are announced";
+    }
+    subEl.style.visibility = 'hidden';
   } else {
-    document.getElementById('grants-breakdown').textContent =
-      grantItems.filter(g => !g.tbd).map(g => g.name + ' $' + g.amount.toLocaleString()).join(' + ');
+    eyebrowEl.textContent = "Your child qualifies for";
+    subEl.style.visibility = 'visible';
+    breakdownEl.textContent = grantItems.filter(g => !g.tbd).map(g => g.name + ' $' + g.amount.toLocaleString()).join(' + ');
   }
 
   // ── Eligibility card ──
