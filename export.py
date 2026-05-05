@@ -104,9 +104,10 @@ def export_state_grants(conn, timestamp):
 
     rows = conn.execute(
         """SELECT id, state_code, grantor_name, donor_line, grant_amount, amount_display,
-                  req_no_seed, req_has_seed, req_age_max, req_born_year,
+                  req_no_seed, req_has_seed, req_age_max,
+                  req_born_year_min, req_born_year_max,
                   req_zip_income, income_cap, req_zip_set,
-                  req_county_checkbox, county_checkbox_label, county_checkbox_label2,
+                  req_checkbox_labels,
                   note, source_url, sort_order
            FROM state_grants ORDER BY sort_order, grantor_name"""
     ).fetchall()
@@ -132,9 +133,10 @@ def export_state_grants_sql(conn):
 
     rows = conn.execute(
         """SELECT id, state_code, grantor_name, donor_line, grant_amount, amount_display,
-                  req_no_seed, req_has_seed, req_age_max, req_born_year,
+                  req_no_seed, req_has_seed, req_age_max,
+                  req_born_year_min, req_born_year_max,
                   req_zip_income, income_cap, req_zip_set,
-                  req_county_checkbox, county_checkbox_label, county_checkbox_label2,
+                  req_checkbox_labels,
                   note, source_url, sort_order
            FROM state_grants ORDER BY sort_order, grantor_name"""
     ).fetchall()
@@ -147,20 +149,21 @@ def export_state_grants_sql(conn):
             sql_quote(r["amount_display"]),
             str(r["req_no_seed"]), str(r["req_has_seed"]),
             str(r["req_age_max"]) if r["req_age_max"] is not None else "NULL",
-            str(r["req_born_year"]) if r["req_born_year"] is not None else "NULL",
+            str(r["req_born_year_min"]) if r["req_born_year_min"] is not None else "NULL",
+            str(r["req_born_year_max"]) if r["req_born_year_max"] is not None else "NULL",
             str(r["req_zip_income"]),
             str(r["income_cap"]) if r["income_cap"] is not None else "NULL",
             sql_quote(r["req_zip_set"]),
-            str(r["req_county_checkbox"]),
-            sql_quote(r["county_checkbox_label"]), sql_quote(r["county_checkbox_label2"]),
+            sql_quote(r["req_checkbox_labels"]),
             sql_quote(r["note"]), sql_quote(r["source_url"]),
             str(r["sort_order"]),
         ])
         lines.append(
             f"INSERT INTO state_grants (id,state_code,grantor_name,donor_line,grant_amount,amount_display,"
-            f"req_no_seed,req_has_seed,req_age_max,req_born_year,"
+            f"req_no_seed,req_has_seed,req_age_max,"
+            f"req_born_year_min,req_born_year_max,"
             f"req_zip_income,income_cap,req_zip_set,"
-            f"req_county_checkbox,county_checkbox_label,county_checkbox_label2,"
+            f"req_checkbox_labels,"
             f"note,source_url,sort_order) VALUES ({vals});"
         )
     Path("state_grants_seed.sql").write_text("\n".join(lines))

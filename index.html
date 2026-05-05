@@ -321,7 +321,7 @@
   <a href="/employers.html">Employer Directory</a>
 </nav>
 <section class="hero">
-  <div class="hero-badge">Trump Accounts · Available July 4, 2026</div>
+  <div class="hero-badge">Trump Accounts · Available July 5, 2026</div>
   <h1>Trump Account <span class="hero-title-break">Benefits Calculator</span></h1>
   <p class="hero-sub">See what grants your child qualifies for — federal seed, employer, state, and philanthropic.</p>
   <a href="#calculator" class="hero-cta">Calculate Your Benefits →</a>
@@ -615,7 +615,7 @@
   </div>
 
   <p class="disclaimer">
-    <strong>Disclaimer:</strong> This calculator is for informational and educational purposes only, based on publicly available information about Trump Accounts as of March 2026. Account availability begins July 4, 2026. Grant programs are pledges — amounts, eligibility criteria, and distribution processes may change. Figures are illustrative estimates; actual results depend on market performance, legislative changes, and individual circumstances. Consult a qualified financial advisor or tax professional before making financial decisions.<br><br>
+    <strong>Disclaimer:</strong> This calculator is for informational and educational purposes only, based on publicly available information about Trump Accounts as of March 2026. Account availability begins July 5, 2026. Grant programs are pledges — amounts, eligibility criteria, and distribution processes may change. Figures are illustrative estimates; actual results depend on market performance, legislative changes, and individual circumstances. Consult a qualified financial advisor or tax professional before making financial decisions.<br><br>
     Sources:
     <a href="https://www.irs.gov/trumpaccounts" target="_blank">IRS Trump Accounts</a> &bull;
     <a href="https://www.trumpaccounts.gov/" target="_blank">trumpaccounts.gov</a> &bull;
@@ -827,8 +827,17 @@ function evaluateGrant(g, ctx) {
   if (g.req_age_max !== null && age > g.req_age_max) {
     return { cls: 'g-ineligible', badge: 'gs-ineligible', msg: `Not eligible — child must be age ${g.req_age_max} or under`, eligible: false, amount: null };
   }
-  if (g.req_born_year !== null && (!birth || birth.getFullYear() !== g.req_born_year)) {
-    return { cls: 'g-ineligible', badge: 'gs-ineligible', msg: `Not eligible — requires birth in ${g.req_born_year}`, eligible: false, amount: null };
+  const bmin = g.req_born_year_min, bmax = g.req_born_year_max;
+  if ((bmin !== null || bmax !== null)) {
+    const yr = birth ? birth.getFullYear() : null;
+    if (yr === null || (bmin !== null && yr < bmin) || (bmax !== null && yr > bmax)) {
+      let range;
+      if (bmin === bmax) range = `birth in ${bmin}`;
+      else if (bmin !== null && bmax !== null) range = `birth between ${bmin} and ${bmax}`;
+      else if (bmin !== null) range = `birth in ${bmin} or later`;
+      else range = `birth in ${bmax} or earlier`;
+      return { cls: 'g-ineligible', badge: 'gs-ineligible', msg: `Not eligible — requires ${range}`, eligible: false, amount: null };
+    }
   }
   if (g.req_zip_set) {
     const zipSet = new Set(JSON.parse(g.req_zip_set));
@@ -864,32 +873,28 @@ function renderGrantSection(wrapId, filterState, ctx) {
     const amtStyle = g.grant_amount === null ? ' style="font-size:0.85rem;"' : '';
     const srcHtml = g.source_url ? `<div style="margin-top:0.4rem;font-size:0.75rem;"><a href="${g.source_url}" target="_blank" rel="noopener" style="color:var(--blue);">Source ↗</a></div>` : '';
 
-    if (g.req_county_checkbox) {
-      // Special case: manual checkbox eligibility
-      const cb1Id = `cb_${g.id}_1`;
-      const cb2Id = g.county_checkbox_label2 ? `cb_${g.id}_2` : null;
-      const cb1Checked = (document.getElementById(cb1Id) || {}).checked || false;
-      const cb2Checked = cb2Id ? ((document.getElementById(cb2Id) || {}).checked || false) : true;
-      const allChecked = cb1Checked && cb2Checked && ctx.dob && ctx.under18;
+    if (g.req_checkbox_labels) {
+      // Manual checkbox eligibility — N labels
+      const labels = JSON.parse(g.req_checkbox_labels);
+      const ids = labels.map((_, i) => `cb_${g.id}_${i + 1}`);
+      const states = ids.map(id => (document.getElementById(id) || {}).checked || false);
+      const allChecked = states.every(Boolean) && ctx.dob && ctx.under18;
       const cls = allChecked ? 'g-pending' : 'g-tbd';
       const badge = allChecked
         ? '<span class="grant-status gs-pending">Potentially eligible — contact the foundation directly</span>'
         : '<span class="grant-status gs-tbd">Check boxes to assess eligibility</span>';
+      const rows = labels.map((lab, i) => `
+          <div class="gi-row">
+            <input type="checkbox" id="${ids[i]}" onchange="compute()" ${states[i] ? 'checked' : ''} />
+            <label for="${ids[i]}">${lab}</label>
+          </div>`).join('');
       html += `
       <div class="grant-card ${cls}">
         <div class="grant-card-header"><div class="grant-name">${g.grantor_name}</div><div class="grant-amount"${amtStyle}>${amtDisplay}</div></div>
         ${g.donor_line ? `<div class="grant-donor">${g.donor_line}</div>` : ''}
         ${g.note ? `<div class="grant-note">${g.note}</div>` : ''}
         ${badge}${srcHtml}
-        <div class="grant-inputs">
-          <div class="gi-row">
-            <input type="checkbox" id="${cb1Id}" onchange="compute()" ${cb1Checked ? 'checked' : ''} />
-            <label for="${cb1Id}">${g.county_checkbox_label}</label>
-          </div>
-          ${cb2Id ? `<div class="gi-row">
-            <input type="checkbox" id="${cb2Id}" onchange="compute()" ${cb2Checked ? 'checked' : ''} />
-            <label for="${cb2Id}">${g.county_checkbox_label2}</label>
-          </div>` : ''}
+        <div class="grant-inputs">${rows}
         </div>
       </div>`;
     } else {

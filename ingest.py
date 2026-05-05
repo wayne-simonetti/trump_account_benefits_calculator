@@ -88,7 +88,8 @@ Each object must have exactly these fields:
   "req_no_seed": 0 or 1,
   "req_has_seed": 0 or 1,
   "req_age_max": integer or null,
-  "req_born_year": integer or null,
+  "req_born_year_min": integer or null,
+  "req_born_year_max": integer or null,
   "req_zip_income": 0 or 1,
   "income_cap": integer or null,
   "note": "string or null — key eligibility caveat",
@@ -99,7 +100,8 @@ Each object must have exactly these fields:
 req_no_seed   — 1 if child must NOT have the $1,000 federal seed deposit
 req_has_seed  — 1 if child MUST have the federal seed deposit
 req_age_max   — max age (inclusive) if there is an age cap, else null
-req_born_year — exact birth year required (e.g. 2025), else null
+req_born_year_min — earliest eligible birth year (inclusive), else null
+req_born_year_max — latest eligible birth year (inclusive), else null. For a single-year window like 2026, set both min and max to 2026.
 req_zip_income — 1 if eligibility depends on ZIP median income being below a threshold
 income_cap    — the income threshold in dollars when req_zip_income=1
 
@@ -231,7 +233,12 @@ def print_grant(r: dict):
     if r.get('req_no_seed'):  flags.append('no federal seed')
     if r.get('req_has_seed'): flags.append('must have federal seed')
     if r.get('req_age_max'):  flags.append(f'age ≤ {r["req_age_max"]}')
-    if r.get('req_born_year'): flags.append(f'born {r["req_born_year"]}')
+    bmin, bmax = r.get('req_born_year_min'), r.get('req_born_year_max')
+    if bmin or bmax:
+        if bmin == bmax: flags.append(f'born {bmin}')
+        elif bmin and bmax: flags.append(f'born {bmin}–{bmax}')
+        elif bmin: flags.append(f'born {bmin} or later')
+        else: flags.append(f'born {bmax} or earlier')
     if r.get('req_zip_income'): flags.append(f'ZIP income < ${r.get("income_cap", "?"):,}' if r.get('income_cap') else 'ZIP income cap')
     print(f"  Eligibility: {', '.join(flags) or 'none specified'}")
     print(f"  Note       : {r.get('note') or '—'}")
@@ -244,9 +251,10 @@ def write_grant(conn, r: dict, sort_order: int) -> str:
     conn.execute(
         """INSERT OR REPLACE INTO state_grants
            (id, state_code, grantor_name, donor_line, grant_amount, amount_display,
-            req_no_seed, req_has_seed, req_age_max, req_born_year,
+            req_no_seed, req_has_seed, req_age_max,
+            req_born_year_min, req_born_year_max,
             req_zip_income, income_cap, note, source_url, sort_order)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (
             gid,
             r.get("state_code"),
@@ -257,7 +265,8 @@ def write_grant(conn, r: dict, sort_order: int) -> str:
             int(r.get("req_no_seed") or 0),
             int(r.get("req_has_seed") or 0),
             r.get("req_age_max"),
-            r.get("req_born_year"),
+            r.get("req_born_year_min"),
+            r.get("req_born_year_max"),
             int(r.get("req_zip_income") or 0),
             r.get("income_cap"),
             r.get("note"),

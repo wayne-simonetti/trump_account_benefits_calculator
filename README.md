@@ -27,7 +27,7 @@ A single-page web calculator for the **Trump Account** program established by th
 | Family contributions | After-tax in, tax-free out |
 | Employer/seed/earnings | Taxed as ordinary income on withdrawal |
 | Withdrawals | Prohibited before age 18 |
-| Account open date | July 4, 2026 (via Form 4547 or trumpaccounts.gov) |
+| Account open date | July 5, 2026 (via Form 4547 or trumpaccounts.gov) |
 
 ---
 
