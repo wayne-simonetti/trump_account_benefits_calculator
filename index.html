@@ -877,7 +877,7 @@ function renderGrantSection(wrapId, filterState, ctx) {
   let total = 0;
   if (!wrap) return { total, items };
 
-  const grants = (window.STATE_GRANTS || []).filter(g =>
+  const grants = (STATE_GRANTS || []).filter(g =>
     filterState === null ? g.state_code === null : g.state_code === filterState
   );
 
@@ -938,7 +938,7 @@ function renderStateGrants(state, ctx) {
     wrap.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;">Select your state above to see available regional programs.</p>';
     return { total: 0, items: [] };
   }
-  const stateGrants = (window.STATE_GRANTS || []).filter(g => g.state_code === state);
+  const stateGrants = (STATE_GRANTS || []).filter(g => g.state_code === state);
   if (!stateGrants.length) {
     wrap.innerHTML = `
       <div class="grant-card g-tbd">
@@ -1020,22 +1020,6 @@ async function compute() {
   // Compute grants
   const { total: grantsTotal, items: grantItems } = await computeGrants(dob, state, zip);
 
-  // ── TEMPORARY DEBUG ──
-  try {
-    const dbgGrants = (window.STATE_GRANTS || []);
-    const dell = dbgGrants.find(g => g.id === 'dell_foundation');
-    const dbgCtx = { dob, zip, zipIncome: await getZipIncome(zip) };
-    const dbgEv = dell ? evaluateGrant(dell, { dob, age: getAge(dob)?.age, birth: getAge(dob)?.birth, hasSeed: false, under18: true, zip, zipIncome: await getZipIncome(zip), zipQualifies: true }) : 'no-dell';
-    const dbg = { stateGrantsLen: dbgGrants.length, dellPresent: !!dell, dellEvalEligible: dbgEv?.eligible, dellEvalMsg: dbgEv?.msg, zipIncome: dbgCtx.zipIncome, grantsTotal, grantItemsLen: grantItems.length, grantItems };
-    let dbgEl = document.getElementById('__debug__');
-    if (!dbgEl) { dbgEl = document.createElement('pre'); dbgEl.id = '__debug__'; dbgEl.style = 'background:#fffbe6;border:2px solid #C9A84C;padding:0.6rem;font-size:0.7rem;margin:0.5rem 0;white-space:pre-wrap;word-break:break-all;'; document.getElementById('results-section').prepend(dbgEl); }
-    dbgEl.textContent = '[DEBUG] ' + JSON.stringify(dbg, null, 2);
-  } catch (e) {
-    let dbgEl = document.getElementById('__debug__');
-    if (!dbgEl) { dbgEl = document.createElement('pre'); dbgEl.id = '__debug__'; dbgEl.style = 'background:#ffebee;border:2px solid #c62828;padding:0.6rem;font-size:0.7rem;margin:0.5rem 0;'; document.getElementById('results-section').prepend(dbgEl); }
-    dbgEl.textContent = '[DEBUG ERROR] ' + (e.stack || e.message);
-  }
-  // ── END DEBUG ──
 
   // Grants total hero card
   document.getElementById('grants-total-amount').textContent = fmtFull(grantsTotal);
