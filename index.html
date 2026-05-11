@@ -441,6 +441,8 @@
       color: #5C4A1F;
     }
     .info-notice strong { color: #3A2F11; }
+    .info-notice a { color: #5C4A1F; text-decoration: underline; margin-left: 0.3rem; white-space: nowrap; }
+    .info-notice a:hover { color: #3A2F11; }
 
     .chart-caveat {
       font-size: 0.72rem;
@@ -590,11 +592,6 @@
   <!-- ── RESULTS SECTION ───────────────────────────────────────────────────── -->
   <div id="results-section" style="display:none;">
 
-  <div class="info-notice">
-    <strong>Informational tool only — not financial, tax, or legal advice.</strong>
-    Results are estimates based on publicly available program details and may change. This site is not affiliated with the IRS, U.S. Treasury, or any listed employer, foundation, or grant program. Consult a qualified advisor before making financial decisions.
-  </div>
-
   <!-- ── TOTAL GRANTS BAR ──────────────────────────────────────────────────── -->
   <div class="card card-full" style="padding:0;">
     <div class="grants-total" style="border-radius:inherit;margin:0;">
@@ -610,6 +607,11 @@
         <span id="share-msg" style="display:none;color:#fff;font-size:0.8rem;opacity:0.9;align-self:center;">Link copied!</span>
       </div>
     </div>
+  </div>
+
+  <div class="info-notice">
+    <strong>Informational tool only — not financial, tax, or legal advice.</strong>
+    <a href="#disclaimer">Read the full disclaimer →</a>
   </div>
 
   <!-- ── GRANT ELIGIBILITY (full width) ───────────────────────────────────── -->
@@ -781,7 +783,7 @@
     <div class="signup-fineprint">No spam. Unsubscribe anytime. Powered by Kit.</div>
   </div>
 
-  <p class="disclaimer">
+  <p class="disclaimer" id="disclaimer">
     <strong>Disclaimer:</strong> This calculator is for informational and educational purposes only, based on publicly available information about Trump Accounts as of May 2026. Account availability begins July 5, 2026. This site is not affiliated with the IRS, U.S. Department of the Treasury, or any listed employer, foundation, or grant program. Nothing on this site constitutes financial, tax, legal, or investment advice, and no fiduciary relationship is created by use of this calculator. Grant programs are pledges — amounts, eligibility criteria, and distribution processes may change. Figures are illustrative estimates; actual results depend on market performance, legislative changes, and individual circumstances. Consult a qualified financial advisor or tax professional before making financial decisions.<br><br>
     Sources:
     <a href="https://www.irs.gov/trumpaccounts" target="_blank">IRS Trump Accounts</a> &bull;
