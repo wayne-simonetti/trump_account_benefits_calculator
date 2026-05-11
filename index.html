@@ -3,7 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Trump Account Benefits Calculator</title>
+  <title>Trump Account Benefits Calculator — See Your Child's Grants</title>
+  <meta name="description" content="Free calculator for Trump Account child savings. See federal seed grants, state programs, employer matches, and projected growth for your child. Available July 2026." />
+  <meta name="theme-color" content="#1A3FA0" />
+  <meta name="robots" content="index,follow" />
+  <link rel="canonical" href="https://YOUR_DOMAIN.com/" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%231A3FA0'/%3E%3Cpath d='M32 10l5.5 14.5L52 26l-11 9.5 3.5 15L32 42.5 19.5 50.5 23 35.5 12 26l14.5-1.5z' fill='%23C9A84C'/%3E%3C/svg%3E" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Trump Account Calculator" />
+  <meta property="og:title" content="Trump Account Benefits Calculator" />
+  <meta property="og:description" content="See federal, state, employer, and philanthropic grants your child qualifies for — and project account growth." />
+  <meta property="og:url" content="https://YOUR_DOMAIN.com/" />
+  <meta property="og:image" content="https://YOUR_DOMAIN.com/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Trump Account Benefits Calculator" />
+  <meta name="twitter:description" content="See federal, state, employer, and philanthropic grants your child qualifies for — and project account growth." />
+  <meta name="twitter:image" content="https://YOUR_DOMAIN.com/og-image.png" />
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXXXX', { anonymize_ip: true });
+    function track(name, params) { try { gtag('event', name, params || {}); } catch(e){} }
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -326,6 +354,90 @@
     .ticker-new { color: var(--gold); font-weight: 700; font-size: 0.85rem; letter-spacing: 0.5px; text-transform: uppercase; margin-right: 0.5rem; }
     .ticker-text { color: rgba(255,255,255,0.9); font-size: 0.95rem; }
     .ticker-text a { color: rgba(255,255,255,0.9); text-decoration: underline; text-underline-offset: 2px; }
+
+    #share-btn:hover { background: rgba(255,255,255,0.28) !important; }
+
+    .share-row {
+      margin-top: 0.95rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.45rem;
+    }
+    .share-btn {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.45);
+      padding: 0.45rem 0.95rem;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .share-btn:hover { background: rgba(255,255,255,0.28); }
+
+    /* EMAIL SIGNUP */
+    .signup-card {
+      grid-column: 1 / -1;
+      background: linear-gradient(135deg, var(--dark-blue) 0%, var(--blue) 100%);
+      color: white;
+      border-radius: 10px;
+      padding: 1.6rem 1.4rem;
+      text-align: center;
+      box-shadow: 0 4px 14px rgba(26,63,160,0.20);
+    }
+    .signup-card h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.35rem; }
+    .signup-card .signup-sub { font-size: 0.88rem; opacity: 0.9; margin-bottom: 0.95rem; }
+    .signup-form {
+      display: flex; flex-wrap: wrap; gap: 0.5rem;
+      justify-content: center; max-width: 480px; margin: 0 auto;
+    }
+    .signup-form input[type="email"] {
+      flex: 1 1 240px; min-width: 200px;
+      padding: 0.65rem 0.85rem;
+      border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 6px;
+      font-family: inherit; font-size: 0.95rem;
+      background: rgba(255,255,255,0.95); color: var(--text);
+    }
+    .signup-form input[type="email"]:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
+    .signup-form button {
+      padding: 0.65rem 1.4rem;
+      background: var(--gold); color: #1C1C1E;
+      border: none; border-radius: 6px;
+      font-family: inherit; font-size: 0.92rem; font-weight: 700;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .signup-form button:hover { background: #d4b05a; }
+    .signup-form button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .signup-msg { margin-top: 0.7rem; font-size: 0.85rem; min-height: 1.2em; }
+    .signup-msg.error { color: #FFD7D7; }
+    .signup-fineprint { margin-top: 0.6rem; font-size: 0.7rem; opacity: 0.7; }
+
+    /* INFO NOTICE */
+    .info-notice {
+      grid-column: 1 / -1;
+      background: #FFF8E1;
+      border: 1px solid #E6CC8A;
+      border-left: 4px solid var(--gold);
+      border-radius: 6px;
+      padding: 0.7rem 0.95rem;
+      font-size: 0.78rem;
+      line-height: 1.5;
+      color: #5C4A1F;
+    }
+    .info-notice strong { color: #3A2F11; }
+
+    .chart-caveat {
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-style: italic;
+      margin-top: 0.4rem;
+      text-align: center;
+      line-height: 1.45;
+    }
   </style>
   <script src="employers.js"></script>
   <script src="state_grants.js"></script>
@@ -466,6 +578,11 @@
   <!-- ── RESULTS SECTION ───────────────────────────────────────────────────── -->
   <div id="results-section" style="display:none;">
 
+  <div class="info-notice">
+    <strong>Informational tool only — not financial, tax, or legal advice.</strong>
+    Results are estimates based on publicly available program details and may change. This site is not affiliated with the IRS, U.S. Treasury, or any listed employer, foundation, or grant program. Consult a qualified advisor before making financial decisions.
+  </div>
+
   <!-- ── TOTAL GRANTS BAR ──────────────────────────────────────────────────── -->
   <div class="card card-full" style="padding:0;">
     <div class="grants-total" style="border-radius:inherit;margin:0;">
@@ -473,6 +590,13 @@
       <div class="gt-amount" id="grants-total-amount">$0</div>
       <div class="gt-sub" id="grants-total-sub" style="visibility:hidden;">in one-time grants</div>
       <div class="gt-breakdown" id="grants-breakdown">Enter child's birth date to calculate</div>
+      <div class="share-row">
+        <button type="button" class="share-btn" onclick="shareTo('x')" aria-label="Share on X">X</button>
+        <button type="button" class="share-btn" onclick="shareTo('facebook')" aria-label="Share on Facebook">Facebook</button>
+        <button type="button" class="share-btn" onclick="shareTo('email')" aria-label="Share via email">Email</button>
+        <button type="button" class="share-btn" id="share-btn" onclick="copyShareLink()" aria-label="Copy link">Copy link</button>
+        <span id="share-msg" style="display:none;color:#fff;font-size:0.8rem;opacity:0.9;align-self:center;">Link copied!</span>
+      </div>
     </div>
   </div>
 
@@ -612,6 +736,9 @@
     <h2>Projected Account Value</h2>
     <div class="result-grid" id="result-grid"></div>
     <div class="chart-wrap"><canvas id="growthChart"></canvas></div>
+    <div class="chart-caveat">
+      Projections are illustrative. Actual returns depend on market performance and are not guaranteed. Past performance does not predict future results.
+    </div>
   </div>
 
   <!-- ── YEAR-BY-YEAR TABLE ────────────────────────────────────────────────── -->
@@ -630,8 +757,19 @@
     </div>
   </div>
 
+  <div class="signup-card">
+    <h3>Trump Accounts open July 5, 2026</h3>
+    <p class="signup-sub">Get one email when accounts open and when new grant programs launch in your state.</p>
+    <form class="signup-form" id="kit-signup-form" novalidate>
+      <input type="email" name="email_address" id="kit-email" placeholder="you@example.com" required autocomplete="email" />
+      <button type="submit" id="kit-submit">Notify me</button>
+    </form>
+    <div class="signup-msg" id="kit-msg"></div>
+    <div class="signup-fineprint">No spam. Unsubscribe anytime. Powered by Kit.</div>
+  </div>
+
   <p class="disclaimer">
-    <strong>Disclaimer:</strong> This calculator is for informational and educational purposes only, based on publicly available information about Trump Accounts as of March 2026. Account availability begins July 5, 2026. Grant programs are pledges — amounts, eligibility criteria, and distribution processes may change. Figures are illustrative estimates; actual results depend on market performance, legislative changes, and individual circumstances. Consult a qualified financial advisor or tax professional before making financial decisions.<br><br>
+    <strong>Disclaimer:</strong> This calculator is for informational and educational purposes only, based on publicly available information about Trump Accounts as of May 2026. Account availability begins July 5, 2026. This site is not affiliated with the IRS, U.S. Department of the Treasury, or any listed employer, foundation, or grant program. Nothing on this site constitutes financial, tax, legal, or investment advice, and no fiduciary relationship is created by use of this calculator. Grant programs are pledges — amounts, eligibility criteria, and distribution processes may change. Figures are illustrative estimates; actual results depend on market performance, legislative changes, and individual circumstances. Consult a qualified financial advisor or tax professional before making financial decisions.<br><br>
     Sources:
     <a href="https://www.irs.gov/trumpaccounts" target="_blank">IRS Trump Accounts</a> &bull;
     <a href="https://www.trumpaccounts.gov/" target="_blank">trumpaccounts.gov</a> &bull;
@@ -1326,6 +1464,7 @@ function initEmployerCombo() {
     clearBtn.style.display = label ? 'block' : 'none';
     closeDropdown();
     compute();
+    if (value && typeof track === 'function') track('employer_selected', { employer: label });
   }
 
   function openDropdown() {
@@ -1401,6 +1540,9 @@ function initEmployerCombo() {
 // ────────────────────────────────────────────────────────────────────────────
 ['dob','zipCode','familyContrib','stateSelect']
   .forEach(id => document.getElementById(id).addEventListener('input', compute));
+document.getElementById('stateSelect').addEventListener('change', function() {
+  if (this.value && typeof track === 'function') track('state_selected', { state: this.value });
+});
 document.getElementById('targetAge').addEventListener('input', function() {
   document.getElementById('contribStartAge').max = this.value;
   document.getElementById('contribEndAge').max   = this.value;
@@ -1454,8 +1596,172 @@ function updateDualRange() {
 
 document.getElementById('contribStartAge').addEventListener('input', () => { updateDualRange(); compute(); });
 document.getElementById('contribEndAge').addEventListener('input',   () => { updateDualRange(); compute(); });
+
+// ────────────────────────────────────────────────────────────────────────────
+// SHAREABLE URL (hash-encoded state)
+// ────────────────────────────────────────────────────────────────────────────
+function getShareUrl() {
+  const params = new URLSearchParams();
+  const fields = {
+    dob:   document.getElementById('dob').value,
+    state: document.getElementById('stateSelect').value,
+    zip:   document.getElementById('zipCode').value,
+    emp:   document.getElementById('employerSelect').value,
+    fam:   document.getElementById('familyContrib').value,
+    rate:  document.getElementById('returnRate').value,
+    tgt:   document.getElementById('targetAge').value,
+    cs:    document.getElementById('contribStartAge').value,
+    ce:    document.getElementById('contribEndAge').value,
+  };
+  for (const [k, v] of Object.entries(fields)) if (v) params.set(k, v);
+  if (document.getElementById('ibmConditional').checked) params.set('ibm', '1');
+  return location.origin + location.pathname + '#' + params.toString();
+}
+
+function updateUrlHash() {
+  const url = getShareUrl();
+  const hash = url.split('#')[1] || '';
+  history.replaceState(null, '', hash ? '#' + hash : location.pathname);
+}
+
+function copyShareLink() {
+  updateUrlHash();
+  const url = getShareUrl();
+  const msg = document.getElementById('share-msg');
+  const showMsg = (text, ok) => {
+    msg.textContent = text;
+    msg.style.color = ok ? '#fff' : '#FFD7D7';
+    msg.style.display = 'inline';
+    setTimeout(() => { msg.style.display = 'none'; }, 2500);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url)
+      .then(() => showMsg('Link copied!', true))
+      .catch(() => { window.prompt('Copy this link:', url); });
+  } else {
+    window.prompt('Copy this link:', url);
+  }
+  if (typeof track === 'function') track('share_link_copied', {});
+}
+
+function getShareMessage() {
+  const totalText = (document.getElementById('grants-total-amount').textContent || '').trim();
+  if (totalText && totalText !== '$0') {
+    return `My child qualifies for ${totalText} in Trump Account grants. Check what yours qualifies for:`;
+  }
+  return 'See what Trump Account grants your child qualifies for:';
+}
+
+function shareTo(channel) {
+  updateUrlHash();
+  const url = getShareUrl();
+  const text = getShareMessage();
+  let target = '';
+  if (channel === 'x') {
+    target = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(url);
+  } else if (channel === 'facebook') {
+    target = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url);
+  } else if (channel === 'email') {
+    target = 'mailto:?subject=' + encodeURIComponent('Trump Account grants for your child')
+           + '&body=' + encodeURIComponent(text + '\n\n' + url);
+  }
+  if (!target) return;
+  if (channel === 'email') {
+    window.location.href = target;
+  } else {
+    window.open(target, '_blank', 'noopener,width=600,height=600');
+  }
+  if (typeof track === 'function') track('share_clicked', { channel });
+}
+
+function restoreStateFromHash() {
+  if (!location.hash || location.hash.length < 2) return false;
+  const params = new URLSearchParams(location.hash.slice(1));
+  if (![...params.keys()].length) return false;
+
+  const setVal = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+  setVal('dob',             params.get('dob'));
+  setVal('stateSelect',     params.get('state'));
+  setVal('zipCode',         params.get('zip'));
+  setVal('familyContrib',   params.get('fam'));
+  setVal('returnRate',      params.get('rate'));
+  setVal('targetAge',       params.get('tgt'));
+  setVal('contribStartAge', params.get('cs'));
+  setVal('contribEndAge',   params.get('ce'));
+
+  const emp = params.get('emp');
+  if (emp && (window.EMPLOYER_DATA || []).length) {
+    const rec = EMPLOYER_DATA.find(e => e.value === emp);
+    if (rec) {
+      document.getElementById('employerSelect').value = emp;
+      document.getElementById('emp-combo-input').value = rec.label;
+      document.getElementById('emp-combo-clear').style.display = 'block';
+    }
+  }
+  if (params.get('ibm')) {
+    const ibmEl = document.getElementById('ibmConditional');
+    if (ibmEl) ibmEl.checked = true;
+  }
+
+  const rateDisp = document.getElementById('rate-display');
+  if (rateDisp) rateDisp.textContent = document.getElementById('returnRate').value + '%';
+
+  const tgt = document.getElementById('targetAge').value;
+  document.getElementById('contribStartAge').max = tgt;
+  document.getElementById('contribEndAge').max   = tgt;
+  document.getElementById('contrib-age-max').textContent = tgt;
+
+  document.getElementById('ssn-confirm').checked = true;
+  document.getElementById('results-section').style.display = 'grid';
+  document.getElementById('calc-btn-wrap').style.display = 'none';
+  if (typeof track === 'function') track('shared_link_opened', {});
+  return true;
+}
+
+const restoredFromHash = restoreStateFromHash();
 updateDualRange();
 compute();
+
+// ────────────────────────────────────────────────────────────────────────────
+// EMAIL SIGNUP (Kit)
+// ────────────────────────────────────────────────────────────────────────────
+const KIT_FORM_ID = 'YOUR_KIT_FORM_ID';
+(function() {
+  const form = document.getElementById('kit-signup-form');
+  if (!form) return;
+  const emailEl = document.getElementById('kit-email');
+  const btn = document.getElementById('kit-submit');
+  const msg = document.getElementById('kit-msg');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = (emailEl.value || '').trim();
+    msg.classList.remove('error');
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      msg.textContent = 'Please enter a valid email address.';
+      msg.classList.add('error');
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    try {
+      await fetch(`https://app.kit.com/forms/${KIT_FORM_ID}/subscriptions`, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'email_address=' + encodeURIComponent(email),
+      });
+      msg.textContent = "Thanks! We'll email you when accounts open.";
+      form.style.display = 'none';
+      if (typeof track === 'function') track('email_subscribed', {});
+    } catch (err) {
+      msg.textContent = 'Something went wrong. Please try again.';
+      msg.classList.add('error');
+      btn.disabled = false;
+      btn.textContent = 'Notify me';
+    }
+  });
+})();
 
 document.getElementById('calc-btn').addEventListener('click', function () {
   const ssnConfirmed = document.getElementById('ssn-confirm').checked;
@@ -1463,6 +1769,7 @@ document.getElementById('calc-btn').addEventListener('click', function () {
   if (!ssnConfirmed) {
     ssnError.innerHTML = 'A U.S. Social Security Number is required to open a Trump Account. Please check the box above to confirm eligibility.';
     ssnError.style.display = 'block';
+    if (typeof track === 'function') track('calculate_blocked', { reason: 'ssn_unchecked' });
     return;
   }
   ssnError.style.display = 'none';
@@ -1470,6 +1777,18 @@ document.getElementById('calc-btn').addEventListener('click', function () {
   document.getElementById('results-section').style.display = 'grid';
   document.getElementById('calc-btn-wrap').style.display = 'none';
   compute();
+  updateUrlHash();
+  if (typeof track === 'function') {
+    const dob = document.getElementById('dob').value;
+    const state = document.getElementById('stateSelect').value;
+    const empVal = document.getElementById('employerSelect').value;
+    track('calculate_clicked', {
+      has_dob: !!dob,
+      state: state || 'none',
+      has_employer: !!empVal,
+      has_zip: (document.getElementById('zipCode').value || '').length === 5,
+    });
+  }
 });
 </script>
 </body>
