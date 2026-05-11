@@ -105,6 +105,18 @@
       .breakdown-table th, .breakdown-table td { font-size: 0.76rem; padding: 0.35rem 0.5rem; }
       #emp-table th:nth-child(4), #emp-table td:nth-child(4) { display: none; }
       .field input, .field select, .emp-combo-input { font-size: 1rem; }
+
+      /* Forecast: single column + compact horizontal stat rows */
+      .result-grid { grid-template-columns: 1fr; gap: 0.5rem; }
+      .result-box {
+        display: flex; align-items: center; justify-content: space-between;
+        text-align: left; padding: 0.65rem 0.85rem; gap: 0.75rem;
+      }
+      .result-box .label { font-size: 0.72rem; flex: 1; min-width: 0; }
+      .result-box .amount { font-size: 1.15rem; margin: 0; white-space: nowrap; }
+      .result-box .sub { display: none; }
+      .result-box.highlight { padding: 0.75rem 0.95rem; }
+      .result-box.highlight .amount { font-size: 1.4rem; }
     }
 
     /* CARDS */
@@ -699,14 +711,14 @@
       </div>
     </div>
     <div class="field">
-      <label>Contribution Age Window: <span id="contrib-age-display">Ages 0 → 18</span></label>
+      <label>Contribution Age Window: <span id="contrib-age-display">Ages 0 → 17</span></label>
       <div class="dual-range-wrap">
         <div class="dual-range-track"><div class="dual-range-fill" id="dual-range-fill"></div></div>
-        <input type="range" id="contribStartAge" min="0" max="30" value="0" step="1" />
-        <input type="range" id="contribEndAge"   min="0" max="30" value="18" step="1" />
+        <input type="range" id="contribStartAge" min="0" max="17" value="0" step="1" />
+        <input type="range" id="contribEndAge"   min="0" max="17" value="17" step="1" />
       </div>
-      <div class="range-labels"><span>Age 0</span><span>Age <span id="contrib-age-max">30</span></span></div>
-      <div class="hint">Growth still compounds outside the window — contributions just pause.</div>
+      <div class="range-labels"><span>Age 0</span><span>Age 17</span></div>
+      <div class="hint">Contributions allowed only before the child turns 18 (per program rules). Growth continues to compound after that.</div>
     </div>
     <div id="contrib-warning" class="eligibility-banner ineligible" style="display:none;">
       <strong>Contribution Limit Exceeded</strong> Total contributions cannot exceed $5,000/year.
@@ -727,6 +739,7 @@
         <option value="18" selected>18 — First withdrawal eligible</option>
         <option value="22">22 — College graduation</option>
         <option value="30">30 — Early career</option>
+        <option value="65">65 — Retirement</option>
       </select>
     </div>
   </div>
@@ -1227,7 +1240,12 @@ async function compute() {
   if (at18) boxes.push({ label: 'At Age 18', amount: at18.value, sub: 'First eligible withdrawal' });
   if (at22 && at22 !== atTarget) boxes.push({ label: 'At Age 22', amount: at22.value, sub: 'College graduation' });
   if (at30 && at30 !== atTarget) boxes.push({ label: 'At Age 30', amount: at30.value, sub: 'Early career' });
-  boxes.push({ label: `At Age ${atTarget.age}`, amount: atTarget.value, sub: 'Target projection', highlight: true });
+  const targetSub = atTarget.age === 18 ? 'First eligible withdrawal'
+                  : atTarget.age === 22 ? 'College graduation'
+                  : atTarget.age === 30 ? 'Early career'
+                  : atTarget.age === 65 ? 'Retirement'
+                  : 'Target projection';
+  boxes.push({ label: `At Age ${atTarget.age}`, amount: atTarget.value, sub: targetSub, highlight: true });
   boxes.push({ label: 'Total Invested', amount: cumulContrib, sub: 'Your dollars in' });
   boxes.push({ label: 'Total Growth', amount: Math.max(0, atTarget.value - cumulContrib), sub: 'Investment earnings' });
 
@@ -1428,7 +1446,8 @@ function initEmployerCombo() {
     let currentGroup = null;
     let visibleCount = 0;
 
-    EMPLOYER_DATA.forEach(emp => {
+    const sorted = [...EMPLOYER_DATA].sort((a, b) => a.label.localeCompare(b.label));
+    sorted.forEach(emp => {
       const matchLabel = emp.label.toLowerCase().includes(q);
       const matchGroup = emp.group.toLowerCase().includes(q);
       const matchNote  = (emp.note || '').toLowerCase().includes(q);
@@ -1543,13 +1562,7 @@ function initEmployerCombo() {
 document.getElementById('stateSelect').addEventListener('change', function() {
   if (this.value && typeof track === 'function') track('state_selected', { state: this.value });
 });
-document.getElementById('targetAge').addEventListener('input', function() {
-  document.getElementById('contribStartAge').max = this.value;
-  document.getElementById('contribEndAge').max   = this.value;
-  document.getElementById('contrib-age-max').textContent = this.value;
-  updateDualRange();
-  compute();
-});
+document.getElementById('targetAge').addEventListener('input', compute);
 window.addEventListener('resize', compute);
 
 loadEmployers();
@@ -1705,11 +1718,6 @@ function restoreStateFromHash() {
 
   const rateDisp = document.getElementById('rate-display');
   if (rateDisp) rateDisp.textContent = document.getElementById('returnRate').value + '%';
-
-  const tgt = document.getElementById('targetAge').value;
-  document.getElementById('contribStartAge').max = tgt;
-  document.getElementById('contribEndAge').max   = tgt;
-  document.getElementById('contrib-age-max').textContent = tgt;
 
   document.getElementById('ssn-confirm').checked = true;
   document.getElementById('results-section').style.display = 'grid';
