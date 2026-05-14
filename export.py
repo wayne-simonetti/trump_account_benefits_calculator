@@ -171,19 +171,24 @@ def export_state_grants_csv(conn):
     out_rows = []
     for code in sorted(STATE_NAMES):
         grants = by_state.get(code, [])
+        name = STATE_NAMES[code]
         if grants:
             top = grants[0]
+            amount = fmt_amount(top)
+            elig = (top["note"] or "").strip()
+            tooltip = f"<b>{top['grantor_name']}</b> — {amount}<br><small>{elig}</small>"
             out_rows.append([
-                code, STATE_NAMES[code], "Yes", len(grants),
-                top["grantor_name"], fmt_amount(top), (top["note"] or "").strip()
+                code, name, "Yes", len(grants),
+                top["grantor_name"], amount, elig, tooltip
             ])
         else:
-            out_rows.append([code, STATE_NAMES[code], "No", 0, "", "", ""])
+            tooltip = "No state program announced yet."
+            out_rows.append([code, name, "No", 0, "", "", "", tooltip])
 
     with open("state_grants.csv", "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["State Code", "State", "Has Program", "Program Count",
-                    "Top Program", "Amount", "Eligibility"])
+                    "Top Program", "Amount", "Eligibility", "Tooltip"])
         w.writerows(out_rows)
 
     n_has = sum(1 for r in out_rows if r[2] == "Yes")

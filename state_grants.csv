@@ -1,52 +1,52 @@
-State Code,State,Has Program,Program Count,Top Program,Amount,Eligibility
-AK,Alaska,No,0,,,
-AL,Alabama,No,0,,,
-AR,Arkansas,No,0,,,
-AZ,Arizona,No,0,,,
-CA,California,Yes,2,Anonymous SF Donor,~$500,Children born in San Francisco in 2026 (eligible ZIP codes). Exact amount depends on final applicant count.
-CO,Colorado,No,0,,,
-CT,Connecticut,Yes,1,Dalio Foundation,$250,"Connecticut children age 9 or under who did not receive the federal $1,000 seed, in ZIPs with median income ≤ $150,000. ~87% of CT ZIPs qualify."
-DC,District of Columbia,No,0,,,
-DE,Delaware,No,0,,,
-FL,Florida,No,0,,,
-GA,Georgia,No,0,,,
-HI,Hawaii,No,0,,,
-IA,Iowa,No,0,,,
-ID,Idaho,No,0,,,
-IL,Illinois,No,0,,,
-IN,Indiana,Yes,1,Altimeter Capital (Brad Gerstner),$250,"Indiana children age 4 or under who did not receive the federal $1,000 seed."
-KS,Kansas,No,0,,,
-KY,Kentucky,No,0,,,
-LA,Louisiana,No,0,,,
-MA,Massachusetts,No,0,,,
-MD,Maryland,No,0,,,
-ME,Maine,No,0,,,
-MI,Michigan,No,0,,,
-MN,Minnesota,No,0,,,
-MO,Missouri,No,0,,,
-MS,Mississippi,No,0,,,
-MT,Montana,No,0,,,
-NC,North Carolina,No,0,,,
-ND,North Dakota,No,0,,,
-NE,Nebraska,No,0,,,
-NH,New Hampshire,No,0,,,
-NJ,New Jersey,No,0,,,
-NM,New Mexico,No,0,,,
-NV,Nevada,No,0,,,
-NY,New York,No,0,,,
-OH,Ohio,No,0,,,
-OK,Oklahoma,Yes,1,Oklahoma Dream Accounts,$250,Oklahoma children under 18 (U.S. citizens with primary residence in OK). Requires family application and verification by the State Treasurer.
-OR,Oregon,No,0,,,
-PA,Pennsylvania,No,0,,,
-RI,Rhode Island,No,0,,,
-SC,South Carolina,No,0,,,
-SD,South Dakota,No,0,,,
-TN,Tennessee,No,0,,,
-TX,Texas,No,0,,,
-UT,Utah,No,0,,,
-VA,Virginia,No,0,,,
-VT,Vermont,No,0,,,
-WA,Washington,No,0,,,
-WI,Wisconsin,No,0,,,
-WV,West Virginia,No,0,,,
-WY,Wyoming,Yes,1,Kraken,TBD,Children born in Wyoming during 2026. Dollar amount not yet published.
+State Code,State,Has Program,Program Count,Top Program,Amount,Eligibility,Tooltip
+AK,Alaska,No,0,,,,No state program announced yet.
+AL,Alabama,No,0,,,,No state program announced yet.
+AR,Arkansas,No,0,,,,No state program announced yet.
+AZ,Arizona,No,0,,,,No state program announced yet.
+CA,California,Yes,2,Anonymous SF Donor,~$500,Children born in San Francisco in 2026 (eligible ZIP codes). Exact amount depends on final applicant count.,<b>Anonymous SF Donor</b> — ~$500<br><small>Children born in San Francisco in 2026 (eligible ZIP codes). Exact amount depends on final applicant count.</small>
+CO,Colorado,No,0,,,,No state program announced yet.
+CT,Connecticut,Yes,1,Dalio Foundation,$250,"Connecticut children age 9 or under who did not receive the federal $1,000 seed, in ZIPs with median income ≤ $150,000. ~87% of CT ZIPs qualify.","<b>Dalio Foundation</b> — $250<br><small>Connecticut children age 9 or under who did not receive the federal $1,000 seed, in ZIPs with median income ≤ $150,000. ~87% of CT ZIPs qualify.</small>"
+DC,District of Columbia,No,0,,,,No state program announced yet.
+DE,Delaware,No,0,,,,No state program announced yet.
+FL,Florida,No,0,,,,No state program announced yet.
+GA,Georgia,No,0,,,,No state program announced yet.
+HI,Hawaii,No,0,,,,No state program announced yet.
+IA,Iowa,No,0,,,,No state program announced yet.
+ID,Idaho,No,0,,,,No state program announced yet.
+IL,Illinois,No,0,,,,No state program announced yet.
+IN,Indiana,Yes,1,Altimeter Capital (Brad Gerstner),$250,"Indiana children age 4 or under who did not receive the federal $1,000 seed.","<b>Altimeter Capital (Brad Gerstner)</b> — $250<br><small>Indiana children age 4 or under who did not receive the federal $1,000 seed.</small>"
+KS,Kansas,No,0,,,,No state program announced yet.
+KY,Kentucky,No,0,,,,No state program announced yet.
+LA,Louisiana,No,0,,,,No state program announced yet.
+MA,Massachusetts,No,0,,,,No state program announced yet.
+MD,Maryland,No,0,,,,No state program announced yet.
+ME,Maine,No,0,,,,No state program announced yet.
+MI,Michigan,No,0,,,,No state program announced yet.
+MN,Minnesota,No,0,,,,No state program announced yet.
+MO,Missouri,No,0,,,,No state program announced yet.
+MS,Mississippi,No,0,,,,No state program announced yet.
+MT,Montana,No,0,,,,No state program announced yet.
+NC,North Carolina,No,0,,,,No state program announced yet.
+ND,North Dakota,No,0,,,,No state program announced yet.
+NE,Nebraska,No,0,,,,No state program announced yet.
+NH,New Hampshire,No,0,,,,No state program announced yet.
+NJ,New Jersey,No,0,,,,No state program announced yet.
+NM,New Mexico,No,0,,,,No state program announced yet.
+NV,Nevada,No,0,,,,No state program announced yet.
+NY,New York,No,0,,,,No state program announced yet.
+OH,Ohio,No,0,,,,No state program announced yet.
+OK,Oklahoma,Yes,1,Oklahoma Dream Accounts,$250,Oklahoma children under 18 (U.S. citizens with primary residence in OK). Requires family application and verification by the State Treasurer.,<b>Oklahoma Dream Accounts</b> — $250<br><small>Oklahoma children under 18 (U.S. citizens with primary residence in OK). Requires family application and verification by the State Treasurer.</small>
+OR,Oregon,No,0,,,,No state program announced yet.
+PA,Pennsylvania,No,0,,,,No state program announced yet.
+RI,Rhode Island,No,0,,,,No state program announced yet.
+SC,South Carolina,No,0,,,,No state program announced yet.
+SD,South Dakota,No,0,,,,No state program announced yet.
+TN,Tennessee,No,0,,,,No state program announced yet.
+TX,Texas,No,0,,,,No state program announced yet.
+UT,Utah,No,0,,,,No state program announced yet.
+VA,Virginia,No,0,,,,No state program announced yet.
+VT,Vermont,No,0,,,,No state program announced yet.
+WA,Washington,No,0,,,,No state program announced yet.
+WI,Wisconsin,No,0,,,,No state program announced yet.
+WV,West Virginia,No,0,,,,No state program announced yet.
+WY,Wyoming,Yes,1,Kraken,TBD,Children born in Wyoming during 2026. Dollar amount not yet published.,<b>Kraken</b> — TBD<br><small>Children born in Wyoming during 2026. Dollar amount not yet published.</small>
