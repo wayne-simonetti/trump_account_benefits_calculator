@@ -3,14 +3,34 @@ export.py — Export trump_accounts.db tables to JS files for the frontend.
 Run after any DB update:  python3 export.py
 
 Outputs:
-  employers.js    — employer seed grant data
-  zip_income.js   — ZIP code median income lookup (requires census_import.py first)
+  employers.js        — employer seed grant data
+  zip_income.js       — ZIP code median income lookup (requires census_import.py first)
+  state_grants.js     — state + nationwide grant data
+  state_grants.csv    — flat CSV consumed by Datawrapper state map
+  *_seed.sql          — re-seedable SQL dumps for each table
 """
 
+import csv
 import json
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
+
+STATE_NAMES = {
+    "AL": "Alabama", "AK": "Alaska", "AZ": "Arizona", "AR": "Arkansas",
+    "CA": "California", "CO": "Colorado", "CT": "Connecticut", "DE": "Delaware",
+    "DC": "District of Columbia", "FL": "Florida", "GA": "Georgia", "HI": "Hawaii",
+    "ID": "Idaho", "IL": "Illinois", "IN": "Indiana", "IA": "Iowa",
+    "KS": "Kansas", "KY": "Kentucky", "LA": "Louisiana", "ME": "Maine",
+    "MD": "Maryland", "MA": "Massachusetts", "MI": "Michigan", "MN": "Minnesota",
+    "MS": "Mississippi", "MO": "Missouri", "MT": "Montana", "NE": "Nebraska",
+    "NV": "Nevada", "NH": "New Hampshire", "NJ": "New Jersey", "NM": "New Mexico",
+    "NY": "New York", "NC": "North Carolina", "ND": "North Dakota", "OH": "Ohio",
+    "OK": "Oklahoma", "OR": "Oregon", "PA": "Pennsylvania", "RI": "Rhode Island",
+    "SC": "South Carolina", "SD": "South Dakota", "TN": "Tennessee", "TX": "Texas",
+    "UT": "Utah", "VT": "Vermont", "VA": "Virginia", "WA": "Washington",
+    "WV": "West Virginia", "WI": "Wisconsin", "WY": "Wyoming",
+}
 
 DB_PATH = Path(__file__).parent / "trump_accounts.db"
 
@@ -123,6 +143,53 @@ def export_state_grants(conn, timestamp):
     print(f"✓ state_grants.js written ({len(grants)} grants)")
 
 
+def export_state_grants_csv(conn):
+    exists = conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='state_grants'"
+    ).fetchone()
+    if not exists:
+        print("  state_grants table not found — skipping state_grants.csv.")
+        return
+
+    rows = conn.execute(
+        """SELECT state_code, grantor_name, grant_amount, amount_display, note, sort_order
+           FROM state_grants WHERE state_code IS NOT NULL
+           ORDER BY state_code, sort_order"""
+    ).fetchall()
+
+    by_state = {}
+    for r in rows:
+        by_state.setdefault(r["state_code"], []).append(r)
+
+    def fmt_amount(r):
+        if r["amount_display"]:
+            return r["amount_display"]
+        if r["grant_amount"] is not None:
+            return f"${r['grant_amount']:,}"
+        return "TBD"
+
+    out_rows = []
+    for code in sorted(STATE_NAMES):
+        grants = by_state.get(code, [])
+        if grants:
+            top = grants[0]
+            out_rows.append([
+                code, STATE_NAMES[code], "Yes", len(grants),
+                top["grantor_name"], fmt_amount(top), (top["note"] or "").strip()
+            ])
+        else:
+            out_rows.append([code, STATE_NAMES[code], "No", 0, "", "", ""])
+
+    with open("state_grants.csv", "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["State Code", "State", "Has Program", "Program Count",
+                    "Top Program", "Amount", "Eligibility"])
+        w.writerows(out_rows)
+
+    n_has = sum(1 for r in out_rows if r[2] == "Yes")
+    print(f"✓ state_grants.csv written (51 rows, {n_has} with programs)")
+
+
 def export_state_grants_sql(conn):
     exists = conn.execute(
         "SELECT 1 FROM sqlite_master WHERE type='table' AND name='state_grants'"
@@ -228,6 +295,7 @@ def main():
     export_employers(conn, timestamp)
     export_zip_income(conn, timestamp)
     export_state_grants(conn, timestamp)
+    export_state_grants_csv(conn)
     export_employers_sql(conn)
     export_zip_income_sql(conn)
     export_state_grants_sql(conn)
