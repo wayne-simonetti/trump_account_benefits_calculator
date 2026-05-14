@@ -168,6 +168,17 @@ def export_state_grants_csv(conn):
             return f"${r['grant_amount']:,}"
         return "TBD"
 
+    def short(text, limit=90):
+        text = (text or "").strip()
+        if len(text) <= limit:
+            return text
+        cut = text[:limit]
+        # back up to last space so we don't cut mid-word
+        sp = cut.rfind(" ")
+        if sp > 40:
+            cut = cut[:sp]
+        return cut.rstrip(",;:.-") + "…"
+
     out_rows = []
     for code in sorted(STATE_NAMES):
         grants = by_state.get(code, [])
@@ -176,7 +187,7 @@ def export_state_grants_csv(conn):
             top = grants[0]
             amount = fmt_amount(top)
             elig = (top["note"] or "").strip()
-            tooltip = f"<b>{top['grantor_name']}</b> — {amount}<br><small>{elig}</small>"
+            tooltip = f"<b>{top['grantor_name']}</b> — {amount}<br><small>{short(elig)}</small>"
             out_rows.append([
                 code, name, "Yes", len(grants),
                 top["grantor_name"], amount, elig, tooltip
