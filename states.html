@@ -96,61 +96,26 @@
     .nation-grant .ng-donor { font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem; }
     .nation-grant .ng-note { font-size: 0.8rem; color: var(--text); margin-top: 0.45rem; line-height: 1.45; }
 
-    /* Tile map */
-    .legend { display: flex; gap: 1.4rem; flex-wrap: wrap; margin-bottom: 0.9rem; font-size: 0.82rem; color: var(--muted); }
-    .legend-item { display: inline-flex; align-items: center; gap: 0.45rem; }
-    .legend-dot { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
-    .legend-dot.has  { background: var(--gold); border: 1px solid var(--gold-dark); }
-    .legend-dot.none { background: #e6e3dc; border: 1px solid #cfcbc1; }
-
-    .map-wrap { padding: 0.5rem 0; }
-    .tile-map {
-      display: grid;
-      grid-template-columns: repeat(11, 1fr);
-      gap: 5px;
-      max-width: 720px; margin: 0 auto;
+    /* Datawrapper map embed */
+    .map-embed-wrap {
+      position: relative;
+      width: 100%;
+      min-height: 480px;
     }
-    .tile {
-      aspect-ratio: 1;
-      display: flex; align-items: center; justify-content: center;
-      border-radius: 5px;
-      font-size: 0.78rem; font-weight: 700;
-      font-family: 'Helvetica Neue', sans-serif;
-      letter-spacing: 0.5px;
-      user-select: none;
-      transition: transform 0.1s, box-shadow 0.1s;
+    .map-embed-wrap iframe {
+      width: 100%; border: none; display: block;
     }
-    .tile.empty { visibility: hidden; }
-    .tile.has-grant {
-      background: var(--gold);
-      color: #2A1F00;
-      border: 1px solid var(--gold-dark);
-      cursor: pointer;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+    .map-placeholder {
+      background: var(--off-white);
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      padding: 3rem 1.5rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
     }
-    .tile.has-grant:hover { transform: translateY(-1px); box-shadow: 0 2px 6px rgba(201,168,76,0.5); }
-    .tile.no-grant {
-      background: #e6e3dc;
-      color: #888577;
-      border: 1px solid #cfcbc1;
-      cursor: pointer;
-    }
-    .tile.no-grant:hover { background: #d8d4ca; }
+    .map-placeholder strong { display: block; color: var(--text); font-size: 1rem; margin-bottom: 0.5rem; }
     .map-hint { text-align: center; font-size: 0.78rem; color: var(--muted); margin-top: 1rem; font-style: italic; }
-
-    /* Tooltip */
-    .tooltip {
-      position: fixed;
-      background: rgba(28,28,30,0.95);
-      color: #fff; border-radius: 6px;
-      padding: 0.45rem 0.7rem;
-      font-size: 0.78rem; line-height: 1.35;
-      pointer-events: none; z-index: 300;
-      max-width: 240px; display: none;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-    }
-    .tooltip strong { color: var(--gold); }
-    .tooltip .tt-note { color: rgba(255,255,255,0.75); font-size: 0.72rem; margin-top: 0.15rem; }
 
     /* Modal */
     .modal-backdrop {
@@ -231,8 +196,7 @@
 
     @media (max-width: 680px) {
       .card { padding: 1.1rem; }
-      .tile { font-size: 0.62rem; border-radius: 4px; }
-      .tile-map { gap: 3px; max-width: 100%; }
+      .map-embed-wrap { min-height: 380px; }
       .hero-stats { gap: 1.6rem; }
       .modal { padding: 1.25rem 1rem; max-height: 92vh; }
     }
@@ -264,14 +228,15 @@
 
   <div class="card">
     <h2>By State</h2>
-    <div class="legend">
-      <span class="legend-item"><span class="legend-dot has"></span> Has announced program</span>
-      <span class="legend-item"><span class="legend-dot none"></span> No program yet</span>
+    <div class="map-embed-wrap" id="map-embed-wrap">
+      <!-- DATAWRAPPER_EMBED_START -->
+      <div class="map-placeholder">
+        <strong>Map placeholder</strong>
+        The Datawrapper map embed will go here. Hover over states for grant details.
+      </div>
+      <!-- DATAWRAPPER_EMBED_END -->
     </div>
-    <div class="map-wrap">
-      <div class="tile-map" id="tile-map"></div>
-    </div>
-    <p class="map-hint">Hover for a quick summary. Tap or click any state for full details.</p>
+    <p class="map-hint">For full eligibility details and to open the calculator pre-filled with your state, click a state name in the list below.</p>
   </div>
 
   <div class="card">
@@ -280,8 +245,6 @@
   </div>
 
 </main>
-
-<div class="tooltip" id="tooltip"></div>
 
 <div class="modal-backdrop" id="modal-backdrop">
   <div class="modal" id="state-modal" role="dialog" aria-modal="true" aria-labelledby="modal-state-name">
@@ -300,62 +263,19 @@
 
 <script>
 // ── State metadata ──────────────────────────────────────────────────────────
-// row/col on an 11-col grid (geographic approximation, 538-style tile map)
-const STATE_TILES = {
-  AK: { row: 0, col: 0,  name: 'Alaska' },
-  ME: { row: 0, col: 10, name: 'Maine' },
-  VT: { row: 1, col: 9,  name: 'Vermont' },
-  NH: { row: 1, col: 10, name: 'New Hampshire' },
-  WA: { row: 2, col: 1,  name: 'Washington' },
-  ID: { row: 2, col: 2,  name: 'Idaho' },
-  MT: { row: 2, col: 3,  name: 'Montana' },
-  ND: { row: 2, col: 4,  name: 'North Dakota' },
-  MN: { row: 2, col: 5,  name: 'Minnesota' },
-  IL: { row: 2, col: 6,  name: 'Illinois' },
-  WI: { row: 2, col: 7,  name: 'Wisconsin' },
-  MI: { row: 2, col: 8,  name: 'Michigan' },
-  NY: { row: 2, col: 9,  name: 'New York' },
-  MA: { row: 2, col: 10, name: 'Massachusetts' },
-  OR: { row: 3, col: 1,  name: 'Oregon' },
-  NV: { row: 3, col: 2,  name: 'Nevada' },
-  WY: { row: 3, col: 3,  name: 'Wyoming' },
-  SD: { row: 3, col: 4,  name: 'South Dakota' },
-  IA: { row: 3, col: 5,  name: 'Iowa' },
-  IN: { row: 3, col: 6,  name: 'Indiana' },
-  OH: { row: 3, col: 7,  name: 'Ohio' },
-  PA: { row: 3, col: 8,  name: 'Pennsylvania' },
-  NJ: { row: 3, col: 9,  name: 'New Jersey' },
-  CT: { row: 3, col: 10, name: 'Connecticut' },
-  CA: { row: 4, col: 1,  name: 'California' },
-  UT: { row: 4, col: 2,  name: 'Utah' },
-  CO: { row: 4, col: 3,  name: 'Colorado' },
-  NE: { row: 4, col: 4,  name: 'Nebraska' },
-  MO: { row: 4, col: 5,  name: 'Missouri' },
-  KY: { row: 4, col: 6,  name: 'Kentucky' },
-  WV: { row: 4, col: 7,  name: 'West Virginia' },
-  VA: { row: 4, col: 8,  name: 'Virginia' },
-  MD: { row: 4, col: 9,  name: 'Maryland' },
-  RI: { row: 4, col: 10, name: 'Rhode Island' },
-  AZ: { row: 5, col: 2,  name: 'Arizona' },
-  NM: { row: 5, col: 3,  name: 'New Mexico' },
-  KS: { row: 5, col: 4,  name: 'Kansas' },
-  AR: { row: 5, col: 5,  name: 'Arkansas' },
-  TN: { row: 5, col: 6,  name: 'Tennessee' },
-  NC: { row: 5, col: 8,  name: 'North Carolina' },
-  SC: { row: 5, col: 9,  name: 'South Carolina' },
-  DE: { row: 5, col: 10, name: 'Delaware' },
-  OK: { row: 6, col: 4,  name: 'Oklahoma' },
-  LA: { row: 6, col: 5,  name: 'Louisiana' },
-  MS: { row: 6, col: 6,  name: 'Mississippi' },
-  AL: { row: 6, col: 7,  name: 'Alabama' },
-  GA: { row: 6, col: 8,  name: 'Georgia' },
-  DC: { row: 5, col: 7,  name: 'D.C.' },
-  HI: { row: 7, col: 0,  name: 'Hawaii' },
-  TX: { row: 7, col: 4,  name: 'Texas' },
-  FL: { row: 7, col: 8,  name: 'Florida' },
+const STATE_NAMES = {
+  AL:'Alabama',AK:'Alaska',AZ:'Arizona',AR:'Arkansas',CA:'California',
+  CO:'Colorado',CT:'Connecticut',DE:'Delaware',DC:'District of Columbia',
+  FL:'Florida',GA:'Georgia',HI:'Hawaii',ID:'Idaho',IL:'Illinois',
+  IN:'Indiana',IA:'Iowa',KS:'Kansas',KY:'Kentucky',LA:'Louisiana',
+  ME:'Maine',MD:'Maryland',MA:'Massachusetts',MI:'Michigan',MN:'Minnesota',
+  MS:'Mississippi',MO:'Missouri',MT:'Montana',NE:'Nebraska',NV:'Nevada',
+  NH:'New Hampshire',NJ:'New Jersey',NM:'New Mexico',NY:'New York',
+  NC:'North Carolina',ND:'North Dakota',OH:'Ohio',OK:'Oklahoma',
+  OR:'Oregon',PA:'Pennsylvania',RI:'Rhode Island',SC:'South Carolina',
+  SD:'South Dakota',TN:'Tennessee',TX:'Texas',UT:'Utah',VT:'Vermont',
+  VA:'Virginia',WA:'Washington',WV:'West Virginia',WI:'Wisconsin',WY:'Wyoming'
 };
-
-const ROWS = 8, COLS = 11;
 
 // Build grant index by state
 function buildIndex() {
@@ -399,57 +319,19 @@ if (!nationwide.length) {
   `).join('');
 }
 
-// ── Tile map ───────────────────────────────────────────────────────────────
-const tileMap = document.getElementById('tile-map');
-{
-  const grid = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
-  for (const [code, t] of Object.entries(STATE_TILES)) grid[t.row][t.col] = code;
-  const html = [];
-  for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c < COLS; c++) {
-      const code = grid[r][c];
-      if (!code) { html.push('<div class="tile empty"></div>'); continue; }
-      const has = !!byState[code];
-      html.push(`<div class="tile ${has ? 'has-grant' : 'no-grant'}" data-code="${code}" tabindex="0" role="button" aria-label="${STATE_TILES[code].name}, ${has ? (byState[code].length + ' program' + (byState[code].length>1?'s':'')) : 'no program'}">${code}</div>`);
-    }
-  }
-  tileMap.innerHTML = html.join('');
-}
-
 // ── States A-Z list ────────────────────────────────────────────────────────
 {
-  const sorted = Object.entries(STATE_TILES).sort((a, b) => a[1].name.localeCompare(b[1].name));
-  const html = sorted.map(([code, meta]) => {
+  const sorted = Object.entries(STATE_NAMES).sort((a, b) => a[1].localeCompare(b[1]));
+  const html = sorted.map(([code, name]) => {
     const grants = byState[code] || [];
     const has = grants.length > 0;
     return `<a href="#" data-code="${code}" class="${has ? 'has' : ''}">
-      <span>${meta.name}</span>
+      <span>${name}</span>
       <span class="count">${has ? grants.length + ' program' + (grants.length>1?'s':'') : '—'}</span>
     </a>`;
   }).join('');
   document.getElementById('states-list').innerHTML = html;
 }
-
-// ── Tooltip ────────────────────────────────────────────────────────────────
-const tooltip = document.getElementById('tooltip');
-function showTooltip(code, x, y) {
-  const meta = STATE_TILES[code];
-  const grants = byState[code] || [];
-  let html = `<strong>${meta.name}</strong>`;
-  if (grants.length === 0) {
-    html += `<div class="tt-note">No program announced yet</div>`;
-  } else {
-    html += `<div class="tt-note">${grants.length} program${grants.length>1?'s':''} · click for details</div>`;
-  }
-  tooltip.innerHTML = html;
-  tooltip.style.display = 'block';
-  const rect = tooltip.getBoundingClientRect();
-  const px = Math.min(window.innerWidth - rect.width - 12, x + 14);
-  const py = Math.min(window.innerHeight - rect.height - 12, y + 14);
-  tooltip.style.left = px + 'px';
-  tooltip.style.top  = py + 'px';
-}
-function hideTooltip() { tooltip.style.display = 'none'; }
 
 // ── Modal ──────────────────────────────────────────────────────────────────
 const modalBackdrop = document.getElementById('modal-backdrop');
@@ -459,9 +341,9 @@ const modalContent   = document.getElementById('modal-content');
 const modalCta       = document.getElementById('modal-cta');
 
 function openModal(code) {
-  const meta = STATE_TILES[code];
+  const name = STATE_NAMES[code] || code;
   const grants = byState[code] || [];
-  modalStateName.textContent = meta.name;
+  modalStateName.textContent = name;
   modalStateSub.textContent = grants.length
     ? `${grants.length} announced program${grants.length>1?'s':''}`
     : 'No state program announced yet';
@@ -469,7 +351,7 @@ function openModal(code) {
   modalCta.textContent = grants.length ? `See full eligibility in calculator →` : `Open the calculator →`;
   if (!grants.length) {
     modalContent.innerHTML = `<div class="grant none">
-      ${meta.name} has not announced a state-level Trump Account contribution.
+      ${name} has not announced a state-level Trump Account contribution.
       Check back as the <strong>50 State Challenge</strong> rolls out, or use the calculator
       to see federal, employer, and nationwide grants your child may qualify for.
     </div>`;
@@ -498,26 +380,6 @@ function closeModal() {
 }
 
 // ── Event wiring ───────────────────────────────────────────────────────────
-tileMap.addEventListener('mousemove', e => {
-  const t = e.target.closest('.tile');
-  if (!t || t.classList.contains('empty')) { hideTooltip(); return; }
-  showTooltip(t.dataset.code, e.clientX, e.clientY);
-});
-tileMap.addEventListener('mouseleave', hideTooltip);
-tileMap.addEventListener('click', e => {
-  const t = e.target.closest('.tile');
-  if (!t || t.classList.contains('empty')) return;
-  hideTooltip();
-  openModal(t.dataset.code);
-});
-tileMap.addEventListener('keydown', e => {
-  if (e.key !== 'Enter' && e.key !== ' ') return;
-  const t = e.target.closest('.tile');
-  if (!t || t.classList.contains('empty')) return;
-  e.preventDefault();
-  openModal(t.dataset.code);
-});
-
 document.getElementById('states-list').addEventListener('click', e => {
   const a = e.target.closest('a[data-code]');
   if (!a) return;
