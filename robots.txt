@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /prototype-1.html
+Disallow: /prototype-2.html
+Disallow: /prototype-3.html
+Disallow: /og-image.html
+
+Sitemap: https://trumpaccountbenefits.com/sitemap.xml
