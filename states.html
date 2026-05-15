@@ -33,7 +33,7 @@
     function track(name, params) { try { gtag('event', name, params || {}); } catch(e){} }
   </script>
 
-  <script src="state_grants.js"></script>
+  <link rel="preload" href="state_grants.js" as="script" />
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -256,6 +256,8 @@
   <a href="/privacy.html">Privacy Policy</a> &bull;
   <a href="mailto:hello@trumpaccountbenefits.com">Contact</a>
 </footer>
+
+<script src="state_grants.js"></script>
 
 <script>
 // ── State metadata ──────────────────────────────────────────────────────────

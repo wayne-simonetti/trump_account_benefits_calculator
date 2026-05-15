@@ -453,9 +453,9 @@
       line-height: 1.45;
     }
   </style>
-  <script src="employers.js"></script>
-  <script src="state_grants.js"></script>
-  <script src="zip_income.js"></script>
+  <link rel="preload" href="employers.js" as="script" />
+  <link rel="preload" href="state_grants.js" as="script" />
+  <link rel="preload" href="zip_income.js" as="script" />
 </head>
 <body>
 
@@ -801,6 +801,10 @@
   </div><!-- /#results-section -->
 
 </main>
+
+<script src="employers.js"></script>
+<script src="state_grants.js"></script>
+<script src="zip_income.js"></script>
 
 <script>
 // ────────────────────────────────────────────────────────────────────────────
