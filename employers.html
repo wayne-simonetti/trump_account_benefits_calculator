@@ -99,9 +99,77 @@
     nav a:hover { color: #fff; }
     nav a.active { color: #fff; border-bottom-color: var(--gold); }
 
+    /* Multi-select combobox */
+    .filter-row { margin-bottom: 1rem; max-width: 480px; }
+    .multi-combo { position: relative; width: 100%; }
+    .combo-input-wrap {
+      position: relative; display: flex; align-items: center; gap: 0.5rem;
+      border: 1.5px solid #ccc; border-radius: 6px;
+      background: var(--off-white); padding: 0.45rem 0.65rem;
+      cursor: text; transition: border-color 0.15s;
+    }
+    .multi-combo.open .combo-input-wrap { border-color: var(--blue); background: white; }
+    #combo-search {
+      flex: 1; min-width: 0; border: none; outline: none;
+      background: transparent; font-family: inherit; font-size: 0.9rem; padding: 0;
+    }
+    .combo-count {
+      font-size: 0.75rem; color: var(--green); font-weight: 700;
+      background: var(--light-green); padding: 0.1rem 0.45rem; border-radius: 999px;
+      white-space: nowrap;
+    }
+    .combo-clear {
+      background: none; border: none; cursor: pointer; color: var(--muted);
+      padding: 0 0.25rem; font-size: 0.95rem; line-height: 1; font-family: inherit;
+    }
+    .combo-clear:hover { color: var(--red); }
+    .combo-arrow { color: var(--muted); font-size: 0.7rem; transition: transform 0.15s; }
+    .multi-combo.open .combo-arrow { transform: rotate(180deg); }
+    .combo-dropdown {
+      position: absolute; top: calc(100% + 3px); left: 0; right: 0;
+      background: white; border: 1.5px solid var(--blue); border-radius: 7px;
+      max-height: 320px; overflow-y: auto; z-index: 200; display: none;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+    }
+    .multi-combo.open .combo-dropdown { display: block; }
+    .combo-actions {
+      position: sticky; top: 0; display: flex; justify-content: space-between; gap: 0.5rem;
+      padding: 0.4rem 0.7rem; background: #f8f8f8;
+      border-bottom: 1px solid #e0e0e0; font-size: 0.75rem;
+    }
+    .combo-actions button {
+      background: none; border: none; color: var(--blue);
+      cursor: pointer; font-size: 0.75rem; font-family: inherit; font-weight: 600;
+      padding: 0.18rem 0.45rem; border-radius: 4px;
+    }
+    .combo-actions button:hover { background: rgba(43,96,216,0.1); }
+    .combo-actions button:disabled { color: var(--muted); cursor: default; }
+    .combo-actions button:disabled:hover { background: none; }
+    .combo-option {
+      display: flex; align-items: center; gap: 0.55rem;
+      padding: 0.42rem 0.7rem; cursor: pointer; font-size: 0.85rem;
+      border-bottom: 1px solid #f3f3f3; user-select: none;
+    }
+    .combo-option:last-child { border-bottom: none; }
+    .combo-option:hover, .combo-option.focused { background: #EEF3FA; }
+    .combo-option input[type="checkbox"] {
+      width: 14px; height: 14px; accent-color: var(--blue);
+      cursor: pointer; flex-shrink: 0; pointer-events: none;
+    }
+    .combo-option .opt-label { flex: 1; }
+    .combo-option .opt-verified {
+      display: inline-flex; align-items: center; justify-content: center;
+      border: 1.5px solid var(--gold); color: var(--gold);
+      font-size: 0.6rem; font-weight: 700; width: 0.85rem; height: 0.85rem;
+      border-radius: 2px; flex-shrink: 0;
+    }
+    .combo-option mark { background: #FFF176; color: inherit; border-radius: 2px; padding: 0 1px; font-style: normal; }
+    .combo-no-results { padding: 0.75rem; font-size: 0.85rem; color: var(--muted); text-align: center; font-style: italic; }
+
     @media (max-width: 680px) {
       .tax-table th, .tax-table td { font-size: 0.76rem; padding: 0.35rem 0.5rem; }
       #emp-table th:nth-child(4), #emp-table td:nth-child(4) { display: none; }
+      .filter-row { max-width: 100%; }
     }
   </style>
 </head>
@@ -121,17 +189,17 @@
 <main>
   <div class="card">
     <h2>Employer Grant Directory</h2>
-    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem;">All known employer one-time seed grants for Trump Accounts. Use the search to filter.</p>
-    <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:1rem;flex-wrap:wrap;">
-      <input type="text" id="emp-table-search" placeholder="Search employers…"
-        style="width:100%;max-width:340px;padding:0.5rem 0.75rem;border:1.5px solid #ccc;border-radius:6px;font-size:0.9rem;font-family:inherit;background:var(--off-white);" />
-      <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;color:var(--muted);white-space:nowrap;">
-        Show:
-        <select id="verified-filter" style="padding:0.45rem 0.6rem;border:1.5px solid #ccc;border-radius:6px;font-size:0.85rem;font-family:inherit;background:var(--off-white);cursor:pointer;">
-          <option value="all">All</option>
-          <option value="verified">Verified Only</option>
-        </select>
-      </label>
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem;">All known employer one-time seed grants for Trump Accounts. Pick one or more employers to filter the table, or leave empty to see all.</p>
+    <div class="filter-row">
+      <div class="multi-combo" id="emp-multi-combo">
+        <div class="combo-input-wrap" id="combo-input-wrap">
+          <input type="text" id="combo-search" placeholder="Filter employers…" autocomplete="off" spellcheck="false" />
+          <span class="combo-count" id="combo-count" style="display:none;">0 selected</span>
+          <button class="combo-clear" id="combo-clear" type="button" style="display:none;" aria-label="Clear all">✕</button>
+          <span class="combo-arrow">▼</span>
+        </div>
+        <div class="combo-dropdown" id="combo-dropdown"></div>
+      </div>
     </div>
     <div style="font-size:0.78rem;color:var(--muted);margin-bottom:0.6rem;display:flex;align-items:center;gap:0.4rem;">
       <span style="display:inline-flex;align-items:center;justify-content:center;border:1.5px solid var(--gold);color:var(--gold);font-size:0.7rem;font-weight:700;width:1rem;height:1rem;border-radius:2px;flex-shrink:0;">✓</span>
@@ -161,7 +229,8 @@ window.EMPLOYER_DATA = typeof EMPLOYER_DATA !== 'undefined' ? EMPLOYER_DATA : []
 const conditionLabels = { all: 'All eligible children', seed: 'Born 2025–2028', newborn: 'Newborns only', conditional: 'Conditional', variable: 'TBD' };
 const contribLabels = { seed_grant: 'One-time grant', employer_match: 'Annual match' };
 
-let sortCol = -1, sortAsc = true, verifiedOnly = false;
+let sortCol = -1, sortAsc = true;
+const selectedEmployers = new Set();  // employer labels selected via multi-combo
 
 function rootDomain(url) {
   try {
@@ -180,16 +249,14 @@ function getSortValue(e, col) {
   return '';
 }
 
-function loadEmployers() { renderEmployerTable(); }
+function loadEmployers() { initCombo(); renderEmployerTable(); }
 
-function renderEmployerTable(filter) {
+function renderEmployerTable() {
   const tbody = document.getElementById('emp-table-body');
   if (!tbody) return;
-  const q = (filter || '').trim().toLowerCase();
-  let rows = EMPLOYER_DATA.filter(e =>
-    (!verifiedOnly || e.verified) &&
-    (!q || e.label.toLowerCase().includes(q) || (e.note || '').toLowerCase().includes(q) || e.group.toLowerCase().includes(q))
-  );
+  let rows = selectedEmployers.size === 0
+    ? EMPLOYER_DATA.slice()
+    : EMPLOYER_DATA.filter(e => selectedEmployers.has(e.label));
   if (sortCol >= 0) {
     rows = [...rows].sort((a, b) => {
       const av = getSortValue(a, sortCol), bv = getSortValue(b, sortCol);
@@ -228,16 +295,160 @@ document.querySelectorAll('#emp-table th.sortable').forEach(th => {
     const col = parseInt(th.dataset.col);
     if (sortCol === col) sortAsc = !sortAsc;
     else { sortCol = col; sortAsc = true; }
-    renderEmployerTable(document.getElementById('emp-table-search').value);
+    renderEmployerTable();
   });
 });
 
-document.getElementById('emp-table-search').addEventListener('input', e => renderEmployerTable(e.target.value));
+// ── Multi-select combobox ──────────────────────────────────────────────────
+function initCombo() {
+  const combo     = document.getElementById('emp-multi-combo');
+  const wrap      = document.getElementById('combo-input-wrap');
+  const searchEl  = document.getElementById('combo-search');
+  const dropdown  = document.getElementById('combo-dropdown');
+  const countEl   = document.getElementById('combo-count');
+  const clearBtn  = document.getElementById('combo-clear');
+  let focusedIdx  = -1;
 
-document.getElementById('verified-filter').addEventListener('change', function() {
-  verifiedOnly = this.value === 'verified';
-  renderEmployerTable(document.getElementById('emp-table-search').value);
-});
+  function highlight(text, q) {
+    if (!q) return text;
+    const idx = text.toLowerCase().indexOf(q.toLowerCase());
+    if (idx === -1) return text;
+    return text.slice(0, idx) + '<mark>' + text.slice(idx, idx + q.length) + '</mark>' + text.slice(idx + q.length);
+  }
+
+  function updateChrome() {
+    const n = selectedEmployers.size;
+    countEl.textContent = n ? `${n} selected` : '';
+    countEl.style.display = n ? 'inline-block' : 'none';
+    clearBtn.style.display = n ? 'inline-block' : 'none';
+    searchEl.placeholder = n ? 'Add another…' : 'Filter employers…';
+  }
+
+  function renderDropdown() {
+    const q = searchEl.value.trim().toLowerCase();
+    const sorted = [...EMPLOYER_DATA].sort((a, b) => a.label.localeCompare(b.label));
+    const matches = q ? sorted.filter(e => e.label.toLowerCase().includes(q)) : sorted;
+    const totalSelected = selectedEmployers.size;
+    const visibleSelectedCount = matches.filter(e => selectedEmployers.has(e.label)).length;
+    const visibleUnselected = matches.filter(e => !selectedEmployers.has(e.label)).length;
+
+    const actions = `
+      <div class="combo-actions">
+        <button id="combo-select-all" type="button" ${visibleUnselected === 0 ? 'disabled' : ''}>
+          Select all ${q ? 'matching' : ''} (${visibleUnselected})
+        </button>
+        <button id="combo-clear-all" type="button" ${totalSelected === 0 ? 'disabled' : ''}>
+          Clear all
+        </button>
+      </div>`;
+
+    if (matches.length === 0) {
+      dropdown.innerHTML = actions + '<div class="combo-no-results">No matching employers</div>';
+      focusedIdx = -1;
+      wireActionButtons();
+      return;
+    }
+
+    const opts = matches.map(e => {
+      const sel = selectedEmployers.has(e.label);
+      const vmark = e.verified ? '<span class="opt-verified" title="Verified">✓</span>' : '';
+      return `<div class="combo-option" data-label="${e.label.replace(/"/g, '&quot;')}">
+        <input type="checkbox" ${sel ? 'checked' : ''} tabindex="-1" />
+        <span class="opt-label">${highlight(e.label, q)}</span>
+        ${vmark}
+      </div>`;
+    }).join('');
+    dropdown.innerHTML = actions + opts;
+    focusedIdx = -1;
+    wireActionButtons();
+
+    dropdown.querySelectorAll('.combo-option').forEach(opt => {
+      opt.addEventListener('mousedown', ev => { ev.preventDefault(); toggleSelection(opt.dataset.label); });
+    });
+  }
+
+  function wireActionButtons() {
+    const all = dropdown.querySelector('#combo-select-all');
+    const clr = dropdown.querySelector('#combo-clear-all');
+    if (all) all.addEventListener('mousedown', ev => {
+      ev.preventDefault();
+      const q = searchEl.value.trim().toLowerCase();
+      const matches = q
+        ? EMPLOYER_DATA.filter(e => e.label.toLowerCase().includes(q))
+        : EMPLOYER_DATA;
+      matches.forEach(e => selectedEmployers.add(e.label));
+      updateChrome();
+      renderDropdown();
+      renderEmployerTable();
+    });
+    if (clr) clr.addEventListener('mousedown', ev => {
+      ev.preventDefault();
+      selectedEmployers.clear();
+      updateChrome();
+      renderDropdown();
+      renderEmployerTable();
+    });
+  }
+
+  function toggleSelection(label) {
+    if (selectedEmployers.has(label)) selectedEmployers.delete(label);
+    else selectedEmployers.add(label);
+    updateChrome();
+    renderDropdown();
+    renderEmployerTable();
+  }
+
+  function open()  { combo.classList.add('open'); renderDropdown(); }
+  function close() { combo.classList.remove('open'); focusedIdx = -1; }
+
+  wrap.addEventListener('click', () => { searchEl.focus(); open(); });
+  searchEl.addEventListener('focus', open);
+  searchEl.addEventListener('input', () => { open(); renderDropdown(); });
+  searchEl.addEventListener('keydown', ev => {
+    const opts = dropdown.querySelectorAll('.combo-option');
+    if (!opts.length) return;
+    if (ev.key === 'ArrowDown') {
+      ev.preventDefault();
+      focusedIdx = Math.min(opts.length - 1, focusedIdx + 1);
+      opts.forEach((o, i) => o.classList.toggle('focused', i === focusedIdx));
+      opts[focusedIdx].scrollIntoView({ block: 'nearest' });
+    } else if (ev.key === 'ArrowUp') {
+      ev.preventDefault();
+      focusedIdx = Math.max(0, focusedIdx - 1);
+      opts.forEach((o, i) => o.classList.toggle('focused', i === focusedIdx));
+      opts[focusedIdx].scrollIntoView({ block: 'nearest' });
+    } else if (ev.key === 'Enter') {
+      ev.preventDefault();
+      const target = focusedIdx >= 0 ? opts[focusedIdx] : opts[0];
+      if (target) toggleSelection(target.dataset.label);
+    } else if (ev.key === 'Escape') {
+      close();
+      searchEl.blur();
+    } else if (ev.key === 'Backspace' && !searchEl.value && selectedEmployers.size) {
+      // remove last-added selection on backspace in empty input
+      const lastLabel = [...selectedEmployers].pop();
+      selectedEmployers.delete(lastLabel);
+      updateChrome();
+      renderDropdown();
+      renderEmployerTable();
+    }
+  });
+
+  clearBtn.addEventListener('mousedown', ev => {
+    ev.preventDefault();
+    selectedEmployers.clear();
+    updateChrome();
+    renderDropdown();
+    renderEmployerTable();
+    searchEl.focus();
+  });
+
+  document.addEventListener('mousedown', ev => {
+    if (!combo.contains(ev.target)) close();
+  });
+
+  updateChrome();
+}
 
 loadEmployers();
 </script>
