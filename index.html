@@ -302,6 +302,10 @@
       padding: 0.35rem 0.85rem; background: rgba(255,255,255,0.12);
       border-radius: 999px; max-width: 100%;
     }
+    .grants-total .gt-match-note {
+      font-size: 0.78rem; opacity: 0.9; margin-top: 0.6rem;
+      color: var(--gold); font-weight: 600;
+    }
     @media (max-width: 600px) {
       .grants-total { padding: 1.4rem 1rem; }
       .grants-total .gt-amount { font-size: 2.6rem; }
@@ -600,6 +604,7 @@
       <div class="gt-amount" id="grants-total-amount">$0</div>
       <div class="gt-sub" id="grants-total-sub" style="visibility:hidden;">in one-time grants</div>
       <div class="gt-breakdown" id="grants-breakdown">Enter child's birth date to calculate</div>
+      <div class="gt-match-note" id="grants-match-note" style="display:none;"></div>
       <div class="share-row">
         <button type="button" class="share-btn" onclick="shareTo('x')" aria-label="Share on X">X</button>
         <button type="button" class="share-btn" onclick="shareTo('facebook')" aria-label="Share on Facebook">Facebook</button>
@@ -977,7 +982,7 @@ async function computeGrants(dob, state, zip) {
           ? 'Annual match — counts toward $2,500 employer sub-cap'
           : 'One-time seed grant — does not count toward $5,000 annual cap';
         gnEl.style.display = 'block';
-        if (dob && under18) {
+        if (dob && under18 && contribType !== 'employer_match') {
           items.push({ name: empLabel + ' Grant', amount: amt });
           total += amt;
         }
@@ -1129,13 +1134,16 @@ async function compute() {
   const empVal = document.getElementById('employerSelect').value;
   let employerRaw = 0;
   let employerMatchDisplay = '';
+  let employerMatchNote = '';
   if (empVal) {
     const [empId, amtStr, condition, contribType] = empVal.split('|');
     if (contribType === 'employer_match' && condition !== 'variable') {
       employerRaw = Math.min(parseInt(amtStr) || 0, 2500);
       const empRec = (EMPLOYER_DATA || []).find(e => e.value.startsWith(empId + '|'));
       const empDisplayName = empRec ? empRec.label : empId;
-      employerMatchDisplay = `${empDisplayName} annual match: +$${employerRaw.toLocaleString()}/yr`;
+      const capStr = '$' + employerRaw.toLocaleString();
+      employerMatchDisplay = `${empDisplayName} annual match: +${capStr}/yr`;
+      employerMatchNote = `+ up to ${capStr}/yr from ${empDisplayName} — employer match, requires you to contribute ${capStr}`;
     }
   }
   const matchLine = document.getElementById('employer-match-line');
@@ -1202,6 +1210,14 @@ async function compute() {
     breakdownEl.textContent = grantItems.filter(g => !g.tbd).map(g => g.name + ' $' + g.amount.toLocaleString()).join(' + ');
   }
 
+  const matchNoteEl = document.getElementById('grants-match-note');
+  if (employerMatchNote && under18) {
+    matchNoteEl.textContent = employerMatchNote;
+    matchNoteEl.style.display = 'block';
+  } else {
+    matchNoteEl.style.display = 'none';
+  }
+
   // ── Eligibility card ──
   const eligCard = document.getElementById('eligibility-content');
   if (!dob) {
@@ -1215,6 +1231,9 @@ async function compute() {
       `<li>Annual contribution limit: <strong>$5,000 total</strong> (family + employer recurring)</li>`,
       `<li>One-time grants applied: <strong>${fmtFull(grantsTotal)}</strong> (exempt from annual cap)</li>`,
     ];
+    if (employerRaw > 0) {
+      items.push(`<li>Employer annual match: <strong>up to $${employerRaw.toLocaleString()}/yr</strong> — counts toward the $5,000 annual cap ($2,500 employer sub-cap)</li>`);
+    }
     eligCard.innerHTML = `<div class="eligibility-banner eligible"><strong>Eligible for Trump Account</strong></div><ul style="padding-left:1.2rem;line-height:2;font-size:0.9rem;margin-top:0.5rem;">${items.join('')}</ul>`;
   }
 
