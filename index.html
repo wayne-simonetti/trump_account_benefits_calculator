@@ -303,8 +303,8 @@
       border-radius: 999px; max-width: 100%;
     }
     .grants-total .gt-match-note {
-      font-size: 0.78rem; opacity: 0.9; margin-top: 0.6rem;
-      color: var(--gold); font-weight: 600;
+      font-size: 0.8rem; margin-top: 0.6rem;
+      color: var(--white); font-weight: 600;
     }
     @media (max-width: 600px) {
       .grants-total { padding: 1.4rem 1rem; }
@@ -1143,7 +1143,7 @@ async function compute() {
       const empDisplayName = empRec ? empRec.label : empId;
       const capStr = '$' + employerRaw.toLocaleString();
       employerMatchDisplay = `${empDisplayName} annual match: +${capStr}/yr`;
-      employerMatchNote = `+ up to ${capStr}/yr from ${empDisplayName} — employer match, requires you to contribute ${capStr}`;
+      employerMatchNote = `+ up to ${capStr}/yr ${empDisplayName} match (if you contribute ${capStr})`;
     }
   }
   const matchLine = document.getElementById('employer-match-line');
