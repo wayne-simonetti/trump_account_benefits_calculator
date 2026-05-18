@@ -24,13 +24,10 @@
   <meta name="twitter:description" content="See federal, state, employer, and philanthropic grants your child qualifies for — and project account growth." />
   <meta name="twitter:image" content="https://trumpaccountbenefits.com/og-image.png" />
 
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
   <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-XXXXXXXXXX', { anonymize_ip: true });
-    function track(name, params) { try { gtag('event', name, params || {}); } catch(e){} }
+    // Analytics via Cloudflare Web Analytics (edge-injected). No-op stub
+    // so existing track() call sites remain safe.
+    function track(name, params) {}
   </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -371,29 +368,6 @@
     .ticker-text { color: rgba(255,255,255,0.9); font-size: 0.95rem; }
     .ticker-text a { color: rgba(255,255,255,0.9); text-decoration: underline; text-underline-offset: 2px; }
 
-    #share-btn:hover { background: rgba(255,255,255,0.28) !important; }
-
-    .share-row {
-      margin-top: 0.95rem;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 0.45rem;
-    }
-    .share-btn {
-      background: rgba(255,255,255,0.15);
-      color: #fff;
-      border: 1px solid rgba(255,255,255,0.45);
-      padding: 0.45rem 0.95rem;
-      border-radius: 6px;
-      font-family: inherit;
-      font-size: 0.82rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-    .share-btn:hover { background: rgba(255,255,255,0.28); }
-
     /* EMAIL SIGNUP */
     .signup-card {
       grid-column: 1 / -1;
@@ -605,13 +579,6 @@
       <div class="gt-sub" id="grants-total-sub" style="visibility:hidden;">in one-time grants</div>
       <div class="gt-breakdown" id="grants-breakdown">Enter child's birth date to calculate</div>
       <div class="gt-match-note" id="grants-match-note" style="display:none;"></div>
-      <div class="share-row">
-        <button type="button" class="share-btn" onclick="shareTo('x')" aria-label="Share on X">X</button>
-        <button type="button" class="share-btn" onclick="shareTo('facebook')" aria-label="Share on Facebook">Facebook</button>
-        <button type="button" class="share-btn" onclick="shareTo('email')" aria-label="Share via email">Email</button>
-        <button type="button" class="share-btn" id="share-btn" onclick="copyShareLink()" aria-label="Copy link">Copy link</button>
-        <span id="share-msg" style="display:none;color:#fff;font-size:0.8rem;opacity:0.9;align-self:center;">Link copied!</span>
-      </div>
     </div>
   </div>
 
@@ -1639,123 +1606,6 @@ function updateDualRange() {
 document.getElementById('contribStartAge').addEventListener('input', () => { updateDualRange(); compute(); });
 document.getElementById('contribEndAge').addEventListener('input',   () => { updateDualRange(); compute(); });
 
-// ────────────────────────────────────────────────────────────────────────────
-// SHAREABLE URL (hash-encoded state)
-// ────────────────────────────────────────────────────────────────────────────
-function getShareUrl() {
-  const params = new URLSearchParams();
-  const fields = {
-    dob:   document.getElementById('dob').value,
-    state: document.getElementById('stateSelect').value,
-    zip:   document.getElementById('zipCode').value,
-    emp:   document.getElementById('employerSelect').value,
-    fam:   document.getElementById('familyContrib').value,
-    rate:  document.getElementById('returnRate').value,
-    tgt:   document.getElementById('targetAge').value,
-    cs:    document.getElementById('contribStartAge').value,
-    ce:    document.getElementById('contribEndAge').value,
-  };
-  for (const [k, v] of Object.entries(fields)) if (v) params.set(k, v);
-  if (document.getElementById('ibmConditional').checked) params.set('ibm', '1');
-  return location.origin + location.pathname + '#' + params.toString();
-}
-
-function updateUrlHash() {
-  const url = getShareUrl();
-  const hash = url.split('#')[1] || '';
-  history.replaceState(null, '', hash ? '#' + hash : location.pathname);
-}
-
-function copyShareLink() {
-  updateUrlHash();
-  const url = getShareUrl();
-  const msg = document.getElementById('share-msg');
-  const showMsg = (text, ok) => {
-    msg.textContent = text;
-    msg.style.color = ok ? '#fff' : '#FFD7D7';
-    msg.style.display = 'inline';
-    setTimeout(() => { msg.style.display = 'none'; }, 2500);
-  };
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(url)
-      .then(() => showMsg('Link copied!', true))
-      .catch(() => { window.prompt('Copy this link:', url); });
-  } else {
-    window.prompt('Copy this link:', url);
-  }
-  if (typeof track === 'function') track('share_link_copied', {});
-}
-
-function getShareMessage() {
-  const totalText = (document.getElementById('grants-total-amount').textContent || '').trim();
-  if (totalText && totalText !== '$0') {
-    return `My child qualifies for ${totalText} in Trump Account grants. Check what yours qualifies for:`;
-  }
-  return 'See what Trump Account grants your child qualifies for:';
-}
-
-function shareTo(channel) {
-  updateUrlHash();
-  const url = getShareUrl();
-  const text = getShareMessage();
-  let target = '';
-  if (channel === 'x') {
-    target = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(url);
-  } else if (channel === 'facebook') {
-    target = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url);
-  } else if (channel === 'email') {
-    target = 'mailto:?subject=' + encodeURIComponent('Trump Account grants for your child')
-           + '&body=' + encodeURIComponent(text + '\n\n' + url);
-  }
-  if (!target) return;
-  if (channel === 'email') {
-    window.location.href = target;
-  } else {
-    window.open(target, '_blank', 'noopener,width=600,height=600');
-  }
-  if (typeof track === 'function') track('share_clicked', { channel });
-}
-
-function restoreStateFromHash() {
-  if (!location.hash || location.hash.length < 2) return false;
-  const params = new URLSearchParams(location.hash.slice(1));
-  if (![...params.keys()].length) return false;
-
-  const setVal = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
-  setVal('dob',             params.get('dob'));
-  setVal('stateSelect',     params.get('state'));
-  setVal('zipCode',         params.get('zip'));
-  setVal('familyContrib',   params.get('fam'));
-  setVal('returnRate',      params.get('rate'));
-  setVal('targetAge',       params.get('tgt'));
-  setVal('contribStartAge', params.get('cs'));
-  setVal('contribEndAge',   params.get('ce'));
-
-  const emp = params.get('emp');
-  if (emp && (window.EMPLOYER_DATA || []).length) {
-    const rec = EMPLOYER_DATA.find(e => e.value === emp);
-    if (rec) {
-      document.getElementById('employerSelect').value = emp;
-      document.getElementById('emp-combo-input').value = rec.label;
-      document.getElementById('emp-combo-clear').style.display = 'block';
-    }
-  }
-  if (params.get('ibm')) {
-    const ibmEl = document.getElementById('ibmConditional');
-    if (ibmEl) ibmEl.checked = true;
-  }
-
-  const rateDisp = document.getElementById('rate-display');
-  if (rateDisp) rateDisp.textContent = document.getElementById('returnRate').value + '%';
-
-  document.getElementById('ssn-confirm').checked = true;
-  document.getElementById('results-section').style.display = 'grid';
-  document.getElementById('calc-btn-wrap').style.display = 'none';
-  if (typeof track === 'function') track('shared_link_opened', {});
-  return true;
-}
-
-const restoredFromHash = restoreStateFromHash();
 updateDualRange();
 compute();
 
@@ -1814,7 +1664,6 @@ document.getElementById('calc-btn').addEventListener('click', function () {
   document.getElementById('results-section').style.display = 'grid';
   document.getElementById('calc-btn-wrap').style.display = 'none';
   compute();
-  updateUrlHash();
   if (typeof track === 'function') {
     const dob = document.getElementById('dob').value;
     const state = document.getElementById('stateSelect').value;
