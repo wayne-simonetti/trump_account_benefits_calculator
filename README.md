@@ -11,8 +11,8 @@ A web tool for the **Trump Account** child savings program established by the On
 | Path | What's there |
 |------|--------------|
 | `/` | Calculator — date of birth, ZIP, state, employer → eligibility + growth projection to age 18 / 22 / 30 / 65 |
-| `/employers.html` | Searchable directory of 50 employers with known Trump Account grants or matches |
-| `/states.html` | Choropleth map of all 50 states + DC showing which have announced state-level programs |
+| `/employers.html` | Searchable directory of employers with known Trump Account grants or matches |
+| `/states.html` | Choropleth map of states showing which have announced state-level programs |
 | `/privacy.html` | Privacy policy |
 
 ---
