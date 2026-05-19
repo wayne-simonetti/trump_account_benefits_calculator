@@ -433,7 +433,9 @@
   </style>
   <link rel="preload" href="employers.js" as="script" />
   <link rel="preload" href="state_grants.js" as="script" />
-  <link rel="preload" href="zip_income.js" as="script" />
+  <!-- zip_income.js (424 KB) intentionally NOT preloaded — only needed after
+       ZIP entry; preloading it competed for the critical path and inflated
+       FCP/LCP. Still loaded via the deferred <script> at end of body. -->
 </head>
 <body>
 
