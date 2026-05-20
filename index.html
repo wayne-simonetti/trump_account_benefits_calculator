@@ -29,9 +29,11 @@
     // so existing track() call sites remain safe.
     function track(name, params) {}
   </script>
-  <!-- Cloudflare Turnstile (bot protection for the signup endpoint).
-       Deliberate external-script exception, same category as the CF analytics beacon. -->
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <!-- Cloudflare Turnstile is lazy-loaded on first interaction with the signup
+       form (see loadTurnstile() in the signup script block) to keep it off the
+       critical path. The signup card sits below the fold so there's no need
+       to pay for it on page load. -->
+  <link rel="preconnect" href="https://challenges.cloudflare.com" crossorigin />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -1627,6 +1629,20 @@ compute();
   const btn = document.getElementById('kit-submit');
   const msg = document.getElementById('kit-msg');
 
+  let turnstileLoading = false;
+  function loadTurnstile() {
+    if (turnstileLoading || window.turnstile) return;
+    turnstileLoading = true;
+    const s = document.createElement('script');
+    s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+    s.async = true;
+    s.defer = true;
+    document.head.appendChild(s);
+  }
+  ['focus', 'pointerdown', 'touchstart'].forEach(ev =>
+    emailEl.addEventListener(ev, loadTurnstile, { once: true, passive: true })
+  );
+
   const fail = (text) => {
     msg.textContent = text;
     msg.classList.add('error');
@@ -1637,6 +1653,7 @@ compute();
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    loadTurnstile();
     const email = (emailEl.value || '').trim();
     msg.classList.remove('error');
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
