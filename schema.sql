@@ -38,3 +38,14 @@ CREATE TABLE IF NOT EXISTS employers (
                       CHECK(contribution_type IN ('seed_grant', 'employer_match')),
     source_url        TEXT
 );
+
+-- Email launch-notification signups. Lives in REMOTE D1 only (never exported
+-- to a tracked seed file; never in git). Written by functions/api/subscribe.js.
+CREATE TABLE IF NOT EXISTS subscribers (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    email       TEXT    NOT NULL UNIQUE,         -- dedup on email
+    created_at  TEXT    NOT NULL,                -- ISO8601 UTC
+    source      TEXT,                            -- e.g. 'calculator'
+    ip_hash     TEXT,                            -- salted SHA-256 of IP; never raw IP
+    kit_synced  INTEGER NOT NULL DEFAULT 0       -- 1 once forwarded to Kit
+);

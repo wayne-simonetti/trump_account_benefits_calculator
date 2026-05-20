@@ -67,7 +67,7 @@
 
 <main>
   <div class="card">
-    <p class="effective">Effective May 13, 2026</p>
+    <p class="effective">Effective May 17, 2026</p>
 
     <h2>Who we are</h2>
     <p>Trump Account Benefits Calculator ("we," "us") operates the website at <a href="https://trumpaccountbenefits.com">trumpaccountbenefits.com</a>. This site is an independent informational tool and is not affiliated with the IRS, U.S. Department of the Treasury, or any listed employer, foundation, or grant program.</p>
@@ -75,10 +75,9 @@
     <h2>What we collect</h2>
     <p>We collect the minimum information needed to run the site and improve it:</p>
     <ul>
-      <li><strong>Calculator inputs</strong> (date of birth, ZIP code, state, employer selection, contribution amounts) — these are processed entirely in your browser. We do not transmit them to our servers or store them on a backend.</li>
-      <li><strong>Share-link URLs</strong> — when you click "Copy share link," your calculator inputs are encoded into the URL hash. Anyone you share that link with can see those inputs. The data still does not touch our servers.</li>
-      <li><strong>Email address</strong> — only if you voluntarily sign up for launch notifications. Stored by our email provider (Kit).</li>
-      <li><strong>Analytics data</strong> — anonymized page views, button clicks, and approximate location (country/region) via Google Analytics 4. IP addresses are anonymized.</li>
+      <li><strong>Calculator inputs</strong> (date of birth, ZIP code, state, employer selection, contribution amounts) — these are processed entirely in your browser. We do not transmit them to our servers, share them with any third party, store them, or place them in the page URL.</li>
+      <li><strong>Email address</strong> — only if you voluntarily sign up for launch notifications. It is stored in our own database (Cloudflare D1) and shared with our email provider (Kit) to send those updates. When you submit the form we also store a salted, one-way hash of your IP address (never the raw address) to prevent abuse.</li>
+      <li><strong>Aggregate analytics</strong> — cookieless, privacy-first metrics via Cloudflare Web Analytics: page views, referrer, approximate country, and device type. This is not tied to your identity.</li>
       <li><strong>Server logs</strong> — Cloudflare (our hosting provider) records standard request logs (IP, user agent, timestamp) for security and abuse prevention.</li>
     </ul>
 
@@ -100,20 +99,19 @@
     <h2>Third parties we share with</h2>
     <p>We do not sell your information. We use these service providers, each with their own privacy practices:</p>
     <ul>
-      <li><a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google (Analytics 4)</a> — anonymized usage analytics.</li>
-      <li><a href="https://kit.com/privacy" target="_blank" rel="noopener">Kit</a> — email list management, if you sign up.</li>
-      <li><a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener">Cloudflare</a> — hosting, CDN, and DNS.</li>
+      <li><a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener">Cloudflare</a> — hosting, CDN, DNS, cookieless analytics, database storage of your signup, and bot protection (Turnstile) on the signup form.</li>
+      <li><a href="https://kit.com/privacy" target="_blank" rel="noopener">Kit</a> — email delivery, if you sign up. Every email includes an unsubscribe link.</li>
     </ul>
 
     <h2>Cookies</h2>
-    <p>Google Analytics sets cookies to measure aggregate visits. No advertising cookies are set. You can block cookies in your browser settings without affecting the calculator's core functionality.</p>
+    <p>We set no advertising or cross-site tracking cookies. Our analytics is cookieless. Cloudflare Turnstile may set a temporary token solely to verify the signup form is not automated. Blocking cookies does not affect the calculator's core functionality.</p>
 
     <h2>Your rights</h2>
     <p>Depending on where you live (California, EU/UK, and others), you may have the right to:</p>
     <ul>
       <li>Access, correct, or delete personal information we hold about you.</li>
       <li>Unsubscribe from email at any time using the link in any message we send.</li>
-      <li>Opt out of analytics by enabling "Do Not Track" or using a browser extension like Google Analytics Opt-out.</li>
+      <li>Our analytics is already anonymous and cookieless — there is nothing identifying to opt out of.</li>
       <li>Request that we not sell or share your information (we don't sell information).</li>
     </ul>
     <p>To exercise any of these rights, email <a href="mailto:hello@trumpaccountbenefits.com">hello@trumpaccountbenefits.com</a>.</p>
@@ -122,7 +120,7 @@
     <p>This site is intended for parents, guardians, and adults researching Trump Accounts on behalf of a child. We do not knowingly collect personal information from anyone under 13. The calculator's "date of birth" field refers to the child the user is researching — that data is not transmitted or stored.</p>
 
     <h2>Data retention</h2>
-    <p>Email addresses are retained until you unsubscribe. Analytics data is retained for 14 months by Google. Server logs are retained by Cloudflare for up to 30 days.</p>
+    <p>Email addresses are retained until you unsubscribe or request deletion. Aggregate analytics is not tied to your identity. Server logs are retained by Cloudflare for a short period for security purposes.</p>
 
     <h2>Changes to this policy</h2>
     <p>We may update this policy as the site evolves. The "Effective" date at the top will reflect the most recent change. Material changes will be highlighted on the homepage.</p>

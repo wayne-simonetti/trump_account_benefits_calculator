@@ -29,6 +29,9 @@
     // so existing track() call sites remain safe.
     function track(name, params) {}
   </script>
+  <!-- Cloudflare Turnstile (bot protection for the signup endpoint).
+       Deliberate external-script exception, same category as the CF analytics beacon. -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -754,8 +757,9 @@
       <input type="email" name="email_address" id="kit-email" placeholder="you@example.com" required autocomplete="email" aria-label="Email address for launch notifications" />
       <button type="submit" id="kit-submit">Notify me</button>
     </form>
+    <div class="cf-turnstile" data-sitekey="0x4AAAAAADRwdPxMhwRiCnnF" data-size="flexible" style="margin-top:0.7rem;"></div>
     <div class="signup-msg" id="kit-msg"></div>
-    <div class="signup-fineprint">No spam. Unsubscribe anytime. Powered by Kit.</div>
+    <div class="signup-fineprint">No spam. Unsubscribe anytime. Your email is stored securely and only used for launch updates — see our <a href="/privacy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a>.</div>
   </div>
 
   <p class="disclaimer" id="disclaimer">
@@ -1612,15 +1616,24 @@ updateDualRange();
 compute();
 
 // ────────────────────────────────────────────────────────────────────────────
-// EMAIL SIGNUP (Kit)
+// EMAIL SIGNUP — same-origin proxy: POST /api/subscribe
+// (server-side Turnstile verify + D1 store + Kit forward; see
+//  functions/api/subscribe.js). No secrets or form id in the client.
 // ────────────────────────────────────────────────────────────────────────────
-const KIT_FORM_ID = 'YOUR_KIT_FORM_ID';
 (function() {
   const form = document.getElementById('kit-signup-form');
   if (!form) return;
   const emailEl = document.getElementById('kit-email');
   const btn = document.getElementById('kit-submit');
   const msg = document.getElementById('kit-msg');
+
+  const fail = (text) => {
+    msg.textContent = text;
+    msg.classList.add('error');
+    btn.disabled = false;
+    btn.textContent = 'Notify me';
+    if (window.turnstile) try { turnstile.reset(); } catch (e) {}
+  };
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -1631,23 +1644,31 @@ const KIT_FORM_ID = 'YOUR_KIT_FORM_ID';
       msg.classList.add('error');
       return;
     }
+    const token = window.turnstile ? turnstile.getResponse() : '';
+    if (!token) { fail('Please complete the verification and try again.'); return; }
+
     btn.disabled = true;
     btn.textContent = 'Sending…';
     try {
-      await fetch(`https://app.kit.com/forms/${KIT_FORM_ID}/subscriptions`, {
+      const r = await fetch('/api/subscribe', {
         method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'email_address=' + encodeURIComponent(email),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, turnstileToken: token }),
       });
-      msg.textContent = "Thanks! We'll email you when accounts open.";
-      form.style.display = 'none';
-      if (typeof track === 'function') track('email_subscribed', {});
+      const data = await r.json().catch(() => ({}));
+      if (r.ok && data.ok) {
+        msg.textContent = "Thanks! We'll email you when accounts open.";
+        form.style.display = 'none';
+        if (typeof track === 'function') track('email_subscribed', {});
+      } else if (r.status === 429) {
+        fail('Too many attempts. Please wait a minute and try again.');
+      } else if (data.error === 'verification_failed') {
+        fail('Verification failed. Please try again.');
+      } else {
+        fail('Something went wrong. Please try again.');
+      }
     } catch (err) {
-      msg.textContent = 'Something went wrong. Please try again.';
-      msg.classList.add('error');
-      btn.disabled = false;
-      btn.textContent = 'Notify me';
+      fail('Network error. Please try again.');
     }
   });
 })();

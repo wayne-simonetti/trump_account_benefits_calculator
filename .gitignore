@@ -8,3 +8,13 @@ trump_accounts.db
 /zip_income_seed.sql
 /state_grants_seed.sql
 .wrangler/
+
+# Local secrets for `wrangler pages dev` — MUST never be committed (public repo)
+.dev.vars
+.dev.vars.*
+
+# Any local DB / SQLite dumps or a subscribers export
+*.db
+*.sqlite
+*.sqlite3
+subscribers*.sql
