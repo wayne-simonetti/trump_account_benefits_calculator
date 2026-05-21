@@ -318,7 +318,7 @@
     .disclaimer a { color: var(--blue); }
 
     /* NAV */
-    nav { background: var(--dark-blue); text-align: center; }
+    nav { background: var(--dark-blue); text-align: center; position: relative; }
     nav a {
       display: inline-block; padding: 0.6rem 1.4rem;
       color: rgba(255,255,255,0.75); text-decoration: none;
@@ -327,6 +327,22 @@
     }
     nav a:hover { color: #fff; }
     nav a.active { color: #fff; border-bottom-color: var(--gold); }
+    .nav-brand, .nav-toggle { display: none; }
+    @media (max-width: 640px) {
+      nav { display: flex; justify-content: space-between; align-items: center; padding: 0.3rem 1rem; }
+      .nav-brand { display: inline-block; color: #fff; font-weight: 700; font-size: 0.95rem; letter-spacing: 0.3px; text-decoration: none; }
+      .nav-toggle {
+        display: inline-flex; align-items: center; justify-content: center;
+        background: transparent; border: none; color: #fff;
+        font-size: 1.4rem; line-height: 1; cursor: pointer;
+        padding: 0.35rem 0.55rem; border-radius: 6px;
+      }
+      .nav-toggle:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+      .nav-links { display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--dark-blue); flex-direction: column; z-index: 20; box-shadow: 0 4px 12px rgba(0,0,0,0.25); }
+      .nav-toggle[aria-expanded="true"] + .nav-links { display: flex; }
+      .nav-links a { display: block; text-align: left; padding: 0.85rem 1.4rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
+      .nav-links a.active { border-bottom-color: rgba(255,255,255,0.08); background: rgba(255,255,255,0.06); color: #fff; }
+    }
 
     /* CALCULATE BUTTON */
     .calc-btn {
@@ -446,10 +462,23 @@
 <body>
 
 <nav>
-  <a href="/" class="active">Calculator</a>
-  <a href="/employers.html">Employer Directory</a>
-  <a href="/states.html">State Grants</a>
+  <a href="/" class="nav-brand">Trump Accounts</a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">☰</button>
+  <div class="nav-links" id="nav-links">
+    <a href="/" class="active">Calculator</a>
+    <a href="/employers.html">Employer Directory</a>
+    <a href="/states.html">State Grants</a>
+  </div>
 </nav>
+<script>
+  (function () {
+    var t = document.querySelector('.nav-toggle');
+    if (!t) return;
+    t.addEventListener('click', function () {
+      t.setAttribute('aria-expanded', t.getAttribute('aria-expanded') === 'true' ? 'false' : 'true');
+    });
+  })();
+</script>
 <section class="hero">
   <div class="hero-badge">Trump Accounts · Available July 5, 2026</div>
   <h1>Trump Account <span class="hero-title-break">Benefits Calculator</span></h1>
