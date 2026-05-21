@@ -467,8 +467,8 @@
   <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">☰</button>
   <div class="nav-links" id="nav-links">
     <a href="/" class="active">Calculator</a>
-    <a href="/employers.html">Employer Directory</a>
-    <a href="/states.html">State Grants</a>
+    <a href="/employers">Employer Directory</a>
+    <a href="/states">State Grants</a>
   </div>
 </nav>
 <script>
@@ -715,7 +715,7 @@
     </form>
     <div class="cf-turnstile" data-sitekey="0x4AAAAAADRwdPxMhwRiCnnF" data-size="flexible" style="margin-top:0.7rem;"></div>
     <div class="signup-msg" id="kit-msg"></div>
-    <div class="signup-fineprint">No spam. Unsubscribe anytime. Your email is stored securely and only used for launch updates — see our <a href="/privacy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a>.</div>
+    <div class="signup-fineprint">No spam. Unsubscribe anytime. Your email is stored securely and only used for launch updates — see our <a href="/privacy" style="color:inherit;text-decoration:underline;">Privacy Policy</a>.</div>
   </div>
 
   <!-- ── ELIGIBILITY SUMMARY ───────────────────────────────────────────────── -->
@@ -805,7 +805,7 @@
     <a href="https://www.cnbc.com/2025/12/17/trump-accounts-dalio-blackrock-bny.html" target="_blank">CNBC — Dalio, BlackRock, BNY</a> &bull;
     <a href="https://www.cnbc.com/2026/01/28/altimeter-capital-brad-gerstner-trump-accounts-indiana.html" target="_blank">CNBC — Gerstner / Indiana</a>
     <br><br>
-    <a href="/privacy.html">Privacy Policy</a> &bull;
+    <a href="/privacy">Privacy Policy</a> &bull;
     <a href="mailto:hello@trumpaccountbenefits.com">Contact</a>
   </p>
 
@@ -1617,7 +1617,7 @@ loadEmployers();
     const d = new Date(newest.announcement_date + 'T00:00:00');
     if (!isNaN(d)) dateStr = ` (announced ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })})`;
   }
-  inner.innerHTML = `<span class="ticker-new">New</span><span class="ticker-text"><strong>${newest.label}</strong> just joined${dateStr} — <a href="/employers.html">${total} employers</a> now offering Trump Account benefits</span>`;
+  inner.innerHTML = `<span class="ticker-new">New</span><span class="ticker-text"><strong>${newest.label}</strong> just joined${dateStr} — <a href="/employers">${total} employers</a> now offering Trump Account benefits</span>`;
   ticker.style.display = 'block';
 })();
 loadStateGrants();

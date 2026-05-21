@@ -6,17 +6,17 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://trumpaccountbenefits.com/employers.html</loc>
+    <loc>https://trumpaccountbenefits.com/employers</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://trumpaccountbenefits.com/states.html</loc>
+    <loc>https://trumpaccountbenefits.com/states</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://trumpaccountbenefits.com/privacy.html</loc>
+    <loc>https://trumpaccountbenefits.com/privacy</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
