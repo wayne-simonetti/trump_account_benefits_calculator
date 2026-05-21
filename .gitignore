@@ -4,9 +4,10 @@ __pycache__/
 deploy/
 .claude/
 trump_accounts.db
-/employers_seed.sql
+# employers_seed.sql and state_grants_seed.sql are tracked — they're the
+# git-side source of truth for rebuilding the DB. zip_income_seed.sql stays
+# ignored (too large; regenerable via census_import.py).
 /zip_income_seed.sql
-/state_grants_seed.sql
 .wrangler/
 
 # Local secrets for `wrangler pages dev` — MUST never be committed (public repo)

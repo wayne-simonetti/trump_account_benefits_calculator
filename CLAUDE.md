@@ -22,9 +22,10 @@ Helps users determine grant eligibility and project account growth. Deployed to 
 | `employers.js` | Auto-generated employer data (do not edit directly) |
 | `state_grants.js` | Auto-generated state/regional grant data (do not edit directly) |
 | `zip_income.js` | Auto-generated ZIP median-income lookup (~424KB; lazy-loaded, not preloaded) |
-| `trump_accounts.db` | SQLite (employers, state_grants, zip_income) — gitignored |
-| `seed.py` | One-time DB population from `*_seed.sql` files (also gitignored) |
-| `export.py` | Exports DB → JS files; **run after any DB change** |
+| `trump_accounts.db` | SQLite (employers, state_grants, zip_income) — gitignored; rebuild via `seed.py` |
+| `employers_seed.sql` / `state_grants_seed.sql` | **Tracked in git** — git-side source of truth for the DB. `zip_income_seed.sql` stays gitignored (too large; regen via `census_import.py`) |
+| `seed.py` | Rebuild `trump_accounts.db` from `schema.sql` + tracked `*_seed.sql` files |
+| `export.py` | Exports DB → `.js` files **and** `*_seed.sql` files; **run after any DB change** |
 | `census_import.py` | Downloads ACS ZIP income data into DB |
 | `ingest.py` | Extracts employer + state/philanthropic grant data from text via Claude API |
 | `functions/api/subscribe.js` | Signup endpoint: verifies Turnstile, writes to D1 `subscribers` table, (eventually) forwards to Kit |
@@ -33,10 +34,12 @@ Helps users determine grant eligibility and project account growth. Deployed to 
 | `wrangler.toml` | Cloudflare Pages / D1 binding config |
 
 ## Data Management Workflow
-1. Update data in `trump_accounts.db` (via `seed.py`, `ingest.py`, or DB Browser)
-2. Run `python3 export.py` to regenerate `employers.js`, `state_grants.js`, `zip_income.js`
+1. Update data in `trump_accounts.db` (via `ingest.py` or DB Browser)
+2. Run `python3 export.py` to regenerate the `.js` files **and** `employers_seed.sql` / `state_grants_seed.sql`
 3. Refresh the browser
-4. Commit + push the regenerated `.js` files — Cloudflare Pages auto-deploys on push to `main`
+4. Commit + push **both** the regenerated `.js` files **and** the updated `*_seed.sql` files — they move together. Cloudflare Pages auto-deploys on push to `main`.
+
+After a fresh clone, run `python3 seed.py` to rebuild `trump_accounts.db` from the tracked seed files. (If `zip_income_seed.sql` isn't present locally, run `python3 census_import.py` to repopulate ZIP income from Census.)
 
 ## Domain Facts (OBBBA Trump Accounts)
 - $1,000 federal seed deposit: children born Jan 1, 2025 – Dec 31, 2028

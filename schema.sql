@@ -36,7 +36,9 @@ CREATE TABLE IF NOT EXISTS employers (
     sort_order        INTEGER NOT NULL DEFAULT 0,
     contribution_type TEXT    NOT NULL DEFAULT 'seed_grant'
                       CHECK(contribution_type IN ('seed_grant', 'employer_match')),
-    source_url        TEXT
+    source_url        TEXT,
+    verified          INTEGER NOT NULL DEFAULT 0,   -- 1 = announcement confirmed by primary source
+    announcement_date TEXT                          -- ISO date of original announcement
 );
 
 -- Email launch-notification signups. Lives in REMOTE D1 only (never exported

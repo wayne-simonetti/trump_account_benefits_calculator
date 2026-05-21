@@ -34,14 +34,60 @@ STATE_NAMES = {
 
 DB_PATH = Path(__file__).parent / "trump_accounts.db"
 
+# Public allowlist — every column listed here ships to the public browser via
+# .js and to git via *_seed.sql. The guard below (`assert_no_unknown_columns`)
+# refuses to run if the DB has any column on `employers` / `state_grants` that
+# is NOT in these lists, so a future ALTER TABLE can't silently leak.
+# Order matters: it controls SELECT order and INSERT column order in seed SQL.
+PUBLIC_EMPLOYER_COLUMNS = [
+    "id", "name", "grant_amount", "condition_type", "group_label", "note",
+    "sort_order", "contribution_type", "source_url", "verified", "announcement_date",
+]
+
+PUBLIC_STATE_GRANT_COLUMNS = [
+    "id", "state_code", "grantor_name", "donor_line", "grant_amount", "amount_display",
+    "req_no_seed", "req_has_seed", "req_age_max",
+    "req_born_year_min", "req_born_year_max",
+    "req_zip_income", "income_cap", "req_zip_set", "req_checkbox_labels",
+    "note", "source_url", "sort_order",
+]
+
+
+def assert_no_unknown_columns(conn, table, allowed):
+    """Refuse to run if `table` has columns not on the public allowlist.
+
+    Everything in employers/state_grants ships publicly. Any new column must
+    be an explicit, public-aware decision — add it here, or move it to a
+    separate table that export.py never touches.
+    """
+    actual = {r["name"] for r in conn.execute(f"PRAGMA table_info({table})").fetchall()}
+    unexpected = actual - set(allowed)
+    if unexpected:
+        list_name = "PUBLIC_" + ("EMPLOYER" if table == "employers" else "STATE_GRANT") + "_COLUMNS"
+        raise SystemExit(
+            f"\nexport.py refused to run.\n"
+            f"  Table '{table}' has columns NOT in the public allowlist:\n"
+            f"    {sorted(unexpected)}\n"
+            f"  Every column in '{table}' ships to public .js and .sql.\n"
+            f"  Either:\n"
+            f"    1) Add the column to {list_name} in export.py (it will become PUBLIC), or\n"
+            f"    2) Move it to a separate, non-exported table.\n"
+        )
+
+
+def sql_value(v):
+    """Format a Python value as a SQL literal: None→NULL, int/float→bare, str→quoted."""
+    if v is None:
+        return "NULL"
+    if isinstance(v, (int, float)):
+        return str(v)
+    return "'" + str(v).replace("'", "''") + "'"
+
 
 def export_employers(conn, timestamp):
+    cols = ", ".join(PUBLIC_EMPLOYER_COLUMNS)
     rows = conn.execute(
-        """
-        SELECT id, name, grant_amount, condition_type, group_label, note, contribution_type, source_url, verified, sort_order, announcement_date
-        FROM   employers
-        ORDER  BY sort_order, name
-        """
+        f"SELECT {cols} FROM employers ORDER BY sort_order, name"
     ).fetchall()
 
     employers = []
@@ -122,14 +168,9 @@ def export_state_grants(conn, timestamp):
         print("  state_grants table not found — skipping.")
         return
 
+    cols = ", ".join(PUBLIC_STATE_GRANT_COLUMNS)
     rows = conn.execute(
-        """SELECT id, state_code, grantor_name, donor_line, grant_amount, amount_display,
-                  req_no_seed, req_has_seed, req_age_max,
-                  req_born_year_min, req_born_year_max,
-                  req_zip_income, income_cap, req_zip_set,
-                  req_checkbox_labels,
-                  note, source_url, sort_order
-           FROM state_grants ORDER BY sort_order, grantor_name"""
+        f"SELECT {cols} FROM state_grants ORDER BY sort_order, grantor_name"
     ).fetchall()
 
     grants = [dict(r) for r in rows]
@@ -214,41 +255,16 @@ def export_state_grants_sql(conn):
         print("  state_grants table not found — skipping state_grants_seed.sql.")
         return
 
+    cols = ", ".join(PUBLIC_STATE_GRANT_COLUMNS)
     rows = conn.execute(
-        """SELECT id, state_code, grantor_name, donor_line, grant_amount, amount_display,
-                  req_no_seed, req_has_seed, req_age_max,
-                  req_born_year_min, req_born_year_max,
-                  req_zip_income, income_cap, req_zip_set,
-                  req_checkbox_labels,
-                  note, source_url, sort_order
-           FROM state_grants ORDER BY sort_order, grantor_name"""
+        f"SELECT {cols} FROM state_grants ORDER BY sort_order, grantor_name"
     ).fetchall()
 
+    col_list = ",".join(PUBLIC_STATE_GRANT_COLUMNS)
     lines = ["DELETE FROM state_grants;"]
     for r in rows:
-        vals = ",".join([
-            sql_quote(r["id"]), sql_quote(r["state_code"]), sql_quote(r["grantor_name"]),
-            sql_quote(r["donor_line"]), str(r["grant_amount"]) if r["grant_amount"] is not None else "NULL",
-            sql_quote(r["amount_display"]),
-            str(r["req_no_seed"]), str(r["req_has_seed"]),
-            str(r["req_age_max"]) if r["req_age_max"] is not None else "NULL",
-            str(r["req_born_year_min"]) if r["req_born_year_min"] is not None else "NULL",
-            str(r["req_born_year_max"]) if r["req_born_year_max"] is not None else "NULL",
-            str(r["req_zip_income"]),
-            str(r["income_cap"]) if r["income_cap"] is not None else "NULL",
-            sql_quote(r["req_zip_set"]),
-            sql_quote(r["req_checkbox_labels"]),
-            sql_quote(r["note"]), sql_quote(r["source_url"]),
-            str(r["sort_order"]),
-        ])
-        lines.append(
-            f"INSERT INTO state_grants (id,state_code,grantor_name,donor_line,grant_amount,amount_display,"
-            f"req_no_seed,req_has_seed,req_age_max,"
-            f"req_born_year_min,req_born_year_max,"
-            f"req_zip_income,income_cap,req_zip_set,"
-            f"req_checkbox_labels,"
-            f"note,source_url,sort_order) VALUES ({vals});"
-        )
+        vals = ",".join(sql_value(r[c]) for c in PUBLIC_STATE_GRANT_COLUMNS)
+        lines.append(f"INSERT INTO state_grants ({col_list}) VALUES ({vals});")
     Path("state_grants_seed.sql").write_text("\n".join(lines))
     print(f"✓ state_grants_seed.sql written ({len(rows)} grants)")
 
@@ -260,20 +276,16 @@ def sql_quote(v):
 
 
 def export_employers_sql(conn):
+    cols = ", ".join(PUBLIC_EMPLOYER_COLUMNS)
     rows = conn.execute(
-        "SELECT id, name, grant_amount, condition_type, group_label, note, "
-        "sort_order, contribution_type, source_url FROM employers ORDER BY sort_order, name"
+        f"SELECT {cols} FROM employers ORDER BY sort_order, name"
     ).fetchall()
+
+    col_list = ",".join(PUBLIC_EMPLOYER_COLUMNS)
     lines = ["DELETE FROM employers;"]
     for r in rows:
-        amt = r["grant_amount"] if r["grant_amount"] is not None else "NULL"
-        lines.append(
-            f"INSERT INTO employers (id,name,grant_amount,condition_type,group_label,note,"
-            f"sort_order,contribution_type,source_url) VALUES ("
-            f"{sql_quote(r['id'])},{sql_quote(r['name'])},{amt},"
-            f"{sql_quote(r['condition_type'])},{sql_quote(r['group_label'])},{sql_quote(r['note'])},"
-            f"{r['sort_order']},{sql_quote(r['contribution_type'])},{sql_quote(r['source_url'])});"
-        )
+        vals = ",".join(sql_value(r[c]) for c in PUBLIC_EMPLOYER_COLUMNS)
+        lines.append(f"INSERT INTO employers ({col_list}) VALUES ({vals});")
     Path("employers_seed.sql").write_text("\n".join(lines))
     print(f"✓ employers_seed.sql written ({len(rows)} employers)")
 
@@ -306,6 +318,11 @@ def main():
 
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
+
+    # Guard: refuse to publish if the DB has columns we haven't explicitly approved as public.
+    assert_no_unknown_columns(conn, "employers", PUBLIC_EMPLOYER_COLUMNS)
+    if conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='state_grants'").fetchone():
+        assert_no_unknown_columns(conn, "state_grants", PUBLIC_STATE_GRANT_COLUMNS)
 
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     export_employers(conn, timestamp)
