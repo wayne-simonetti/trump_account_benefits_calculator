@@ -942,7 +942,10 @@ async function computeGrants(dob, state, zip) {
         : '';
       gdEl.innerHTML = empLabel + verifiedBadge;
       const gnameEl = document.getElementById('gname-employer');
-      if (gnameEl) gnameEl.textContent = contribType === 'employer_match' ? 'Employer Annual Match' : 'Employer Seed Grant';
+      if (gnameEl) gnameEl.textContent =
+        contribType === 'employer_match'   ? 'Employer Annual Match' :
+        contribType === 'employer_stipend' ? 'Employer Annual Stipend' :
+                                             'Employer Seed Grant';
 
       if (condition === 'variable') {
         gcEmpEl.className = 'grant-card g-eligible';
@@ -970,9 +973,10 @@ async function computeGrants(dob, state, zip) {
         gsEl.innerHTML = ibmCond
           ? '<span class="grant-status gs-eligible">Eligible — $2,000 (base + conditional)</span>'
           : '<span class="grant-status gs-eligible">Eligible — $1,000 (check box below for +$1,000)</span>';
-        gnEl.textContent = contribType === 'employer_match'
-          ? 'Annual match — counts toward $2,500 employer sub-cap'
-          : 'One-time seed grant — does not count toward $5,000 annual cap';
+        gnEl.textContent =
+          contribType === 'employer_match'   ? 'Annual match — counts toward $2,500 employer sub-cap' :
+          contribType === 'employer_stipend' ? 'Annual stipend — counts toward $2,500 employer sub-cap' :
+                                               'One-time seed grant — does not count toward $5,000 annual cap';
         gnEl.style.display = 'block';
         if (dob && under18) {
           items.push({ name: 'IBM Grant', amount: ibmTotal });
@@ -984,11 +988,12 @@ async function computeGrants(dob, state, zip) {
         gsEl.innerHTML = dob
           ? '<span class="grant-status gs-eligible">Eligible — $' + amt.toLocaleString() + '</span>'
           : '<span class="grant-status gs-pending">Enter birth date to confirm</span>';
-        gnEl.textContent = contribType === 'employer_match'
-          ? 'Annual match — counts toward $2,500 employer sub-cap'
-          : 'One-time seed grant — does not count toward $5,000 annual cap';
+        gnEl.textContent =
+          contribType === 'employer_match'   ? 'Annual match — counts toward $2,500 employer sub-cap' :
+          contribType === 'employer_stipend' ? 'Annual stipend — counts toward $2,500 employer sub-cap' :
+                                               'One-time seed grant — does not count toward $5,000 annual cap';
         gnEl.style.display = 'block';
-        if (dob && under18 && contribType !== 'employer_match') {
+        if (dob && under18 && contribType !== 'employer_match' && contribType !== 'employer_stipend') {
           items.push({ name: empLabel + ' Grant', amount: amt });
           total += amt;
         }
@@ -1143,13 +1148,16 @@ async function compute() {
   let employerMatchNote = '';
   if (empVal) {
     const [empId, amtStr, condition, contribType] = empVal.split('|');
-    if (contribType === 'employer_match' && condition !== 'variable') {
+    if ((contribType === 'employer_match' || contribType === 'employer_stipend') && condition !== 'variable') {
       employerRaw = Math.min(parseInt(amtStr) || 0, 2500);
       const empRec = (EMPLOYER_DATA || []).find(e => e.value.startsWith(empId + '|'));
       const empDisplayName = empRec ? empRec.label : empId;
       const capStr = '$' + employerRaw.toLocaleString();
-      employerMatchDisplay = `${empDisplayName} annual match: +${capStr}/yr`;
-      employerMatchNote = `+ up to ${capStr}/yr ${empDisplayName} match (if you contribute ${capStr})`;
+      const kind = contribType === 'employer_stipend' ? 'stipend' : 'match';
+      employerMatchDisplay = `${empDisplayName} annual ${kind}: +${capStr}/yr`;
+      employerMatchNote = contribType === 'employer_stipend'
+        ? `+ ${capStr}/yr ${empDisplayName} stipend (opt-in election)`
+        : `+ up to ${capStr}/yr ${empDisplayName} match (if you contribute ${capStr})`;
     }
   }
   const matchLine = document.getElementById('employer-match-line');
