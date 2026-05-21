@@ -65,7 +65,8 @@
     .nav-brand, .nav-toggle { display: none; }
     @media (max-width: 640px) {
       nav { display: flex; justify-content: space-between; align-items: center; padding: 0.3rem 1rem; }
-      .nav-brand { display: inline-block; color: #fff; font-weight: 700; font-size: 0.95rem; letter-spacing: 0.3px; text-decoration: none; }
+      .nav-brand { display: inline-flex; align-items: center; color: #fff; text-decoration: none; padding: 0.35rem 0.4rem; border-radius: 6px; }
+      .nav-brand:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
       .nav-toggle {
         display: inline-flex; align-items: center; justify-content: center;
         background: transparent; border: none; color: #fff;
@@ -219,7 +220,7 @@
 <body>
 
 <nav>
-  <a href="/" class="nav-brand">Trump Accounts</a>
+  <a href="/" class="nav-brand" aria-label="Home"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></a>
   <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">☰</button>
   <div class="nav-links" id="nav-links">
     <a href="/">Calculator</a>
