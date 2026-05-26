@@ -22,7 +22,9 @@ CREATE TABLE IF NOT EXISTS state_grants (
     req_checkbox_labels   TEXT,              -- JSON array of checkbox labels for manual eligibility; NULL = automatic
     note                  TEXT,
     source_url            TEXT,
-    sort_order            INTEGER NOT NULL DEFAULT 0
+    sort_order            INTEGER NOT NULL DEFAULT 0,
+    status                TEXT    NOT NULL DEFAULT 'active'
+                          CHECK(status IN ('active', 'pending'))
 );
 
 CREATE TABLE IF NOT EXISTS employers (

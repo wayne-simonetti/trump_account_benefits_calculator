@@ -201,8 +201,25 @@
     .states-list a:hover { background: #f4f1ea; }
     .states-list a.has { border-color: var(--gold-dark); background: #FFF8E1; color: #5C4A1F; font-weight: 700; }
     .states-list a.has:hover { background: #FFEFC4; }
+    .states-list a.pending-only { border-color: var(--gold-dark); border-style: dashed; background: #FCFAF2; color: #5C4A1F; font-weight: 600; }
+    .states-list a.pending-only:hover { background: #FFF8E1; }
     .states-list a .count { font-size: 0.72rem; color: var(--muted); font-weight: 600; }
     .states-list a.has .count { color: var(--gold-dark); }
+    .states-list a.pending-only .count { color: var(--gold-dark); font-style: italic; }
+
+    /* Pending grant card in modal */
+    .modal .grant.pending {
+      border: 1.5px dashed var(--gold-dark); background: #FCFAF2;
+    }
+    .modal .grant.pending .grant-amount { color: var(--gold-dark); }
+    .pending-pill {
+      display: inline-block; font-size: 0.7rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.4px;
+      background: var(--gold-dark); color: #fff;
+      padding: 0.15rem 0.5rem; border-radius: 4px;
+      margin-bottom: 0.45rem;
+    }
+    .hero-stat-pending { font-size: 0.72rem; color: rgba(255,255,255,0.6); margin-top: 1rem; font-style: italic; }
 
     footer.site {
       text-align: center; padding: 1.4rem 1rem 2.4rem;
@@ -245,6 +262,7 @@
     <div class="hero-stat"><strong id="stat-states">—</strong><span>States with programs</span></div>
     <div class="hero-stat"><strong id="stat-nation">—</strong><span>Nationwide grants</span></div>
   </div>
+  <div class="hero-stat-pending" id="stat-pending"></div>
 </section>
 
 <main>
@@ -305,6 +323,9 @@ const STATE_NAMES = {
   VA:'Virginia',WA:'Washington',WV:'West Virginia',WI:'Wisconsin',WY:'Wyoming'
 };
 
+const isPending = g => g.status === 'pending';
+const isActive  = g => g.status !== 'pending';
+
 // Build grant index by state
 function buildIndex() {
   const byState = {};
@@ -319,8 +340,17 @@ function buildIndex() {
 const { byState, nationwide } = buildIndex();
 
 // ── Hero stats ──────────────────────────────────────────────────────────────
-document.getElementById('stat-states').textContent = Object.keys(byState).length;
-document.getElementById('stat-nation').textContent = nationwide.length;
+const activeStates = Object.entries(byState).filter(([, gs]) => gs.some(isActive)).length;
+const pendingOnlyStates = Object.entries(byState)
+  .filter(([, gs]) => gs.some(isPending) && !gs.some(isActive))
+  .map(([code]) => code);
+document.getElementById('stat-states').textContent = activeStates;
+document.getElementById('stat-nation').textContent = nationwide.filter(isActive).length;
+if (pendingOnlyStates.length) {
+  const names = pendingOnlyStates.map(c => STATE_NAMES[c] || c).join(', ');
+  document.getElementById('stat-pending').textContent =
+    `+ ${pendingOnlyStates.length} state${pendingOnlyStates.length > 1 ? 's' : ''} with pending legislation (${names})`;
+}
 
 // ── Nationwide section ─────────────────────────────────────────────────────
 function fmtAmount(g) {
@@ -329,10 +359,11 @@ function fmtAmount(g) {
   return 'TBD';
 }
 const nationwideList = document.getElementById('nationwide-list');
-if (!nationwide.length) {
+const nationwideActive = nationwide.filter(isActive);
+if (!nationwideActive.length) {
   nationwideList.innerHTML = '<p style="color:var(--muted);font-size:0.9rem;">No nationwide grants currently tracked.</p>';
 } else {
-  nationwideList.innerHTML = nationwide.map(g => `
+  nationwideList.innerHTML = nationwideActive.map(g => `
     <div class="nation-grant">
       <div class="ng-head">
         <div>
@@ -352,10 +383,20 @@ if (!nationwide.length) {
   const sorted = Object.entries(STATE_NAMES).sort((a, b) => a[1].localeCompare(b[1]));
   const html = sorted.map(([code, name]) => {
     const grants = byState[code] || [];
-    const has = grants.length > 0;
-    return `<a href="#" data-code="${code}" class="${has ? 'has' : ''}">
+    const active = grants.filter(isActive);
+    const pending = grants.filter(isPending);
+    let cls = '', count = '—';
+    if (active.length) {
+      cls = 'has';
+      count = active.length + ' program' + (active.length > 1 ? 's' : '');
+      if (pending.length) count += ` + ${pending.length} pending`;
+    } else if (pending.length) {
+      cls = 'pending-only';
+      count = pending.length + ' pending';
+    }
+    return `<a href="#" data-code="${code}" class="${cls}">
       <span>${name}</span>
-      <span class="count">${has ? grants.length + ' program' + (grants.length>1?'s':'') : '—'}</span>
+      <span class="count">${count}</span>
     </a>`;
   }).join('');
   document.getElementById('states-list').innerHTML = html;
@@ -371,10 +412,13 @@ const modalCta       = document.getElementById('modal-cta');
 function openModal(code) {
   const name = STATE_NAMES[code] || code;
   const grants = byState[code] || [];
+  const active = grants.filter(isActive);
+  const pending = grants.filter(isPending);
   modalStateName.textContent = name;
-  modalStateSub.textContent = grants.length
-    ? `${grants.length} announced program${grants.length>1?'s':''}`
-    : 'No state program announced yet';
+  const subParts = [];
+  if (active.length) subParts.push(`${active.length} announced program${active.length > 1 ? 's' : ''}`);
+  if (pending.length) subParts.push(`${pending.length} pending`);
+  modalStateSub.textContent = subParts.length ? subParts.join(' · ') : 'No state program announced yet';
   modalCta.href = grants.length ? `/#state=${code}` : `/`;
   modalCta.textContent = grants.length ? `See full eligibility in calculator →` : `Open the calculator →`;
   if (!grants.length) {
@@ -384,8 +428,9 @@ function openModal(code) {
       to see federal, employer, and nationwide grants your child may qualify for.
     </div>`;
   } else {
-    modalContent.innerHTML = grants.map(g => `
-      <div class="grant">
+    const renderGrant = g => `
+      <div class="grant${isPending(g) ? ' pending' : ''}">
+        ${isPending(g) ? '<div class="pending-pill">Pending — not yet enacted</div>' : ''}
         <div class="grant-head">
           <div>
             <div class="grant-name">${g.grantor_name}</div>
@@ -396,11 +441,12 @@ function openModal(code) {
         ${g.note ? `<div class="grant-note">${g.note}</div>` : ''}
         ${g.source_url ? `<div class="grant-source"><a href="${g.source_url}" target="_blank" rel="noopener">Source ↗</a></div>` : ''}
       </div>
-    `).join('');
+    `;
+    modalContent.innerHTML = [...active, ...pending].map(renderGrant).join('');
   }
   modalBackdrop.classList.add('open');
   document.body.style.overflow = 'hidden';
-  if (typeof track === 'function') track('state_modal_opened', { state: code, has_grant: grants.length > 0 });
+  if (typeof track === 'function') track('state_modal_opened', { state: code, has_grant: active.length > 0, has_pending: pending.length > 0 });
 }
 function closeModal() {
   modalBackdrop.classList.remove('open');

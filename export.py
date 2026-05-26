@@ -49,7 +49,7 @@ PUBLIC_STATE_GRANT_COLUMNS = [
     "req_no_seed", "req_has_seed", "req_age_max",
     "req_born_year_min", "req_born_year_max",
     "req_zip_income", "income_cap", "req_zip_set", "req_checkbox_labels",
-    "note", "source_url", "sort_order",
+    "note", "source_url", "sort_order", "status",
 ]
 
 
@@ -194,7 +194,7 @@ def export_state_grants_csv(conn):
 
     rows = conn.execute(
         """SELECT state_code, grantor_name, grant_amount, amount_display, note, sort_order
-           FROM state_grants WHERE state_code IS NOT NULL
+           FROM state_grants WHERE state_code IS NOT NULL AND status = 'active'
            ORDER BY state_code, sort_order"""
     ).fetchall()
 
