@@ -940,10 +940,7 @@ async function computeGrants(dob, state, zip) {
       const amt = parseInt(amtStr) || 0;
       const empRecord = (EMPLOYER_DATA || []).find(e => e.value.startsWith(id + '|'));
       const empLabel = empRecord ? empRecord.label : id;
-      const verifiedBadge = empRecord && empRecord.verified
-        ? ' <span style="display:inline-flex;align-items:center;justify-content:center;border:1.5px solid var(--gold);color:var(--gold);font-size:0.65rem;font-weight:700;width:0.95rem;height:0.95rem;border-radius:2px;vertical-align:middle;margin-left:0.3rem;">✓</span>'
-        : '';
-      gdEl.innerHTML = empLabel + verifiedBadge;
+      gdEl.textContent = empLabel;
       const gnameEl = document.getElementById('gname-employer');
       if (gnameEl) gnameEl.textContent =
         contribType === 'employer_match'   ? 'Employer Annual Match' :
@@ -1513,8 +1510,7 @@ function initEmployerCombo() {
 
       const labelHtml = highlight(emp.label, q);
       const isSel     = emp.value === selectedValue;
-      const verifiedBadge = emp.verified ? ' <span style="font-size:0.65rem;color:var(--gold);font-weight:700;">✓</span>' : '';
-      html += `<div class="emp-option${isSel ? ' selected' : ''}" data-value="${emp.value}" data-label="${emp.label}">${labelHtml}${verifiedBadge}</div>`;
+      html += `<div class="emp-option${isSel ? ' selected' : ''}" data-value="${emp.value}" data-label="${emp.label}">${labelHtml}</div>`;
       visibleCount++;
     });
 

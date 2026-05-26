@@ -285,8 +285,6 @@ function renderEmployerTable() {
       const cmp = typeof av === 'number' ? av - bv : av.localeCompare(bv);
       return sortAsc ? cmp : -cmp;
     });
-  } else {
-    rows = [...rows].sort((a, b) => (b.verified ? 1 : 0) - (a.verified ? 1 : 0));
   }
   tbody.innerHTML = rows.map(e => {
     const [, amtStr, condition, contribType] = e.value.split('|');
@@ -295,8 +293,7 @@ function renderEmployerTable() {
     const condDisplay = conditionLabels[condition] || condition;
     const contribDisplay = contribLabels[contribType] || contribType || '—';
     const note = e.source_url ? `<a href="${e.source_url}" target="_blank" rel="noopener" style="font-size:0.82rem;">${rootDomain(e.source_url)} ↗</a>` : '—';
-    const badge = e.verified ? ' <span style="display:inline-flex;align-items:center;justify-content:center;border:1.5px solid var(--gold);color:var(--gold);font-size:0.65rem;font-weight:700;width:0.95rem;height:0.95rem;border-radius:2px;vertical-align:middle;margin-left:0.25rem;">✓</span>' : '';
-    return `<tr${e.verified ? ' style="background:rgba(201,168,76,0.06);"' : ''}><td>${e.label}${badge}</td><td>${amtDisplay}</td><td>${contribDisplay}</td><td>${condDisplay}</td><td>${note}</td></tr>`;
+    return `<tr><td>${e.label}</td><td>${amtDisplay}</td><td>${contribDisplay}</td><td>${condDisplay}</td><td>${note}</td></tr>`;
   }).join('');
   if (!rows.length) {
     tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);text-align:center;">No matching employers found.</td></tr>';
@@ -373,11 +370,9 @@ function initCombo() {
 
     const opts = matches.map(e => {
       const sel = selectedEmployers.has(e.label);
-      const vmark = e.verified ? '<span class="opt-verified" title="Verified">✓</span>' : '';
       return `<div class="combo-option" data-label="${e.label.replace(/"/g, '&quot;')}">
         <input type="checkbox" ${sel ? 'checked' : ''} tabindex="-1" />
         <span class="opt-label">${highlight(e.label, q)}</span>
-        ${vmark}
       </div>`;
     }).join('');
     dropdown.innerHTML = actions + opts;
