@@ -1064,7 +1064,6 @@ function renderGrantSection(wrapId, filterState, ctx) {
   for (const g of grants) {
     const amtDisplay = g.amount_display || (g.grant_amount !== null ? '$' + g.grant_amount.toLocaleString() : 'TBD');
     const amtStyle = g.grant_amount === null ? ' style="font-size:0.85rem;"' : '';
-    const srcHtml = g.source_url ? `<div style="margin-top:0.4rem;font-size:0.75rem;"><a href="${g.source_url}" target="_blank" rel="noopener" style="color:var(--blue);">Source ↗</a></div>` : '';
 
     if (g.status === 'pending') {
       // Proposed / not-yet-enacted — informational only, not counted in total
@@ -1073,7 +1072,7 @@ function renderGrantSection(wrapId, filterState, ctx) {
         <div class="grant-card-header"><div class="grant-name">${g.grantor_name}</div><div class="grant-amount"${amtStyle}>${amtDisplay}</div></div>
         ${g.donor_line ? `<div class="grant-donor">${g.donor_line}</div>` : ''}
         ${g.note ? `<div class="grant-note">${g.note}</div>` : ''}
-        <span class="grant-status gs-proposed">Proposed — pending legislation, not counted in total</span>${srcHtml}
+        <span class="grant-status gs-proposed">Proposed — pending legislation, not counted in total</span>
       </div>`;
       continue;
     }
@@ -1098,7 +1097,7 @@ function renderGrantSection(wrapId, filterState, ctx) {
         <div class="grant-card-header"><div class="grant-name">${g.grantor_name}</div><div class="grant-amount"${amtStyle}>${amtDisplay}</div></div>
         ${g.donor_line ? `<div class="grant-donor">${g.donor_line}</div>` : ''}
         ${g.note ? `<div class="grant-note">${g.note}</div>` : ''}
-        ${badge}${srcHtml}
+        ${badge}
         <div class="grant-inputs">${rows}
         </div>
       </div>`;
@@ -1113,7 +1112,7 @@ function renderGrantSection(wrapId, filterState, ctx) {
         <div class="grant-card-header"><div class="grant-name">${g.grantor_name}</div><div class="grant-amount"${amtStyle}>${amtDisplay}</div></div>
         ${g.donor_line ? `<div class="grant-donor">${g.donor_line}</div>` : ''}
         ${g.note ? `<div class="grant-note">${g.note}</div>` : ''}
-        <span class="grant-status ${ev.badge}">${ev.msg}</span>${srcHtml}
+        <span class="grant-status ${ev.badge}">${ev.msg}</span>
       </div>`;
     }
   }
