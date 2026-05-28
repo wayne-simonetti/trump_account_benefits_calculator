@@ -272,6 +272,17 @@ def export_state_grants_csv(conn):
     for r in rows:
         by_state.setdefault(r["state_code"], []).append(r)
 
+    # Pending (proposed, not-yet-enacted) state programs — mapped as their own
+    # category so Datawrapper can color them distinctly from active programs.
+    pending_rows = conn.execute(
+        """SELECT state_code, grantor_name, grant_amount, amount_display, note, sort_order
+           FROM state_grants WHERE state_code IS NOT NULL AND status = 'pending'
+           ORDER BY state_code, sort_order"""
+    ).fetchall()
+    pending_by_state = {}
+    for r in pending_rows:
+        pending_by_state.setdefault(r["state_code"], []).append(r)
+
     def fmt_amount(r):
         if r["amount_display"]:
             return r["amount_display"]
@@ -293,6 +304,7 @@ def export_state_grants_csv(conn):
     out_rows = []
     for code in sorted(STATE_NAMES):
         grants = by_state.get(code, [])
+        pending = pending_by_state.get(code, [])
         name = STATE_NAMES[code]
         if grants:
             top = grants[0]
@@ -301,6 +313,15 @@ def export_state_grants_csv(conn):
             tooltip = f"<b>{top['grantor_name']}</b> — {amount}<br><small>{short(elig)}</small>"
             out_rows.append([
                 code, name, "Yes", len(grants),
+                top["grantor_name"], amount, elig, tooltip
+            ])
+        elif pending:
+            top = pending[0]
+            amount = fmt_amount(top)
+            elig = (top["note"] or "").strip()
+            tooltip = f"<b>{top['grantor_name']}</b> (proposed) — {amount}<br><small>{short(elig)}</small>"
+            out_rows.append([
+                code, name, "Pending", len(pending),
                 top["grantor_name"], amount, elig, tooltip
             ])
         else:
@@ -314,7 +335,8 @@ def export_state_grants_csv(conn):
         w.writerows(out_rows)
 
     n_has = sum(1 for r in out_rows if r[2] == "Yes")
-    print(f"✓ state_grants.csv written (51 rows, {n_has} with programs)")
+    n_pending = sum(1 for r in out_rows if r[2] == "Pending")
+    print(f"✓ state_grants.csv written (51 rows, {n_has} active, {n_pending} pending)")
 
 
 def export_state_grants_sql(conn):
