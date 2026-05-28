@@ -320,6 +320,20 @@
     .disclaimer { grid-column: 1 / -1; font-size: 0.73rem; color: var(--muted); border-top: 1px solid #ddd; padding-top: 0.8rem; line-height: 1.5; }
     .disclaimer a { color: var(--blue); }
 
+    /* OFFICIAL RESOURCES */
+    .resource-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 0.75rem; }
+    .resource-link {
+      display: flex; align-items: center; gap: 0.7rem;
+      padding: 0.85rem 1rem; border: 1px solid var(--gray); border-radius: 8px;
+      background: var(--off-white); text-decoration: none; color: var(--text);
+      transition: border-color 0.15s, background 0.15s, transform 0.1s;
+    }
+    .resource-link:hover { border-color: var(--blue); background: var(--white); transform: translateY(-1px); }
+    .resource-icon { font-size: 1.4rem; line-height: 1; flex-shrink: 0; }
+    .resource-text { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+    .resource-text strong { font-size: 0.92rem; color: var(--dark-blue); }
+    .resource-text span { font-size: 0.75rem; color: var(--muted); }
+
     /* NAV */
     nav { background: #0F2454; text-align: center; position: relative; }
     nav a {
@@ -797,6 +811,25 @@
         </thead>
         <tbody id="breakdown-body"></tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- ── OFFICIAL RESOURCES ───────────────────────────────────────────────── -->
+  <div class="card card-full">
+    <h2>Official Resources</h2>
+    <div class="resource-links">
+      <a class="resource-link" href="https://www.trumpaccounts.gov/" target="_blank" rel="noopener">
+        <span class="resource-icon" aria-hidden="true">📱</span>
+        <span class="resource-text"><strong>Get the Trump Accounts app</strong><span>Apple App Store &amp; Google Play — via trumpaccounts.gov</span></span>
+      </a>
+      <a class="resource-link" href="https://www.trumpaccounts.gov/" target="_blank" rel="noopener">
+        <span class="resource-icon" aria-hidden="true">🌐</span>
+        <span class="resource-text"><strong>trumpaccounts.gov</strong><span>Official Treasury program site &amp; account setup</span></span>
+      </a>
+      <a class="resource-link" href="https://investamerica.org/" target="_blank" rel="noopener">
+        <span class="resource-icon" aria-hidden="true">⭐</span>
+        <span class="resource-text"><strong>Invest America</strong><span>The initiative behind Trump Accounts</span></span>
+      </a>
     </div>
   </div>
 
