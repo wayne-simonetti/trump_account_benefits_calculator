@@ -56,7 +56,7 @@ After a fresh clone, run `python3 seed.py` to rebuild `trump_accounts.db` from t
 - Family contributions: after-tax, withdrawn tax-free
 - Employer/seed/earnings: taxed as ordinary income on withdrawal
 - Withdrawals prohibited before age 18
-- Account open date: July 5, 2026 (via Form 4547 or trumpaccounts.gov)
+- Account open date: July 4, 2026 (via Form 4547 or trumpaccounts.gov)
 - Philanthropic/employer seed grants exempt from $5,000 annual cap
 
 ## When to Use Plan Mode
