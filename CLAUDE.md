@@ -17,13 +17,15 @@ Helps users determine grant eligibility and project account growth. Deployed to 
 |------|---------|
 | `index.html` | Calculator page — all HTML, CSS, JS inline |
 | `employers.html` | Public employer directory page (loads `employers.js`) |
-| `states.html` | Public state-grant directory page (loads `state_grants.js`) |
+| `states.html` | Public state-grant directory page (loads `state_grants.js` + `philanthropic_gifts.js`) |
+| `philanthropy.html` | Public philanthropy directory page (loads `philanthropic_gifts.js`) |
 | `privacy.html` | Privacy policy |
 | `employers.js` | Auto-generated employer data (do not edit directly) |
-| `state_grants.js` | Auto-generated state/regional grant data (do not edit directly) |
+| `state_grants.js` | Auto-generated **government** state-program data — OK/WI/TX (do not edit directly) |
+| `philanthropic_gifts.js` | Auto-generated philanthropic/donor gift data (do not edit directly) |
 | `zip_income.js` | Auto-generated ZIP median-income lookup (~424KB; lazy-loaded, not preloaded) |
-| `trump_accounts.db` | SQLite (employers, state_grants, zip_income) — gitignored; rebuild via `seed.py` |
-| `employers_seed.sql` / `state_grants_seed.sql` | **Tracked in git** — git-side source of truth for the DB. `zip_income_seed.sql` stays gitignored (too large; regen via `census_import.py`) |
+| `trump_accounts.db` | SQLite (employers, state_grants, philanthropic_gifts, zip_income) — gitignored; rebuild via `seed.py` |
+| `employers_seed.sql` / `state_grants_seed.sql` / `philanthropic_gifts_seed.sql` | **Tracked in git** — git-side source of truth for the DB. `zip_income_seed.sql` stays gitignored (too large; regen via `census_import.py`) |
 | `seed.py` | Rebuild `trump_accounts.db` from `schema.sql` + tracked `*_seed.sql` files |
 | `export.py` | Exports DB → `.js` files **and** `*_seed.sql` files; **run after any DB change** |
 | `census_import.py` | Downloads ACS ZIP income data into DB |
@@ -33,9 +35,15 @@ Helps users determine grant eligibility and project account growth. Deployed to 
 | `schema.sql` | DB schema reference |
 | `wrangler.toml` | Cloudflare Pages / D1 binding config |
 
+## Grant Data Model — which table?
+- **`state_grants`** — government-funded state programs only (Oklahoma, Wisconsin, Texas). Has a `status` column (`active` | `pending`); pending = proposed/not-yet-law, shown but excluded from totals.
+- **`philanthropic_gifts`** — donor/foundation/company gifts (Dell, Altimeter, Dalio, Anonymous SF, Anand, Kraken, plus informational pledges). Extra fields: `donor_type`, `total_committed`, `geo_scope` (`nationwide`|`state`|`regional`|`closed`), and `is_open_to_apply` (`1` = calculator evaluates eligibility; `0` = page-only informational, e.g. closed gifts / unstructured pledges).
+- The **calculator** and **`/states`** merge both tables at load time (state programs + `is_open_to_apply=1` gifts), so eligibility and the state directory cover both. **`/philanthropy`** shows all `philanthropic_gifts` grouped by `geo_scope`.
+- Both tables share the same eligibility field shape (`req_no_seed`, `req_age_max`, `req_zip_set`, etc.) so the calculator's `evaluateGrant()` works on either.
+
 ## Data Management Workflow
-1. Update data in `trump_accounts.db` (via `ingest.py` or DB Browser)
-2. Run `python3 export.py` to regenerate the `.js` files **and** `employers_seed.sql` / `state_grants_seed.sql`
+1. Update data in `trump_accounts.db` (via `ingest.py` or DB Browser). New donor commitments → `philanthropic_gifts`; new government programs → `state_grants`.
+2. Run `python3 export.py` to regenerate the `.js` files **and** `employers_seed.sql` / `state_grants_seed.sql` / `philanthropic_gifts_seed.sql`
 3. Refresh the browser
 4. Commit + push **both** the regenerated `.js` files **and** the updated `*_seed.sql` files — they move together. Cloudflare Pages auto-deploys on push to `main`.
 
