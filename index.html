@@ -1058,7 +1058,11 @@ function openGrantsPool() {
   const state = (typeof STATE_GRANTS !== 'undefined' && STATE_GRANTS) ? STATE_GRANTS : [];
   const phil  = (typeof PHILANTHROPIC_GIFTS !== 'undefined' && PHILANTHROPIC_GIFTS)
     ? PHILANTHROPIC_GIFTS.filter(g => g.is_open_to_apply) : [];
-  return [...state, ...phil];
+  // Dedup by id (philanthropic_gifts wins) so a stale cached state_grants.js —
+  // which used to hold these rows — can't double-count during a deploy.
+  const byId = new Map();
+  for (const g of [...state, ...phil]) byId.set(g.id, g);
+  return [...byId.values()];
 }
 
 // ── Render a grant section from the combined grant pool ──────────────────

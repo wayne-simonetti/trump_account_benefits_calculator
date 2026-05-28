@@ -331,11 +331,16 @@ const isActive  = g => g.status !== 'pending';
 
 // State programs (government) + philanthropic gifts that are open to apply.
 // Closed/informational gifts (is_open_to_apply=0) live only on /philanthropy.
-const ALL_PROGRAMS = [
-  ...((typeof STATE_GRANTS !== 'undefined' && STATE_GRANTS) ? STATE_GRANTS : []),
-  ...((typeof PHILANTHROPIC_GIFTS !== 'undefined' && PHILANTHROPIC_GIFTS)
-        ? PHILANTHROPIC_GIFTS.filter(g => g.is_open_to_apply) : [])
-];
+// Dedup by id (philanthropic_gifts wins) so a stale cached state_grants.js —
+// which used to hold these rows — can't double-count during a deploy.
+const ALL_PROGRAMS = (() => {
+  const stateArr = (typeof STATE_GRANTS !== 'undefined' && STATE_GRANTS) ? STATE_GRANTS : [];
+  const philArr  = (typeof PHILANTHROPIC_GIFTS !== 'undefined' && PHILANTHROPIC_GIFTS)
+    ? PHILANTHROPIC_GIFTS.filter(g => g.is_open_to_apply) : [];
+  const byId = new Map();
+  for (const g of [...stateArr, ...philArr]) byId.set(g.id, g);
+  return [...byId.values()];
+})();
 
 // Build grant index by state
 function buildIndex() {
