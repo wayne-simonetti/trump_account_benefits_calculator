@@ -82,31 +82,31 @@
     .tag-free  { background: var(--light-green); color: var(--green); }
     .tag-taxed { background: #FFEBEE; color: #C62828; }
 
-    nav { background: var(--white); text-align: center; position: relative; border-bottom: 1px solid #D8D3C8; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    nav { background: var(--dark-blue); text-align: center; position: relative; }
     nav a {
       display: inline-block; padding: 0.6rem 1.4rem;
-      color: rgba(26,63,160,0.72); text-decoration: none;
+      color: rgba(255,255,255,0.75); text-decoration: none;
       font-size: 0.85rem; font-weight: 700; letter-spacing: 0.3px;
       border-bottom: 3px solid transparent; transition: color 0.15s, border-color 0.15s;
     }
-    nav a:hover { color: var(--dark-blue); }
-    nav a.active { color: var(--dark-blue); border-bottom-color: var(--gold); }
+    nav a:hover { color: #fff; }
+    nav a.active { color: #fff; border-bottom-color: var(--gold); }
     .nav-brand, .nav-toggle { display: none; }
     @media (max-width: 640px) {
       nav { display: flex; justify-content: space-between; align-items: center; padding: 0.3rem 1rem; }
-      .nav-brand { display: inline-flex; align-items: center; color: var(--dark-blue); text-decoration: none; padding: 0.35rem 0.4rem; border-radius: 6px; }
+      .nav-brand { display: inline-flex; align-items: center; color: #fff; text-decoration: none; padding: 0.35rem 0.4rem; border-radius: 6px; }
       .nav-brand:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
       .nav-toggle {
         display: inline-flex; align-items: center; justify-content: center;
-        background: transparent; border: none; color: var(--dark-blue);
+        background: transparent; border: none; color: #fff;
         font-size: 1.4rem; line-height: 1; cursor: pointer;
         padding: 0.35rem 0.55rem; border-radius: 6px;
       }
       .nav-toggle:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
-      .nav-links { display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--white); flex-direction: column; z-index: 20; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-bottom: 1px solid #D8D3C8; }
+      .nav-links { display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--dark-blue); flex-direction: column; z-index: 20; box-shadow: 0 4px 12px rgba(0,0,0,0.25); }
       .nav-toggle[aria-expanded="true"] + .nav-links { display: flex; }
-      .nav-links a { display: block; text-align: left; padding: 0.85rem 1.4rem; border-bottom: 1px solid rgba(0,0,0,0.08); }
-      .nav-links a.active { border-bottom-color: rgba(0,0,0,0.08); background: rgba(26,63,160,0.07); color: var(--dark-blue); }
+      .nav-links a { display: block; text-align: left; padding: 0.85rem 1.4rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
+      .nav-links a.active { border-bottom-color: rgba(255,255,255,0.08); background: rgba(255,255,255,0.06); color: #fff; }
     }
 
     /* Multi-select combobox */
