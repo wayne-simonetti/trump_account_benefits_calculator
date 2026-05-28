@@ -27,6 +27,36 @@ CREATE TABLE IF NOT EXISTS state_grants (
                           CHECK(status IN ('active', 'pending'))
 );
 
+CREATE TABLE IF NOT EXISTS philanthropic_gifts (
+    id                    TEXT    PRIMARY KEY,
+    grantor_name          TEXT    NOT NULL,
+    donor_line            TEXT,              -- subtitle line
+    donor_type            TEXT,              -- 'foundation' | 'individual' | 'anonymous' | 'corporate_pledge'
+    total_committed       INTEGER,           -- total $ pledged across program; NULL if unknown
+    state_code            TEXT,              -- 2-letter geo restriction; NULL = nationwide
+    geo_scope             TEXT    NOT NULL DEFAULT 'nationwide'
+                          CHECK(geo_scope IN ('nationwide', 'state', 'regional', 'closed')),
+    grant_amount          INTEGER,           -- per-child amount; NULL = variable/TBD
+    amount_display        TEXT,              -- display override, e.g. "~$500" or "TBD"
+    -- Eligibility (same shape as state_grants so evaluateGrant works on both):
+    req_no_seed           INTEGER NOT NULL DEFAULT 0,
+    req_has_seed          INTEGER NOT NULL DEFAULT 0,
+    req_age_max           INTEGER,
+    req_born_year_min     INTEGER,
+    req_born_year_max     INTEGER,
+    req_zip_income        INTEGER NOT NULL DEFAULT 0,
+    income_cap            INTEGER,
+    req_zip_set           TEXT,
+    req_checkbox_labels   TEXT,
+    -- Display + source:
+    note                  TEXT,
+    source_url            TEXT,
+    sort_order            INTEGER NOT NULL DEFAULT 0,
+    -- 1 = a child can actually apply/qualify (calculator evaluates it);
+    -- 0 = informational only (closed gift, unstructured pledge) — page-only.
+    is_open_to_apply      INTEGER NOT NULL DEFAULT 1
+);
+
 CREATE TABLE IF NOT EXISTS employers (
     id             TEXT    PRIMARY KEY,
     name           TEXT    NOT NULL,

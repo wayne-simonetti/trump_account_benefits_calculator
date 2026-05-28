@@ -34,6 +34,7 @@
   </script>
 
   <link rel="preload" href="state_grants.js" as="script" />
+  <link rel="preload" href="philanthropic_gifts.js" as="script" />
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -243,6 +244,7 @@
     <a href="/">Calculator</a>
     <a href="/employers">Employer Directory</a>
     <a href="/states" class="active">State Grants</a>
+    <a href="/philanthropy">Philanthropy</a>
   </div>
 </nav>
 <script>
@@ -306,6 +308,7 @@
 </footer>
 
 <script src="state_grants.js"></script>
+<script src="philanthropic_gifts.js"></script>
 
 <script>
 // ── State metadata ──────────────────────────────────────────────────────────
@@ -326,12 +329,20 @@ const STATE_NAMES = {
 const isPending = g => g.status === 'pending';
 const isActive  = g => g.status !== 'pending';
 
+// State programs (government) + philanthropic gifts that are open to apply.
+// Closed/informational gifts (is_open_to_apply=0) live only on /philanthropy.
+const ALL_PROGRAMS = [
+  ...((typeof STATE_GRANTS !== 'undefined' && STATE_GRANTS) ? STATE_GRANTS : []),
+  ...((typeof PHILANTHROPIC_GIFTS !== 'undefined' && PHILANTHROPIC_GIFTS)
+        ? PHILANTHROPIC_GIFTS.filter(g => g.is_open_to_apply) : [])
+];
+
 // Build grant index by state
 function buildIndex() {
   const byState = {};
   const nationwide = [];
-  for (const g of (STATE_GRANTS || [])) {
-    if (g.state_code === null) { nationwide.push(g); continue; }
+  for (const g of ALL_PROGRAMS) {
+    if (g.state_code === null || g.state_code === undefined) { nationwide.push(g); continue; }
     if (!byState[g.state_code]) byState[g.state_code] = [];
     byState[g.state_code].push(g);
   }

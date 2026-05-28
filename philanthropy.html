@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Philanthropic Programs — Trump Account Calculator</title>
+  <meta name="description" content="Foundations, donors, and companies funding Trump Account contributions for children — who is giving, how much, and who qualifies." />
+  <meta name="theme-color" content="#1A3FA0" />
+  <meta name="robots" content="index,follow" />
+  <link rel="canonical" href="https://trumpaccountbenefits.com/philanthropy" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%231A3FA0'/%3E%3Cpath d='M32 10l5.5 14.5L52 26l-11 9.5 3.5 15L32 42.5 19.5 50.5 23 35.5 12 26l14.5-1.5z' fill='%23C9A84C'/%3E%3C/svg%3E" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Trump Account Calculator" />
+  <meta property="og:title" content="Philanthropic Programs — Trump Accounts" />
+  <meta property="og:description" content="Foundations, donors, and companies funding Trump Account contributions for children." />
+  <meta property="og:url" content="https://trumpaccountbenefits.com/philanthropy" />
+  <meta property="og:image" content="https://trumpaccountbenefits.com/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Philanthropic Programs — Trump Accounts" />
+  <meta name="twitter:description" content="Foundations, donors, and companies funding Trump Account contributions for children." />
+  <meta name="twitter:image" content="https://trumpaccountbenefits.com/og-image.png" />
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXXXX', { anonymize_ip: true });
+    function track(name, params) { try { gtag('event', name, params || {}); } catch(e){} }
+  </script>
+
+  <link rel="preload" href="philanthropic_gifts.js" as="script" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --red: #C0392B;
+      --blue: #2B60D8;
+      --dark-blue: #1A3FA0;
+      --gold: #C9A84C;
+      --gold-dark: #A68A2F;
+      --white: #FFFFFF;
+      --off-white: #ECEAE4;
+      --gray: #E2DED6;
+      --text: #1C1C1E;
+      --muted: #6B6B80;
+      --green: #2E7D32;
+      --light-green: #E8F5E9;
+    }
+    body { font-family: 'Georgia', serif; background: var(--off-white); color: var(--text); min-height: 100vh; }
+
+    nav { background: var(--dark-blue); text-align: center; position: relative; }
+    nav a {
+      display: inline-block; padding: 0.6rem 1.2rem;
+      color: rgba(255,255,255,0.75); text-decoration: none;
+      font-size: 0.85rem; font-weight: 700; letter-spacing: 0.3px;
+      border-bottom: 3px solid transparent; transition: color 0.15s, border-color 0.15s;
+    }
+    nav a:hover { color: #fff; }
+    nav a.active { color: #fff; border-bottom-color: var(--gold); }
+    .nav-brand, .nav-toggle { display: none; }
+    @media (max-width: 640px) {
+      nav { display: flex; justify-content: space-between; align-items: center; padding: 0.3rem 1rem; }
+      .nav-brand { display: inline-flex; align-items: center; color: #fff; text-decoration: none; padding: 0.35rem 0.4rem; border-radius: 6px; }
+      .nav-brand:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+      .nav-toggle {
+        display: inline-flex; align-items: center; justify-content: center;
+        background: transparent; border: none; color: #fff;
+        font-size: 1.4rem; line-height: 1; cursor: pointer;
+        padding: 0.35rem 0.55rem; border-radius: 6px;
+      }
+      .nav-toggle:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+      .nav-links { display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--dark-blue); flex-direction: column; z-index: 20; box-shadow: 0 4px 12px rgba(0,0,0,0.25); }
+      .nav-toggle[aria-expanded="true"] + .nav-links { display: flex; }
+      .nav-links a { display: block; text-align: left; padding: 0.85rem 1.4rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
+      .nav-links a.active { border-bottom-color: rgba(255,255,255,0.08); background: rgba(255,255,255,0.06); color: #fff; }
+    }
+
+    .hero {
+      background: linear-gradient(135deg, var(--dark-blue) 0%, #1e4db5 60%, #1a3a9e 100%);
+      text-align: center; padding: 2.4rem 1rem 2rem; position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★';
+      position: absolute; top: 0; left: 0; right: 0;
+      color: rgba(255,255,255,0.04); font-size: 2.5rem; letter-spacing: 0.5rem;
+      word-break: break-all; line-height: 1.2; pointer-events: none;
+    }
+    .hero h1 { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 700; color: var(--white); }
+    .hero-sub { margin-top: 0.6rem; font-size: 0.98rem; color: rgba(255,255,255,0.78); max-width: 640px; margin-left: auto; margin-right: auto; }
+    .hero-stats { display: flex; justify-content: center; gap: 2.5rem; margin-top: 1.5rem; flex-wrap: wrap; }
+    .hero-stat { text-align: center; }
+    .hero-stat strong { display: block; font-size: 1.5rem; color: var(--gold); }
+    .hero-stat span { font-size: 0.72rem; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.4px; }
+
+    main { max-width: 980px; margin: 2rem auto; padding: 0 1rem 3rem; display: grid; gap: 1.5rem; }
+    .card { background: var(--white); border: 1px solid #ddd; border-radius: 10px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .card h2 { font-size: 1.05rem; font-weight: 700; color: var(--text); border-bottom: 1px solid #e0ddd6; padding-bottom: 0.5rem; margin-bottom: 0.4rem; }
+    .card .section-hint { font-size: 0.8rem; color: var(--muted); margin-bottom: 1rem; font-style: italic; }
+
+    .gift-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 0.85rem;
+    }
+    .gift {
+      border: 1.5px solid var(--green); background: var(--light-green);
+      border-radius: 8px; padding: 0.95rem 1.05rem; display: flex; flex-direction: column;
+    }
+    .gift.closed { border: 1.5px dashed var(--gold-dark); background: #FCFAF2; }
+    .gift-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.8rem; }
+    .gift-name { font-weight: 700; font-size: 0.98rem; color: var(--text); }
+    .gift-amount { font-weight: 700; font-size: 1.05rem; color: var(--green); white-space: nowrap; }
+    .gift.closed .gift-amount { color: var(--gold-dark); font-size: 0.95rem; }
+    .gift-donor { font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem; }
+    .gift-badges { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.55rem; }
+    .pill {
+      display: inline-block; font-size: 0.66rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.3px;
+      padding: 0.15rem 0.5rem; border-radius: 4px;
+      background: rgba(43,96,216,0.1); color: var(--dark-blue);
+    }
+    .pill.geo { background: rgba(201,168,76,0.18); color: var(--gold-dark); }
+    .pill.total { background: rgba(46,125,50,0.12); color: var(--green); }
+    .pill.closed { background: var(--gold-dark); color: #fff; }
+    .gift-note { font-size: 0.82rem; color: var(--text); margin-top: 0.6rem; line-height: 1.5; }
+    .gift-foot { display: flex; justify-content: space-between; align-items: center; gap: 0.8rem; margin-top: 0.7rem; flex-wrap: wrap; }
+    .gift-source a { color: var(--blue); font-size: 0.78rem; }
+    .gift-cta {
+      font-size: 0.8rem; font-weight: 700; color: var(--blue); text-decoration: none;
+    }
+    .gift-cta:hover { text-decoration: underline; }
+    .gift-tag { font-size: 0.75rem; color: var(--muted); font-style: italic; }
+
+    footer.site {
+      text-align: center; padding: 1.4rem 1rem 2.4rem;
+      font-size: 0.78rem; color: var(--muted);
+    }
+    footer.site a { color: var(--blue); }
+
+    @media (max-width: 680px) {
+      .card { padding: 1.1rem; }
+      .hero-stats { gap: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-brand" aria-label="Home"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></a>
+  <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">☰</button>
+  <div class="nav-links" id="nav-links">
+    <a href="/">Calculator</a>
+    <a href="/employers">Employer Directory</a>
+    <a href="/states">State Grants</a>
+    <a href="/philanthropy" class="active">Philanthropy</a>
+  </div>
+</nav>
+<script>
+  (function () {
+    var t = document.querySelector('.nav-toggle');
+    if (!t) return;
+    t.addEventListener('click', function () {
+      t.setAttribute('aria-expanded', t.getAttribute('aria-expanded') === 'true' ? 'false' : 'true');
+    });
+  })();
+</script>
+
+<section class="hero">
+  <h1>Philanthropic Programs</h1>
+  <p class="hero-sub">Foundations, donors, and companies funding Trump Account contributions on top of the federal $1,000 seed. These are private commitments — separate from state programs and employer benefits.</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><strong id="stat-donors">—</strong><span>Donors &amp; foundations</span></div>
+    <div class="hero-stat"><strong id="stat-total">—</strong><span>Total pledged</span></div>
+    <div class="hero-stat"><strong id="stat-reach">—</strong><span>Geographies reached</span></div>
+  </div>
+</section>
+
+<main id="sections"></main>
+
+<footer class="site">
+  <a href="/privacy">Privacy Policy</a> &bull;
+  <a href="mailto:hello@trumpaccountbenefits.com">Contact</a>
+</footer>
+
+<script src="philanthropic_gifts.js"></script>
+
+<script>
+const STATE_NAMES = {
+  AL:'Alabama',AK:'Alaska',AZ:'Arizona',AR:'Arkansas',CA:'California',
+  CO:'Colorado',CT:'Connecticut',DE:'Delaware',DC:'District of Columbia',
+  FL:'Florida',GA:'Georgia',HI:'Hawaii',ID:'Idaho',IL:'Illinois',
+  IN:'Indiana',IA:'Iowa',KS:'Kansas',KY:'Kentucky',LA:'Louisiana',
+  ME:'Maine',MD:'Maryland',MA:'Massachusetts',MI:'Michigan',MN:'Minnesota',
+  MS:'Mississippi',MO:'Missouri',MT:'Montana',NE:'Nebraska',NV:'Nevada',
+  NH:'New Hampshire',NJ:'New Jersey',NM:'New Mexico',NY:'New York',
+  NC:'North Carolina',ND:'North Dakota',OH:'Ohio',OK:'Oklahoma',
+  OR:'Oregon',PA:'Pennsylvania',RI:'Rhode Island',SC:'South Carolina',
+  SD:'South Dakota',TN:'Tennessee',TX:'Texas',UT:'Utah',VT:'Vermont',
+  VA:'Virginia',WA:'Washington',WV:'West Virginia',WI:'Wisconsin',WY:'Wyoming'
+};
+
+const DONOR_TYPE_LABELS = {
+  foundation: 'Foundation',
+  individual: 'Individual',
+  anonymous: 'Anonymous',
+  corporate_pledge: 'Company'
+};
+
+const gifts = (typeof PHILANTHROPIC_GIFTS !== 'undefined' && PHILANTHROPIC_GIFTS) ? PHILANTHROPIC_GIFTS : [];
+
+function fmtBig(n) {
+  if (n === null || n === undefined) return null;
+  if (n >= 1e9) return '$' + (n / 1e9).toFixed(n % 1e9 === 0 ? 0 : 2).replace(/\.?0+$/, '') + 'B';
+  if (n >= 1e6) return '$' + (n / 1e6).toFixed(n % 1e6 === 0 ? 0 : 1).replace(/\.0$/, '') + 'M';
+  if (n >= 1e3) return '$' + Math.round(n / 1e3) + 'K';
+  return '$' + n.toLocaleString();
+}
+
+function fmtAmount(g) {
+  if (g.amount_display) return g.amount_display;
+  if (g.grant_amount !== null && g.grant_amount !== undefined) return '$' + g.grant_amount.toLocaleString();
+  return 'TBD';
+}
+
+function geoLabel(g) {
+  if (g.state_code) return STATE_NAMES[g.state_code] || g.state_code;
+  return 'Nationwide';
+}
+
+// ── Hero stats ──────────────────────────────────────────────────────────────
+document.getElementById('stat-donors').textContent = gifts.length;
+const totalPledged = gifts.reduce((s, g) => s + (g.total_committed || 0), 0);
+document.getElementById('stat-total').textContent = totalPledged ? fmtBig(totalPledged) + '+' : '—';
+const statesReached = new Set(gifts.filter(g => g.state_code).map(g => g.state_code));
+const hasNationwide = gifts.some(g => !g.state_code);
+document.getElementById('stat-reach').textContent =
+  `${statesReached.size} state${statesReached.size !== 1 ? 's' : ''}${hasNationwide ? ' + US' : ''}`;
+
+// ── Sections by geo scope ─────────────────────────────────────────────────
+const SECTIONS = [
+  { scope: 'nationwide', title: 'Nationwide', hint: 'Available to qualifying children anywhere in the U.S.' },
+  { scope: 'state',      title: 'Statewide Programs', hint: 'Open to qualifying children across an entire state.' },
+  { scope: 'regional',   title: 'Regional & Local', hint: 'Limited to specific cities, counties, or ZIP codes.' },
+  { scope: 'closed',     title: 'Other Announcements', hint: 'Pledges and closed gifts without an open application — listed for the record.' }
+];
+
+function giftCard(g) {
+  const closed = !g.is_open_to_apply;
+  const badges = [];
+  if (g.donor_type && DONOR_TYPE_LABELS[g.donor_type]) badges.push(`<span class="pill">${DONOR_TYPE_LABELS[g.donor_type]}</span>`);
+  badges.push(`<span class="pill geo">${geoLabel(g)}</span>`);
+  if (g.total_committed) badges.push(`<span class="pill total">${fmtBig(g.total_committed)} pledged</span>`);
+  if (closed) badges.push(`<span class="pill closed">Closed / informational</span>`);
+
+  const source = g.source_url
+    ? `<span class="gift-source"><a href="${g.source_url}" target="_blank" rel="noopener">Source ↗</a></span>` : '<span></span>';
+  const cta = (!closed && g.state_code)
+    ? `<a class="gift-cta" href="/#state=${g.state_code}">Open calculator →</a>`
+    : (!closed
+        ? `<a class="gift-cta" href="/">Open calculator →</a>`
+        : `<span class="gift-tag">Not open to new applicants</span>`);
+
+  return `
+    <div class="gift${closed ? ' closed' : ''}">
+      <div class="gift-top">
+        <div>
+          <div class="gift-name">${g.grantor_name}</div>
+          ${g.donor_line ? `<div class="gift-donor">${g.donor_line}</div>` : ''}
+        </div>
+        <div class="gift-amount">${fmtAmount(g)}</div>
+      </div>
+      <div class="gift-badges">${badges.join('')}</div>
+      ${g.note ? `<div class="gift-note">${g.note}</div>` : ''}
+      <div class="gift-foot">${source}${cta}</div>
+    </div>`;
+}
+
+const container = document.getElementById('sections');
+let html = '';
+for (const sec of SECTIONS) {
+  const inSection = gifts
+    .filter(g => (g.geo_scope || 'nationwide') === sec.scope)
+    .sort((a, b) => (a.sort_order - b.sort_order) || a.grantor_name.localeCompare(b.grantor_name));
+  if (!inSection.length) continue;
+  html += `
+    <div class="card">
+      <h2>${sec.title}</h2>
+      <div class="section-hint">${sec.hint}</div>
+      <div class="gift-grid">${inSection.map(giftCard).join('')}</div>
+    </div>`;
+}
+container.innerHTML = html || '<div class="card"><p style="color:var(--muted);font-size:0.9rem;">No philanthropic programs are currently tracked.</p></div>';
+</script>
+
+</body>
+</html>

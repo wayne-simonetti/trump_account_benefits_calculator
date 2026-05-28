@@ -15,7 +15,7 @@ from pathlib import Path
 ROOT     = Path(__file__).parent
 DB_PATH  = ROOT / "trump_accounts.db"
 SCHEMA   = ROOT / "schema.sql"
-SEEDS    = ["employers_seed.sql", "state_grants_seed.sql", "zip_income_seed.sql"]
+SEEDS    = ["employers_seed.sql", "state_grants_seed.sql", "philanthropic_gifts_seed.sql", "zip_income_seed.sql"]
 
 
 def main():
@@ -34,7 +34,7 @@ def main():
 
     conn.commit()
 
-    for table in ("employers", "state_grants", "zip_income"):
+    for table in ("employers", "state_grants", "philanthropic_gifts", "zip_income"):
         try:
             n = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
             print(f"  {table}: {n:,} rows")

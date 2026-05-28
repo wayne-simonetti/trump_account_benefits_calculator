@@ -459,6 +459,7 @@
   </style>
   <link rel="preload" href="employers.js" as="script" />
   <link rel="preload" href="state_grants.js" as="script" />
+  <link rel="preload" href="philanthropic_gifts.js" as="script" />
   <!-- zip_income.js (424 KB) intentionally NOT preloaded — only needed after
        ZIP entry; preloading it competed for the critical path and inflated
        FCP/LCP. Still loaded via the deferred <script> at end of body. -->
@@ -472,6 +473,7 @@
     <a href="/" class="active">Calculator</a>
     <a href="/employers">Employer Directory</a>
     <a href="/states">State Grants</a>
+    <a href="/philanthropy">Philanthropy</a>
   </div>
 </nav>
 <script>
@@ -818,6 +820,7 @@
 
 <script src="employers.js"></script>
 <script src="state_grants.js"></script>
+<script src="philanthropic_gifts.js"></script>
 <script src="zip_income.js"></script>
 
 <script>
@@ -1047,14 +1050,25 @@ function evaluateGrant(g, ctx) {
   return { cls: 'g-eligible', badge: 'gs-eligible', msg: `Eligible — ${amtDisplay}`, eligible: true, amount: g.grant_amount };
 }
 
-// ── Render a grant section from STATE_GRANTS data ────────────────────────
+// Combined pool of grants a child can actually qualify for: government state
+// programs + philanthropic gifts that are open to apply. Closed/informational
+// philanthropic gifts (is_open_to_apply=0) are excluded — they live only on
+// the /philanthropy page.
+function openGrantsPool() {
+  const state = (typeof STATE_GRANTS !== 'undefined' && STATE_GRANTS) ? STATE_GRANTS : [];
+  const phil  = (typeof PHILANTHROPIC_GIFTS !== 'undefined' && PHILANTHROPIC_GIFTS)
+    ? PHILANTHROPIC_GIFTS.filter(g => g.is_open_to_apply) : [];
+  return [...state, ...phil];
+}
+
+// ── Render a grant section from the combined grant pool ──────────────────
 function renderGrantSection(wrapId, filterState, ctx) {
   const wrap = document.getElementById(wrapId);
   const items = [];
   let total = 0;
   if (!wrap) return { total, items };
 
-  const grants = (STATE_GRANTS || []).filter(g =>
+  const grants = openGrantsPool().filter(g =>
     filterState === null ? g.state_code === null : g.state_code === filterState
   );
 
@@ -1126,7 +1140,7 @@ function renderStateGrants(state, ctx) {
     wrap.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;">Select your state above to see available regional programs.</p>';
     return { total: 0, items: [] };
   }
-  const stateGrants = (STATE_GRANTS || []).filter(g => g.state_code === state);
+  const stateGrants = openGrantsPool().filter(g => g.state_code === state);
   if (!stateGrants.length) {
     wrap.innerHTML = `
       <div class="grant-card g-tbd">
