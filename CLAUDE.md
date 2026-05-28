@@ -74,7 +74,7 @@ After a fresh clone, run `python3 seed.py` to rebuild `trump_accounts.db` from t
 
 ## Commit & Push Policy
 **OK to commit + push without asking:**
-- Data regenerations from `export.py` (`employers.js`, `state_grants.js`, `zip_income.js`) after a DB update
+- Data regenerations from `export.py` (`employers.js`, `state_grants.js`, `philanthropic_gifts.js`, `zip_income.js`) after a DB update
 - Doc-only edits (`README.md`, `CLAUDE.md`, in-file copy that doesn't change behavior)
 - Trivial copy/CSS tweaks (single-line text changes, color/spacing adjustments, typo fixes)
 - Follow-on fix-ups within the same task once you've already said "push" / "just push" for it
@@ -92,3 +92,6 @@ When auto-pushing, still use the standard commit-message format with the Claude 
 - Don't add comments, docstrings, or type annotations to unchanged code
 - Don't over-engineer — minimum complexity for the task
 - Ask before creating new files
+
+## Changelog
+- **2026-05-28** — Added `/philanthropy` page backed by a new `philanthropic_gifts` table. Moved the 6 donor-funded programs (Dell, Altimeter, Dalio, Anonymous SF, Anand, Kraken) out of `state_grants` (now government-only: OK/WI/TX). Added 3 informational rows (Durham/Altimeter, Hamm, Minaj) with `is_open_to_apply=0`. Calculator and `/states` merge both tables (deduped by id) so eligibility and the state directory are unchanged.
