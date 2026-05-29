@@ -1440,8 +1440,16 @@ function reorganizeGrants() {
 }
 
 function toggleOtherGrants() {
-  document.getElementById('grants-chevron').classList.toggle('open');
-  reorganizeGrants();
+  // Visibility-only toggle — must NOT re-run reorganizeGrants(), which clears
+  // and re-gathers the eligible panel from #other-grants-section. On a toggle
+  // the sections aren't re-rendered, so the eligible cards (already moved out)
+  // would be destroyed and the eligible panel would vanish.
+  const isOpen = document.getElementById('grants-chevron').classList.toggle('open');
+  document.getElementById('other-grants-section').style.display = isOpen ? 'block' : 'none';
+  const n = document.querySelectorAll('#other-grants-section .grant-card').length;
+  document.getElementById('grants-toggle-label').textContent = isOpen
+    ? `Hide ${n} other grant${n !== 1 ? 's' : ''}`
+    : `Show ${n} other grant${n !== 1 ? 's' : ''} (pending & not eligible)`;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
