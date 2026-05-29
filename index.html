@@ -1774,7 +1774,7 @@ compute();
       });
       const data = await r.json().catch(() => ({}));
       if (r.ok && data.ok) {
-        msg.textContent = "Thanks! We'll email you when accounts open.";
+        msg.textContent = "Thanks! We'll email you when new states, employers, and grants are added.";
         form.style.display = 'none';
         if (typeof track === 'function') track('email_subscribed', {});
       } else if (r.status === 429) {
