@@ -4,6 +4,8 @@ __pycache__/
 deploy/
 .claude/
 trump_accounts.db
+trump_accounts.db-shm
+trump_accounts.db-wal
 # employers_seed.sql and state_grants_seed.sql are tracked — they're the
 # git-side source of truth for rebuilding the DB. zip_income_seed.sql stays
 # ignored (too large; regenerable via census_import.py).
