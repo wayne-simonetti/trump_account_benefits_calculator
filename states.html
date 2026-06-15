@@ -115,6 +115,23 @@
     .nation-grant .ng-donor { font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem; }
     .nation-grant .ng-note { font-size: 0.8rem; color: var(--text); margin-top: 0.45rem; line-height: 1.45; }
 
+    /* Foster Youth (Fostering the Future) section */
+    .foster-intro { font-size: 0.88rem; line-height: 1.55; color: var(--text); margin-bottom: 1rem; }
+    .foster-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 0.5rem;
+    }
+    .foster-item {
+      border: 1px solid #EAE7E0; background: var(--off-white);
+      border-radius: 8px; padding: 0.65rem 0.8rem;
+    }
+    .foster-item .fi-state { font-weight: 700; font-size: 0.9rem; color: var(--text); }
+    .foster-item .fi-gov { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+    .foster-item .fi-src { font-size: 0.74rem; margin-top: 0.35rem; }
+    .foster-item .fi-src a { color: var(--blue); text-decoration: none; }
+    .foster-item .fi-src a:hover { text-decoration: underline; }
+
     /* Datawrapper map embed */
     .map-embed-wrap {
       position: relative;
@@ -276,6 +293,12 @@
     <div id="nationwide-list"></div>
   </div>
 
+  <div class="card" id="foster-card" style="display:none;">
+    <h2>Foster Youth — Fostering the Future Accounts</h2>
+    <p class="foster-intro">Under the federal <strong>Fostering the Future</strong> initiative, a state, territorial, or tribal child welfare agency that is the legal guardian of an eligible foster child can open a Trump Account on the child's behalf — using <strong>Form 4547</strong> — for any child who doesn't already have one. This isn't extra state money: it's the same federal <strong>$1,000</strong> seed for U.S.-citizen children born 2025–2028, with the state handling enrollment. Accounts open for contributions July 4, 2026. The governors below have pledged to enroll foster youth in their states.</p>
+    <div class="foster-list" id="foster-list"></div>
+  </div>
+
   <div class="card">
     <h2>By State</h2>
     <div class="map-embed-wrap" id="map-embed-wrap">
@@ -341,13 +364,23 @@ const isActive  = g => g.status !== 'pending';
 // Dedup by id (philanthropic_gifts wins) so a stale cached state_grants.js —
 // which used to hold these rows — can't double-count during a deploy.
 const ALL_PROGRAMS = (() => {
-  const stateArr = (typeof STATE_GRANTS !== 'undefined' && STATE_GRANTS) ? STATE_GRANTS : [];
+  // foster_enrollment rows (Fostering the Future) aren't grants — excluded here
+  // so they don't affect the map, A–Z list, modal, or hero stats. They render
+  // in their own section below (FOSTER_PROGRAMS).
+  const stateArr = (typeof STATE_GRANTS !== 'undefined' && STATE_GRANTS)
+    ? STATE_GRANTS.filter(g => g.program_type !== 'foster_enrollment') : [];
   const philArr  = (typeof PHILANTHROPIC_GIFTS !== 'undefined' && PHILANTHROPIC_GIFTS)
     ? PHILANTHROPIC_GIFTS.filter(g => g.is_open_to_apply) : [];
   const byId = new Map();
   for (const g of [...stateArr, ...philArr]) byId.set(g.id, g);
   return [...byId.values()];
 })();
+
+// Foster-youth enrollment states (Fostering the Future) — informational only.
+const FOSTER_PROGRAMS = (typeof STATE_GRANTS !== 'undefined' && STATE_GRANTS)
+  ? STATE_GRANTS.filter(g => g.program_type === 'foster_enrollment')
+      .sort((a, b) => (STATE_NAMES[a.state_code] || a.state_code).localeCompare(STATE_NAMES[b.state_code] || b.state_code))
+  : [];
 
 // Build grant index by state
 function buildIndex() {
@@ -397,6 +430,19 @@ if (!nationwideActive.length) {
       </div>
       ${g.note ? `<div class="ng-note">${g.note}</div>` : ''}
       ${g.source_url ? `<div class="grant-source"><a href="${g.source_url}" target="_blank" rel="noopener">Source ↗</a></div>` : ''}
+    </div>
+  `).join('');
+}
+
+// ── Foster Youth (Fostering the Future) section ─────────────────────────────
+if (FOSTER_PROGRAMS.length) {
+  const fosterCard = document.getElementById('foster-card');
+  fosterCard.style.display = '';
+  document.getElementById('foster-list').innerHTML = FOSTER_PROGRAMS.map(g => `
+    <div class="foster-item">
+      <div class="fi-state">${STATE_NAMES[g.state_code] || g.state_code}</div>
+      ${g.donor_line ? `<div class="fi-gov">${g.donor_line}</div>` : ''}
+      ${g.source_url ? `<div class="fi-src"><a href="${g.source_url}" target="_blank" rel="noopener">Source ↗</a></div>` : ''}
     </div>
   `).join('');
 }

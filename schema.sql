@@ -24,7 +24,12 @@ CREATE TABLE IF NOT EXISTS state_grants (
     source_url            TEXT,
     sort_order            INTEGER NOT NULL DEFAULT 0,
     status                TEXT    NOT NULL DEFAULT 'active'
-                          CHECK(status IN ('active', 'pending'))
+                          CHECK(status IN ('active', 'pending')),
+    -- 'grant' = state-funded contribution (counts in calculator/map/totals);
+    -- 'foster_enrollment' = state agency opens the federal account as guardian
+    -- (Fostering the Future) — no state money, page-only, excluded from grant logic.
+    program_type          TEXT    NOT NULL DEFAULT 'grant'
+                          CHECK(program_type IN ('grant', 'foster_enrollment'))
 );
 
 CREATE TABLE IF NOT EXISTS philanthropic_gifts (

@@ -1093,7 +1093,11 @@ function evaluateGrant(g, ctx) {
 // philanthropic gifts (is_open_to_apply=0) are excluded — they live only on
 // the /philanthropy page.
 function openGrantsPool() {
-  const state = (typeof STATE_GRANTS !== 'undefined' && STATE_GRANTS) ? STATE_GRANTS : [];
+  // foster_enrollment rows are state agencies opening the federal account as
+  // guardian (Fostering the Future) — no grant money, so they never enter
+  // eligibility/totals. They surface only in the /states foster section.
+  const state = (typeof STATE_GRANTS !== 'undefined' && STATE_GRANTS)
+    ? STATE_GRANTS.filter(g => g.program_type !== 'foster_enrollment') : [];
   const phil  = (typeof PHILANTHROPIC_GIFTS !== 'undefined' && PHILANTHROPIC_GIFTS)
     ? PHILANTHROPIC_GIFTS.filter(g => g.is_open_to_apply) : [];
   // Dedup by id (philanthropic_gifts wins) so a stale cached state_grants.js —

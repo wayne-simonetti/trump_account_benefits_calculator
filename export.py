@@ -50,7 +50,7 @@ PUBLIC_STATE_GRANT_COLUMNS = [
     "req_no_seed", "req_has_seed", "req_age_max",
     "req_born_year_min", "req_born_year_max",
     "req_zip_income", "income_cap", "req_zip_set", "req_checkbox_labels",
-    "note", "source_url", "sort_order", "status",
+    "note", "source_url", "sort_order", "status", "program_type",
 ]
 
 PUBLIC_PHILANTHROPY_COLUMNS = [
@@ -263,7 +263,8 @@ def export_state_grants_csv(conn):
     )
     rows = conn.execute(
         f"""SELECT state_code, grantor_name, grant_amount, amount_display, note, sort_order
-            FROM state_grants WHERE state_code IS NOT NULL AND status = 'active'
+            FROM state_grants
+            WHERE state_code IS NOT NULL AND status = 'active' AND program_type = 'grant'
             {phil_union}
             ORDER BY state_code, sort_order"""
     ).fetchall()
@@ -276,7 +277,8 @@ def export_state_grants_csv(conn):
     # category so Datawrapper can color them distinctly from active programs.
     pending_rows = conn.execute(
         """SELECT state_code, grantor_name, grant_amount, amount_display, note, sort_order
-           FROM state_grants WHERE state_code IS NOT NULL AND status = 'pending'
+           FROM state_grants
+           WHERE state_code IS NOT NULL AND status = 'pending' AND program_type = 'grant'
            ORDER BY state_code, sort_order"""
     ).fetchall()
     pending_by_state = {}
