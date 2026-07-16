@@ -209,6 +209,41 @@
       font-size: 0.6rem; font-weight: 700; width: 0.85rem; height: 0.85rem;
       border-radius: 2px; flex-shrink: 0;
     }
+
+    /* Bubble view */
+    .bubble-field { position: relative; width: 100%; margin: 0 auto; }
+    .bubble {
+      position: absolute; border-radius: 50%;
+      background: var(--white); border: 1.5px solid var(--gray);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+      text-decoration: none; cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      overflow: hidden;
+    }
+    .bubble:hover, .bubble:focus-visible {
+      transform: scale(1.07);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      z-index: 5;
+      outline: none;
+    }
+    .bubble:focus-visible { border-color: var(--dark-blue); }
+    .bubble img { width: 72%; height: 72%; object-fit: contain; pointer-events: none; }
+    .bubble-initials {
+      width: 100%; height: 100%; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; font-family: 'Georgia', serif;
+      user-select: none;
+    }
+    .bubble-tooltip {
+      position: fixed; z-index: 100; pointer-events: none;
+      background: var(--dark-blue); color: #fff;
+      padding: 0.5rem 0.7rem; border-radius: 6px;
+      font-size: 0.78rem; line-height: 1.4; max-width: 220px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    }
+    .bubble-tooltip strong { display: block; font-size: 0.85rem; margin-bottom: 0.15rem; }
+    .bubble-tooltip[hidden] { display: none; }
   </style>
 </head>
 <body>
@@ -259,6 +294,7 @@
     <div class="view-toggle" role="group" aria-label="View mode">
       <button type="button" class="view-toggle-btn active" id="view-btn-table" aria-pressed="true">Table</button>
       <button type="button" class="view-toggle-btn" id="view-btn-grid" aria-pressed="false">Grid</button>
+      <button type="button" class="view-toggle-btn" id="view-btn-bubbles" aria-pressed="false">Bubbles</button>
     </div>
     <div id="view-table" style="overflow-x:auto;">
       <table class="tax-table" id="emp-table">
@@ -276,6 +312,10 @@
     </div>
     <div id="view-grid" style="display:none;">
       <div id="emp-grid-container"></div>
+    </div>
+    <div id="view-bubbles" style="display:none;">
+      <div id="bubble-field" class="bubble-field"></div>
+      <div id="bubble-tooltip" class="bubble-tooltip" role="tooltip" hidden></div>
     </div>
   </div>
 </main>
@@ -299,7 +339,11 @@ const INDUSTRY_SECTIONS = [
 ];
 
 let sortCol = -1, sortAsc = true;
+let currentView = 'table';
 const selectedEmployers = new Set();  // employer labels selected via multi-combo
+
+const BUBBLE_MIN_R = 26, BUBBLE_MAX_R = 70;
+const BUBBLE_COLORS = ['#1A3FA0', '#2B60D8', '#A68A2F', '#C0392B'];
 
 function rootDomain(url) {
   try {
@@ -323,6 +367,7 @@ function loadEmployers() { initCombo(); renderEmployerViews(); }
 function renderEmployerViews() {
   renderEmployerTable();
   renderEmployerGrid();
+  if (currentView === 'bubbles') renderBubbles();
 }
 
 function renderEmployerTable() {
@@ -398,18 +443,222 @@ function renderEmployerGrid() {
   container.innerHTML = html || '<p style="color:var(--muted);font-size:0.9rem;">No matching employers found.</p>';
 }
 
+// ── Bubble view ─────────────────────────────────────────────────────────────
+function bubbleRadius(amt, minVal, maxVal) {
+  if (!amt || amt <= 0) return BUBBLE_MIN_R;
+  const sqrtMin = Math.sqrt(minVal), sqrtMax = Math.sqrt(maxVal);
+  if (sqrtMax === sqrtMin) return (BUBBLE_MIN_R + BUBBLE_MAX_R) / 2;
+  const t = (Math.sqrt(amt) - sqrtMin) / (sqrtMax - sqrtMin);
+  return BUBBLE_MIN_R + t * (BUBBLE_MAX_R - BUBBLE_MIN_R);
+}
+
+function computeBubbleLayout(items, containerWidth) {
+  const W = Math.max(containerWidth, 200);
+  const cx = W / 2;
+  const sorted = items.slice().sort((a, b) => b.r - a.r);
+  const totalArea = sorted.reduce((s, d) => s + Math.PI * d.r * d.r, 0);
+  const estHeight = Math.max(200, (totalArea * 1.3) / W);
+  const targetY = estHeight / 2;
+
+  const k = (Math.min(W, estHeight) / 2) / Math.sqrt(Math.max(sorted.length, 1));
+  const nodes = sorted.map((d, i) => {
+    const angle = i * 137.5 * Math.PI / 180;
+    const rad = k * Math.sqrt(i);
+    return { item: d.item, r: d.r, x: cx + rad * Math.cos(angle), y: targetY + rad * Math.sin(angle) };
+  });
+
+  const ITER = 120;
+  for (let iter = 0; iter < ITER; iter++) {
+    const centerStrength = iter < 40 ? 0.02 : 0.003;
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const a = nodes[i], b = nodes[j];
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 0.01;
+        const minDist = a.r + b.r;
+        if (dist < minDist) {
+          const overlap = (minDist - dist) / 2;
+          const ux = dx / dist, uy = dy / dist;
+          a.x -= ux * overlap; a.y -= uy * overlap;
+          b.x += ux * overlap; b.y += uy * overlap;
+        }
+      }
+    }
+    for (const n of nodes) {
+      n.x += (cx - n.x) * centerStrength;
+      n.y += (targetY - n.y) * centerStrength;
+      n.x = Math.max(n.r, Math.min(W - n.r, n.x));
+    }
+  }
+
+  const minY = Math.min(...nodes.map(n => n.y - n.r));
+  const maxY = Math.max(...nodes.map(n => n.y + n.r));
+  const pad = 16;
+  const height = (maxY - minY) + pad * 2;
+  for (const n of nodes) n.y = n.y - minY + pad;
+
+  return { nodes, height };
+}
+
+function initialsFor(name) {
+  const words = name.replace(/[^A-Za-z0-9 &]/g, '').split(/\s+/).filter(Boolean);
+  if (words.length === 0) return '?';
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return (words[0][0] + words[1][0]).toUpperCase();
+}
+
+function colorFor(name) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
+  return BUBBLE_COLORS[hash % BUBBLE_COLORS.length];
+}
+
+function makeInitialsEl(name) {
+  const div = document.createElement('div');
+  div.className = 'bubble-initials';
+  div.style.background = colorFor(name);
+  div.style.fontSize = Math.max(11, Math.min(20, 16)) + 'px';
+  div.textContent = initialsFor(name);
+  return div;
+}
+
+function showBubbleTooltip(label, amtDisplay, contribDisplay, condDisplay, ev) {
+  const tip = document.getElementById('bubble-tooltip');
+  tip.innerHTML = '';
+  const strong = document.createElement('strong');
+  strong.textContent = label;
+  tip.appendChild(strong);
+  const line = document.createElement('div');
+  line.textContent = [amtDisplay, contribDisplay, condDisplay].filter(Boolean).join(' · ');
+  tip.appendChild(line);
+  tip.hidden = false;
+  positionBubbleTooltip(ev);
+}
+
+function positionBubbleTooltip(ev) {
+  const tip = document.getElementById('bubble-tooltip');
+  if (tip.hidden) return;
+  let x, y;
+  if (ev && typeof ev.clientX === 'number' && (ev.clientX || ev.clientY)) {
+    x = ev.clientX; y = ev.clientY;
+  } else if (ev && ev.target && ev.target.getBoundingClientRect) {
+    const rect = ev.target.getBoundingClientRect();
+    x = rect.left + rect.width / 2;
+    y = rect.top;
+  } else {
+    return;
+  }
+  tip.style.left = Math.max(8, Math.min(x + 14, window.innerWidth - 240)) + 'px';
+  tip.style.top = Math.max(8, y - 10) + 'px';
+}
+
+function hideBubbleTooltip() {
+  document.getElementById('bubble-tooltip').hidden = true;
+}
+
+function makeBubbleEl(node) {
+  const e = node.item;
+  const [id, amtStr, condition, contribType] = e.value.split('|');
+  const amt = parseInt(amtStr) || 0;
+  const amtDisplay = (condition === 'variable' || amt <= 0) ? 'TBD' : '$' + amt.toLocaleString();
+  const contribDisplay = contribLabels[contribType] || contribType || '';
+  const condDisplay = conditionLabels[condition] || condition || '';
+
+  const el = document.createElement(e.source_url ? 'a' : 'div');
+  el.className = 'bubble';
+  el.style.left = (node.x - node.r) + 'px';
+  el.style.top = (node.y - node.r) + 'px';
+  el.style.width = el.style.height = (node.r * 2) + 'px';
+  if (e.source_url) {
+    el.href = e.source_url;
+    el.target = '_blank';
+    el.rel = 'noopener';
+  } else {
+    el.tabIndex = 0;
+  }
+  el.setAttribute('aria-label', `${e.label} — ${amtDisplay}${contribDisplay ? ' ' + contribDisplay : ''}`);
+
+  const img = document.createElement('img');
+  img.alt = '';
+  img.src = `/logos/${id}.svg`;
+  img.addEventListener('error', function onErr() {
+    if (img.dataset.stage === 'png') {
+      img.remove();
+      el.appendChild(makeInitialsEl(e.label));
+    } else {
+      img.dataset.stage = 'png';
+      img.src = `/logos/${id}.png`;
+    }
+  });
+  el.appendChild(img);
+
+  el.addEventListener('mouseenter', ev => showBubbleTooltip(e.label, amtDisplay, contribDisplay, condDisplay, ev));
+  el.addEventListener('mousemove', ev => positionBubbleTooltip(ev));
+  el.addEventListener('mouseleave', hideBubbleTooltip);
+  el.addEventListener('focus', ev => showBubbleTooltip(e.label, amtDisplay, contribDisplay, condDisplay, ev));
+  el.addEventListener('blur', hideBubbleTooltip);
+
+  return el;
+}
+
+function renderBubbles() {
+  const container = document.getElementById('bubble-field');
+  if (!container) return;
+  const rows = selectedEmployers.size === 0
+    ? EMPLOYER_DATA.slice()
+    : EMPLOYER_DATA.filter(e => selectedEmployers.has(e.label));
+
+  if (!rows.length) {
+    container.style.height = 'auto';
+    container.innerHTML = '<p style="color:var(--muted);font-size:0.9rem;">No matching employers found.</p>';
+    return;
+  }
+
+  const allAmounts = EMPLOYER_DATA.map(e => parseInt(e.value.split('|')[1]) || 0).filter(a => a > 0);
+  const minVal = allAmounts.length ? Math.min(...allAmounts) : 1000;
+  const maxVal = allAmounts.length ? Math.max(...allAmounts) : 1000;
+
+  const items = rows.map(e => {
+    const amt = parseInt(e.value.split('|')[1]) || 0;
+    return { item: e, r: bubbleRadius(amt, minVal, maxVal) };
+  });
+
+  const containerWidth = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 600;
+  const { nodes, height } = computeBubbleLayout(items, containerWidth);
+  container.style.height = height + 'px';
+  container.innerHTML = '';
+  const frag = document.createDocumentFragment();
+  nodes.forEach(n => frag.appendChild(makeBubbleEl(n)));
+  container.appendChild(frag);
+}
+
 function setView(mode) {
+  currentView = mode;
   document.getElementById('view-table').style.display = mode === 'table' ? '' : 'none';
   document.getElementById('view-grid').style.display = mode === 'grid' ? '' : 'none';
+  document.getElementById('view-bubbles').style.display = mode === 'bubbles' ? '' : 'none';
   const tableBtn = document.getElementById('view-btn-table');
   const gridBtn = document.getElementById('view-btn-grid');
+  const bubblesBtn = document.getElementById('view-btn-bubbles');
   tableBtn.classList.toggle('active', mode === 'table');
   gridBtn.classList.toggle('active', mode === 'grid');
+  bubblesBtn.classList.toggle('active', mode === 'bubbles');
   tableBtn.setAttribute('aria-pressed', mode === 'table');
   gridBtn.setAttribute('aria-pressed', mode === 'grid');
+  bubblesBtn.setAttribute('aria-pressed', mode === 'bubbles');
+  if (mode === 'bubbles') renderBubbles();
+  else hideBubbleTooltip();
 }
 document.getElementById('view-btn-table').addEventListener('click', () => setView('table'));
 document.getElementById('view-btn-grid').addEventListener('click', () => setView('grid'));
+document.getElementById('view-btn-bubbles').addEventListener('click', () => setView('bubbles'));
+
+let bubbleResizeTimer = null;
+window.addEventListener('resize', () => {
+  if (currentView !== 'bubbles') return;
+  clearTimeout(bubbleResizeTimer);
+  bubbleResizeTimer = setTimeout(renderBubbles, 200);
+});
 
 document.querySelectorAll('#emp-table th.sortable').forEach(th => {
   th.addEventListener('click', () => {
