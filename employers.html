@@ -32,6 +32,7 @@
       --blue: #2B60D8;
       --dark-blue: #1A3FA0;
       --gold: #C9A84C;
+      --gold-dark: #A68A2F;
       --white: #FFFFFF;
       --off-white: #ECEAE4;
       --gray: #E2DED6;
@@ -181,6 +182,33 @@
       #emp-table th:nth-child(4), #emp-table td:nth-child(4) { display: none; }
       .filter-row { max-width: 100%; }
     }
+
+    /* View toggle */
+    .view-toggle { display: inline-flex; border: 1.5px solid #ccc; border-radius: 6px; overflow: hidden; margin-bottom: 1rem; }
+    .view-toggle-btn { background: var(--off-white); border: none; padding: 0.4rem 1.1rem; font-family: inherit; font-size: 0.82rem; font-weight: 700; color: var(--muted); cursor: pointer; }
+    .view-toggle-btn + .view-toggle-btn { border-left: 1.5px solid #ccc; }
+    .view-toggle-btn.active { background: var(--dark-blue); color: #fff; }
+
+    /* Grid view */
+    .industry-section { margin-bottom: 1.6rem; }
+    .industry-section:last-child { margin-bottom: 0; }
+    .industry-section h3 { font-size: 0.95rem; font-weight: 700; color: var(--text); border-bottom: 1px solid #e0ddd6; padding-bottom: 0.4rem; margin-bottom: 0.75rem; }
+    .industry-count { font-weight: 400; color: var(--muted); font-size: 0.8rem; }
+    .emp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.75rem; }
+    .emp-card { border: 1px solid #EAE7E0; background: var(--white); border-radius: 8px; padding: 0.85rem 1rem; display: flex; flex-direction: column; box-shadow: 0 1px 4px rgba(0,0,0,0.09); }
+    .emp-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.6rem; }
+    .emp-card-name { font-weight: 700; font-size: 0.92rem; color: var(--text); display: flex; align-items: center; gap: 0.35rem; }
+    .emp-card-amount { font-weight: 700; font-size: 0.98rem; color: var(--dark-blue); white-space: nowrap; }
+    .emp-card-type { font-size: 0.76rem; color: var(--muted); margin-top: 0.25rem; }
+    .emp-card-note { font-size: 0.78rem; color: var(--text); margin-top: 0.5rem; line-height: 1.4; }
+    .emp-card-source { margin-top: 0.55rem; font-size: 0.76rem; }
+    .emp-card-source a { color: var(--blue); text-decoration: none; }
+    .emp-verified {
+      display: inline-flex; align-items: center; justify-content: center;
+      border: 1.5px solid var(--gold); color: var(--gold);
+      font-size: 0.6rem; font-weight: 700; width: 0.85rem; height: 0.85rem;
+      border-radius: 2px; flex-shrink: 0;
+    }
   </style>
 </head>
 <body>
@@ -228,7 +256,11 @@
       <span style="display:inline-flex;align-items:center;justify-content:center;border:1.5px solid var(--gold);color:var(--gold);font-size:0.7rem;font-weight:700;width:1rem;height:1rem;border-radius:2px;flex-shrink:0;">✓</span>
       Employer has directly confirmed their Trump Account benefit
     </div>
-    <div style="overflow-x:auto;">
+    <div class="view-toggle" role="group" aria-label="View mode">
+      <button type="button" class="view-toggle-btn active" id="view-btn-table" aria-pressed="true">Table</button>
+      <button type="button" class="view-toggle-btn" id="view-btn-grid" aria-pressed="false">Grid</button>
+    </div>
+    <div id="view-table" style="overflow-x:auto;">
       <table class="tax-table" id="emp-table">
         <thead>
           <tr>
@@ -242,6 +274,9 @@
         <tbody id="emp-table-body"></tbody>
       </table>
     </div>
+    <div id="view-grid" style="display:none;">
+      <div id="emp-grid-container"></div>
+    </div>
   </div>
 </main>
 
@@ -251,6 +286,17 @@ window.EMPLOYER_DATA = typeof EMPLOYER_DATA !== 'undefined' ? EMPLOYER_DATA : []
 
 const conditionLabels = { all: 'All eligible children', seed: 'Born 2025–2028', newborn: 'Newborns only', conditional: 'Conditional', variable: 'TBD' };
 const contribLabels = { seed_grant: 'One-time grant', employer_match: 'Annual match', employer_stipend: 'Annual stipend' };
+
+const INDUSTRY_SECTIONS = [
+  { slug: 'banking_markets', title: 'Banking, Markets & Asset Management' },
+  { slug: 'fintech_crypto', title: 'Fintech & Crypto' },
+  { slug: 'technology', title: 'Technology & Software' },
+  { slug: 'media_telecom', title: 'Media & Telecom' },
+  { slug: 'retail_consumer', title: 'Retail, Restaurants & Consumer' },
+  { slug: 'energy_industrials', title: 'Energy & Industrials' },
+  { slug: 'policy_advocacy', title: 'Policy, Law & Advocacy' },
+  { slug: 'travel_transport', title: 'Travel & Transportation' },
+];
 
 let sortCol = -1, sortAsc = true;
 const selectedEmployers = new Set();  // employer labels selected via multi-combo
@@ -272,7 +318,12 @@ function getSortValue(e, col) {
   return '';
 }
 
-function loadEmployers() { initCombo(); renderEmployerTable(); }
+function loadEmployers() { initCombo(); renderEmployerViews(); }
+
+function renderEmployerViews() {
+  renderEmployerTable();
+  renderEmployerGrid();
+}
 
 function renderEmployerTable() {
   const tbody = document.getElementById('emp-table-body');
@@ -309,6 +360,56 @@ function renderEmployerTable() {
     }
   });
 }
+
+function empCard(e) {
+  const [, amtStr, condition, contribType] = e.value.split('|');
+  const amt = parseInt(amtStr) || 0;
+  const amtDisplay = condition === 'variable' ? 'TBD' : '$' + amt.toLocaleString();
+  const condDisplay = conditionLabels[condition] || condition;
+  const contribDisplay = contribLabels[contribType] || contribType || '—';
+  return `<div class="emp-card">
+    <div class="emp-card-top">
+      <div class="emp-card-name">${e.label}${e.verified ? '<span class="emp-verified" title="Directly confirmed">✓</span>' : ''}</div>
+      <div class="emp-card-amount">${amtDisplay}</div>
+    </div>
+    <div class="emp-card-type">${contribDisplay} · ${condDisplay}</div>
+    ${e.note ? `<div class="emp-card-note">${e.note}</div>` : ''}
+    ${e.source_url ? `<div class="emp-card-source"><a href="${e.source_url}" target="_blank" rel="noopener">${rootDomain(e.source_url)} ↗</a></div>` : ''}
+  </div>`;
+}
+
+function renderEmployerGrid() {
+  const container = document.getElementById('emp-grid-container');
+  if (!container) return;
+  const rows = selectedEmployers.size === 0
+    ? EMPLOYER_DATA.slice()
+    : EMPLOYER_DATA.filter(e => selectedEmployers.has(e.label));
+
+  let html = '';
+  for (const sec of INDUSTRY_SECTIONS) {
+    const inSection = rows.filter(e => e.industry === sec.slug);
+    if (!inSection.length) continue;
+    html += `
+      <div class="industry-section">
+        <h3>${sec.title} <span class="industry-count">(${inSection.length})</span></h3>
+        <div class="emp-grid">${inSection.map(empCard).join('')}</div>
+      </div>`;
+  }
+  container.innerHTML = html || '<p style="color:var(--muted);font-size:0.9rem;">No matching employers found.</p>';
+}
+
+function setView(mode) {
+  document.getElementById('view-table').style.display = mode === 'table' ? '' : 'none';
+  document.getElementById('view-grid').style.display = mode === 'grid' ? '' : 'none';
+  const tableBtn = document.getElementById('view-btn-table');
+  const gridBtn = document.getElementById('view-btn-grid');
+  tableBtn.classList.toggle('active', mode === 'table');
+  gridBtn.classList.toggle('active', mode === 'grid');
+  tableBtn.setAttribute('aria-pressed', mode === 'table');
+  gridBtn.setAttribute('aria-pressed', mode === 'grid');
+}
+document.getElementById('view-btn-table').addEventListener('click', () => setView('table'));
+document.getElementById('view-btn-grid').addEventListener('click', () => setView('grid'));
 
 document.querySelectorAll('#emp-table th.sortable').forEach(th => {
   th.addEventListener('click', () => {
@@ -397,14 +498,14 @@ function initCombo() {
       matches.forEach(e => selectedEmployers.add(e.label));
       updateChrome();
       renderDropdown();
-      renderEmployerTable();
+      renderEmployerViews();
     });
     if (clr) clr.addEventListener('mousedown', ev => {
       ev.preventDefault();
       selectedEmployers.clear();
       updateChrome();
       renderDropdown();
-      renderEmployerTable();
+      renderEmployerViews();
     });
   }
 
@@ -413,7 +514,7 @@ function initCombo() {
     else selectedEmployers.add(label);
     updateChrome();
     renderDropdown();
-    renderEmployerTable();
+    renderEmployerViews();
   }
 
   function open()  { combo.classList.add('open'); renderDropdown(); }
@@ -448,7 +549,7 @@ function initCombo() {
       selectedEmployers.delete(lastLabel);
       updateChrome();
       renderDropdown();
-      renderEmployerTable();
+      renderEmployerViews();
     }
   });
 
@@ -457,7 +558,7 @@ function initCombo() {
     selectedEmployers.clear();
     updateChrome();
     renderDropdown();
-    renderEmployerTable();
+    renderEmployerViews();
     searchEl.focus();
   });
 

@@ -43,6 +43,7 @@ DB_PATH = Path(__file__).parent / "trump_accounts.db"
 PUBLIC_EMPLOYER_COLUMNS = [
     "id", "name", "grant_amount", "condition_type", "group_label", "note",
     "sort_order", "contribution_type", "source_url", "verified", "announcement_date",
+    "industry",
 ]
 
 PUBLIC_STATE_GRANT_COLUMNS = [
@@ -111,6 +112,7 @@ def export_employers(conn, timestamp):
             "group": r["group_label"],
             "label": r["name"],
             "value": f"{r['id']}|{amt}|{r['condition_type']}|{r['contribution_type']}",
+            "industry": r["industry"],
         }
         if r["note"]:
             entry["note"] = r["note"]

@@ -55,6 +55,7 @@ Each object must have exactly these fields:
   "grant_amount": integer or null,
   "condition_type": "all" | "seed" | "newborn" | "conditional" | "variable",
   "contribution_type": "seed_grant" | "employer_match",
+  "industry": "banking_markets" | "fintech_crypto" | "technology" | "media_telecom" | "retail_consumer" | "energy_industrials" | "policy_advocacy" | "travel_transport",
   "note": "string or null",
   "source_url": "string or null — URL to announcement if present in text",
   "confidence": "high" | "medium" | "low"
@@ -70,6 +71,16 @@ condition_type:
 contribution_type:
   seed_grant     — one-time employer deposit; exempt from $5,000 annual cap
   employer_match — recurring annual contribution (up to $2,500/yr, within $5,000 cap)
+
+industry — classify the employer's primary business:
+  banking_markets    — banks, asset managers, exchanges, financial data/market infrastructure
+  fintech_crypto     — fintech apps, payment networks, crypto/digital asset companies
+  technology         — software, semiconductors, hardware, cloud/IT companies
+  media_telecom      — media, broadcasting, telecom, entertainment companies
+  retail_consumer    — retail, restaurants, consumer-facing services
+  energy_industrials — energy, materials, industrial/manufacturing companies
+  policy_advocacy    — think tanks, law firms, trade associations, advocacy nonprofits
+  travel_transport   — airlines, transportation, logistics companies
 
 Return ONLY valid JSON."""
 
@@ -160,6 +171,7 @@ def print_employer(r: dict):
     print(f"  Amount     : {'Variable' if r['grant_amount'] is None else '$' + str(r['grant_amount'])}")
     print(f"  Condition  : {r['condition_type']}")
     print(f"  Contrib    : {r.get('contribution_type', 'seed_grant')}")
+    print(f"  Industry   : {r.get('industry') or '—'}")
     print(f"  Note       : {r.get('note') or '—'}")
     print(f"  Source URL : {r.get('source_url') or '—'}")
     print(f"  Confidence : {r['confidence']}")
@@ -169,8 +181,8 @@ def write_employer(conn, r: dict, sort_order: int) -> str:
     eid = slugify(r["employer_name"])
     conn.execute(
         """INSERT OR REPLACE INTO employers
-           (id, name, grant_amount, condition_type, group_label, note, sort_order, contribution_type, source_url)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+           (id, name, grant_amount, condition_type, group_label, note, sort_order, contribution_type, source_url, industry)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (
             eid,
             r["employer_name"],
@@ -181,6 +193,7 @@ def write_employer(conn, r: dict, sort_order: int) -> str:
             sort_order,
             r.get("contribution_type", "seed_grant"),
             r.get("source_url"),
+            r.get("industry"),
         ),
     )
     return eid

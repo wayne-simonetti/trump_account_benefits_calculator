@@ -75,7 +75,12 @@ CREATE TABLE IF NOT EXISTS employers (
                       CHECK(contribution_type IN ('seed_grant', 'employer_match', 'employer_stipend')),
     source_url        TEXT,
     verified          INTEGER NOT NULL DEFAULT 0,   -- 1 = announcement confirmed by primary source
-    announcement_date TEXT                          -- ISO date of original announcement
+    announcement_date TEXT,                         -- ISO date of original announcement
+    industry           TEXT
+                       CHECK(industry IN (
+                           'banking_markets', 'fintech_crypto', 'technology', 'media_telecom',
+                           'retail_consumer', 'energy_industrials', 'policy_advocacy', 'travel_transport'
+                       ))
 );
 
 -- Email launch-notification signups. Lives in REMOTE D1 only (never exported
