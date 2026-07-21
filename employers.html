@@ -179,7 +179,8 @@
 
     @media (max-width: 680px) {
       .tax-table th, .tax-table td { font-size: 0.76rem; padding: 0.35rem 0.5rem; }
-      #emp-table th:nth-child(4), #emp-table td:nth-child(4) { display: none; }
+      #emp-table th:nth-child(4), #emp-table td:nth-child(4),
+      #emp-table th:nth-child(6), #emp-table td:nth-child(6) { display: none; }
       .filter-row { max-width: 100%; }
     }
 
@@ -305,6 +306,7 @@
             <th class="sortable" data-col="2">Type<em class="sort-icon">⇅</em></th>
             <th class="sortable" data-col="3">Eligibility<em class="sort-icon">⇅</em></th>
             <th class="sortable" data-col="4">Source<em class="sort-icon">⇅</em></th>
+            <th class="sortable" data-col="5">Announced<em class="sort-icon">⇅</em></th>
           </tr>
         </thead>
         <tbody id="emp-table-body"></tbody>
@@ -352,6 +354,13 @@ function rootDomain(url) {
   } catch { return url; }
 }
 
+function formatAnnounced(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr + 'T00:00:00');
+  if (isNaN(d)) return '—';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 function getSortValue(e, col) {
   const [, amtStr, condition, contribType] = e.value.split('|');
   if (col === 0) return e.label.toLowerCase();
@@ -359,6 +368,7 @@ function getSortValue(e, col) {
   if (col === 2) return contribLabels[contribType] || contribType || '';
   if (col === 3) return conditionLabels[condition] || condition;
   if (col === 4) return e.source_url ? rootDomain(e.source_url) : '';
+  if (col === 5) return e.announcement_date || '';
   return '';
 }
 
@@ -390,10 +400,11 @@ function renderEmployerTable() {
     const condDisplay = conditionLabels[condition] || condition;
     const contribDisplay = contribLabels[contribType] || contribType || '—';
     const note = e.source_url ? `<a href="${e.source_url}" target="_blank" rel="noopener" style="font-size:0.82rem;">${rootDomain(e.source_url)} ↗</a>` : '—';
-    return `<tr><td>${e.label}</td><td>${amtDisplay}</td><td>${contribDisplay}</td><td>${condDisplay}</td><td>${note}</td></tr>`;
+    const announced = formatAnnounced(e.announcement_date);
+    return `<tr><td>${e.label}</td><td>${amtDisplay}</td><td>${contribDisplay}</td><td>${condDisplay}</td><td>${note}</td><td>${announced}</td></tr>`;
   }).join('');
   if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);text-align:center;">No matching employers found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);text-align:center;">No matching employers found.</td></tr>';
   }
   // Update header icons
   document.querySelectorAll('#emp-table th.sortable').forEach(th => {
